@@ -1913,7 +1913,8 @@ private:
 
     void polyspaceMisraC2012() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.addons.emplace("misra");
         polyspace::Parser parser(settings);
         parser.parse("/* polyspace MISRA2012 : 2.7 */", 1, "file.c");
         parser.collect(list);
@@ -1944,7 +1945,8 @@ private:
 
     void polyspaceMisraC2023() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2023";
         polyspace::Parser parser(settings);
         parser.parse("// polyspace MISRA-C-2023 : *", 2, "file.c");
         parser.collect(list);
@@ -1959,7 +1961,8 @@ private:
 
     void polyspaceMisraCpp2008() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-cpp-2008";
         polyspace::Parser parser(settings);
         parser.parse("// polyspace MISRA-CPP : 7-1-1", 1, "file.c");
         parser.collect(list);
@@ -1971,7 +1974,8 @@ private:
 
     void polyspaceMisraCpp2023() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-cpp-2023";
         polyspace::Parser parser(settings);
         parser.parse("// polyspace MISRA-CPP-2023 : 4.6.1", 1, "file.c");
         parser.collect(list);
@@ -1983,7 +1987,8 @@ private:
 
     void polyspaceCertC() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--cert-c";
         polyspace::Parser parser(settings);
         parser.parse("// polyspace CERT-C : PRE30", 1, "file.c");
         parser.collect(list);
@@ -1995,7 +2000,8 @@ private:
 
     void polyspaceCertCpp() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--cert-cpp";
         polyspace::Parser parser(settings);
         parser.parse("// polyspace CERT-CPP : CTR51", 1, "file.c");
         parser.collect(list);
@@ -2007,7 +2013,8 @@ private:
 
     void polyspaceAutosar() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--autosar";
         polyspace::Parser parser(settings);
         parser.parse("// polyspace AUTOSAR-CPP14 : a2-10-1", 1, "file.c");
         parser.collect(list);
@@ -2028,49 +2035,53 @@ private:
 
     void polyspaceMultiple1() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2012";
         polyspace::Parser parser(settings);
         parser.parse("/* polyspace MISRA2012 : 2.7, 9.1 */", 1, "file.c");
         parser.collect(list);
         const auto &supprs = list.getSuppressions();
         ASSERT_EQUALS(2, supprs.size());
         auto s = supprs.cbegin();
-        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
         s++;
-        ASSERT_EQUALS("misra-c2012-9.1", s->errorId);
+        ASSERT_EQUALS("premium-misra-c-2012-9.1", s->errorId);
     }
 
     void polyspaceMultiple2() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2012 --misra-cpp-2008";
         polyspace::Parser parser(settings);
         parser.parse("/* polyspace MISRA2012 : 2.7 MISRA-CPP : 7-1-1 */", 1, "file.c");
         parser.collect(list);
         const auto &supprs = list.getSuppressions();
         ASSERT_EQUALS(2, supprs.size());
         auto s = supprs.cbegin();
-        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
         s++;
         ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
     }
 
     void polyspaceMultiple3() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2012 --misra-cpp-2008";
         polyspace::Parser parser(settings);
         parser.parse("/* polyspace MISRA2012 : 2.7 [Justified:Low] \"comment 1\" polyspace MISRA-CPP : 7-1-1 \"comment 2\"*/", 1, "file.c");
         parser.collect(list);
         const auto &supprs = list.getSuppressions();
         ASSERT_EQUALS(2, supprs.size());
         auto s = supprs.cbegin();
-        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
         s++;
         ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
     }
 
     void polyspaceRange() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2012";
         polyspace::Parser parser(settings);
         parser.parse("/* polyspace +3 MISRA2012 : 2.7 */", 1, "file.c");
         parser.collect(list);
@@ -2078,7 +2089,7 @@ private:
         ASSERT_EQUALS(1, supprs.size());
         const auto s = supprs.cbegin();
         ASSERT(s->isInline);
-        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
         ASSERT_EQUALS(1, s->lineNumber);
         ASSERT_EQUALS_ENUM(SuppressionList::Type::block, s->type);
         ASSERT_EQUALS(1, s->lineBegin);
@@ -2087,7 +2098,8 @@ private:
 
     void polyspaceBlock() const {
         SuppressionList list;
-        const Settings settings;
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2012";
         polyspace::Parser parser(settings);
         parser.parse("/* polyspace-begin MISRA2012 : 2.7 */", 1, "file.c");
         parser.parse("/* polyspace-end MISRA2012 : 2.7 */", 5, "file.c");
@@ -2096,7 +2108,7 @@ private:
         ASSERT_EQUALS(1, supprs.size());
         const auto s = supprs.cbegin();
         ASSERT(s->isInline);
-        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
         ASSERT_EQUALS(1, s->lineNumber);
         ASSERT_EQUALS_ENUM(SuppressionList::Type::block, s->type);
         ASSERT_EQUALS(1, s->lineBegin);
