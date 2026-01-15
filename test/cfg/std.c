@@ -39,15 +39,14 @@
 #include <stddef.h>
 
 void test_int32_min() {
+    // cppcheck-suppress shiftNegativeLHS
     // cppcheck-suppress shiftTooManyBits ; tests that INT32_MIN is a 32-bit expression (not 64-bit expression)
-    int a = INT32_MIN >> 40;
+    (void)(INT32_MIN >> 40);
 }
 
 void test_int64_min() {
-    char buf[10];
-
-    // cppcheck-suppress arrayIndexOutOfBounds ; tests that INT64_MIN is a signed expression
-    buf[100 * (int)(INT64_MIN < 0)] = 0;
+    // cppcheck-suppress compareValueOutOfTypeRangeError ; tests that INT64_MIN is a signed expression
+    if (INT64_MIN < 0) {}
 }
 
 size_t invalidFunctionArgStr_wcslen(void)
