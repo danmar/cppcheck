@@ -1649,11 +1649,20 @@ void CheckCondition::alwaysTrueFalse()
     }
 }
 
+static std::string getConditionString(const Token* condition)
+{
+    if (Token::simpleMatch(condition, "return"))
+        return "Return value";
+    if (Token::simpleMatch(condition, "(") && Token::Match(condition->astParent(), "%assign"))
+        return "Assigned value";
+    return "Condition";
+}
+
 void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
 {
     const bool alwaysTrue = value && (value->intvalue != 0 || value->isImpossible());
     const std::string expr = tok ? tok->expressionString() : std::string("x");
-    const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
+    const std::string conditionStr = getConditionString(condition);
     const std::string errmsg = conditionStr + " '" + expr + "' is always " + bool_to_string(alwaysTrue);
     ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(std::move(errorPath),
