@@ -4792,7 +4792,7 @@ private:
               "    bool g() const { return m; }\n"
               "    bool m{};\n"
               "};\n"
-              "void f(S s) {\n"
+              "bool f(S s) {\n"
               "    if (s.g()) {\n"
               "        bool b = s.g();\n"
               "        return b;\n"
