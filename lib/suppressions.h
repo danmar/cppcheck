@@ -31,6 +31,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
 class Tokenizer;
 class ErrorMessage;
@@ -306,13 +307,12 @@ namespace polyspace {
         int lineEnd;
 
         bool matches(const Suppression &other) const;
-        bool convert(const Settings &settings, SuppressionList::Suppression &suppr) const;
     };
 
     class CPPCHECKLIB Parser {
     public:
         Parser() = delete;
-        explicit Parser(const Settings &settings) : mSettings(settings) {}
+        explicit Parser(const Settings &settings);
         void collect(SuppressionList &suppressions) const;
         void parse(const std::string &comment, int line, const std::string &filename);
 
@@ -337,7 +337,7 @@ namespace polyspace {
         std::string mResultName;
         std::string mPeeked;
         bool mHasPeeked{};
-        const Settings &mSettings;
+        std::map<std::string, std::string> mFamilyMap;
     };
 
     bool CPPCHECKLIB isPolyspaceComment(const std::string &comment);

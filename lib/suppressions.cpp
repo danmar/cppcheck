@@ -649,6 +649,51 @@ std::string SuppressionList::Suppression::toString() const
     return s;
 }
 
+polyspace::Parser::Parser(const Settings &settings)
+{
+    const auto matchArg = [&](const std::string &arg) {
+        const std::string args = settings.premiumArgs;
+        const std::string::size_type pos = args.find(arg);
+
+        if (pos == std::string::npos)
+            return false;
+
+        if (pos > 0 && args[pos - 1] != ' ')
+            return false;
+
+        return pos == args.size() - arg.size() || args[pos + arg.size()] == ' ';
+    };
+
+    if (settings.addons.count("misra") != 0) {
+        mFamilyMap["MISRA-C3"] = "misra-c2012-";
+        mFamilyMap["MISRA2012"] = "misra-c2012-";
+    }
+
+    if (matchArg("--misra-c-2012")) {
+        mFamilyMap["MISRA-C3"] = "premium-misra-c-2012-";
+        mFamilyMap["MISRA2012"] = "premium-misra-c-2012-";
+    }
+
+    if (matchArg("--misra-c-2023"))
+        mFamilyMap["MISRA-C-2023"] = "premium-misra-c-2023-";
+
+    if (matchArg("--misra-cpp-2008") || matchArg("--misra-c++-2008"))
+        mFamilyMap["MISRA-CPP"] = "premium-misra-cpp-2008-";
+
+    if (matchArg("--misra-cpp-2023") || matchArg("--misra-c++-2023"))
+        mFamilyMap["MISRA-CPP-2023"] = "premium-misra-cpp-2023-";
+
+    if (matchArg("--cert-c") || matchArg("--cert-c-2016"))
+        mFamilyMap["CERT-C"] = "premium-cert-c-";
+
+    if (matchArg("--cert-cpp") || matchArg("--cert-c++") ||
+        matchArg("--cert-cpp-2016") || matchArg("--cert-c++-2016"))
+        mFamilyMap["CERT-CPP"] = "premium-cert-cpp-";
+
+    if (matchArg("--autosar"))
+        mFamilyMap["AUTOSAR-CPP14"] = "premium-autosar-";
+}
+
 std::string polyspace::Parser::peekToken()
 {
     if (!mHasPeeked) {
@@ -807,9 +852,26 @@ bool polyspace::Parser::parseEntry()
 void polyspace::Parser::collect(SuppressionList &suppressions) const
 {
     for (const auto &polyspaceSuppr : mDone) {
+        const auto it = mFamilyMap.find(polyspaceSuppr.family);
+        if (it == mFamilyMap.cend())
+            continue;
+
         SuppressionList::Suppression suppr;
-        if (polyspaceSuppr.convert(mSettings, suppr))
-            suppressions.addSuppression(std::move(suppr));
+        suppr.errorId = it->second + polyspaceSuppr.resultName;
+        suppr.isInline = true;
+        suppr.isPolyspace = true;
+        suppr.fileName = polyspaceSuppr.filename;
+
+        suppr.lineNumber = polyspaceSuppr.lineBegin;
+        if (polyspaceSuppr.lineBegin == polyspaceSuppr.lineEnd) {
+            suppr.type = SuppressionList::Type::unique;
+        } else {
+            suppr.type = SuppressionList::Type::block;
+            suppr.lineBegin = polyspaceSuppr.lineBegin;
+            suppr.lineEnd = polyspaceSuppr.lineEnd;
+        }
+
+        suppressions.addSuppression(std::move(suppr));
     }
 }
 
@@ -864,48 +926,4 @@ bool polyspace::isPolyspaceComment(const std::string &comment)
 bool polyspace::Suppression::matches(const polyspace::Suppression &other) const
 {
     return family == other.family && resultName == other.resultName;
-}
-
-bool polyspace::Suppression::convert(const Settings &settings, SuppressionList::Suppression &suppr) const
-{
-    static const std::map<std::string, std::string> map = {
-        { "MISRA-C-2023", "premium-misra-c-2023-" },
-        { "MISRA-CPP", "premium-misra-cpp-2008-" },
-        { "MISRA-CPP-2023", "premium-misra-cpp-2023-" },
-        { "CERT-C", "premium-cert-c-" },
-        { "CERT-CPP", "premium-cert-cpp-" },
-        { "AUTOSAR-CPP14", "premium-autosar-" },
-    };
-
-    const auto it = map.find(family);
-    std::string prefix;
-    if (it == map.cend()) {
-        if (family == "MISRA-C3" || family == "MISRA2012") {
-            if (settings.premiumArgs.empty()) {
-                prefix = "misra-c2012-";
-            } else {
-                prefix = "premium-misra-c-2012-";
-            }
-        } else {
-            return false;
-        }
-    } else {
-        prefix = it->second;
-    }
-
-    suppr.errorId = prefix + resultName;
-    suppr.isInline = true;
-    suppr.isPolyspace = true;
-    suppr.fileName = filename;
-
-    suppr.lineNumber = lineBegin;
-    if (lineBegin == lineEnd) {
-        suppr.type = SuppressionList::Type::unique;
-    } else {
-        suppr.type = SuppressionList::Type::block;
-        suppr.lineBegin = lineBegin;
-        suppr.lineEnd = lineEnd;
-    }
-
-    return true;
 }
