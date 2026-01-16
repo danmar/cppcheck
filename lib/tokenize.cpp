@@ -3336,13 +3336,13 @@ bool Tokenizer::simplifyUsing()
                         tok1->deleteThis();
                         substitute = true;
                     }
-                // function pointer
                 } else if (fpArgList && fpQual && Token::Match(tok1->next(), "%name%")) {
+                    // function pointer
                     TokenList::copyTokens(tok1->next(), fpArgList, usingEnd->previous());
                     Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());
                     tok1->deleteThis();
                     Token* const rightPar = copyEnd->next()->insertToken(")");
-                    Token::createMutualLinks(tok1->next(), rightPar);                    
+                    Token::createMutualLinks(tok1->next(), rightPar);
                     substitute = true;
                 } else {
                     // add some qualification back if needed
@@ -6950,8 +6950,7 @@ void Tokenizer::simplifyFunctionParameters()
         }
 
         // Find the function e.g. foo( x ) or foo( x, y )
-        else if (Token::Match(tok, "%name% ( %name% [,)]") &&
-                 !(tok->strAt(-1) == ":" || tok->strAt(-1) == "," || tok->strAt(-1) == "::")) {
+        else if (Token::Match(tok, "%name% ( %name% [,)]") && !Token::Match(tok->tokAt(-1), ":|,|::|=")) {
             // We have found old style function, now we need to change it
 
             // First step: Get list of argument names in parentheses
