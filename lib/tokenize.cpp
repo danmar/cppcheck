@@ -3317,7 +3317,10 @@ bool Tokenizer::simplifyUsing()
                 if (Token::simpleMatch(type->link(), ") (")) {
                     fpArgList = type->link()->next();
                     fpQual = type;
-                    type = type->link()->next()->link()->next();
+                    type = type->link()->linkAt(1)->next();
+                } else if (type->link()->next() == usingEnd) {
+                    fpArgList = type;
+                    type = usingEnd;
                 }
             }
 
@@ -3343,6 +3346,16 @@ bool Tokenizer::simplifyUsing()
                     tok1->deleteThis();
                     Token* const rightPar = copyEnd->next()->insertToken(")");
                     Token::createMutualLinks(tok1->next(), rightPar);
+                    substitute = true;
+                } else if (fpArgList && !fpQual && Token::Match(tok1->next(), "* const| %name%")) {
+                    // function pointer
+                    Token* const dest = tok1->tokAt(tok1->strAt(2) == "const" ? 3 : 2);
+                    Token* const copyEndArgs = TokenList::copyTokens(dest, fpArgList, usingEnd->previous());
+                    Token* const copyEndRet = TokenList::copyTokens(tok1, start, fpArgList->previous());                    
+                    Token* const leftPar = copyEndRet->insertToken("(");
+                    Token* const rightPar = copyEndArgs->link()->tokAt(-1)->insertToken(")");
+                    Token::createMutualLinks(leftPar, rightPar);
+                    tok1->deleteThis();
                     substitute = true;
                 } else {
                     // add some qualification back if needed
