@@ -3211,6 +3211,8 @@ bool Tokenizer::simplifyUsing()
             }
 
             Token * arrayStart = nullptr;
+            Token * fpArgList = nullptr;
+            Token * fpQual = nullptr;
 
             // parse the type
             Token *type = start;
@@ -3310,6 +3312,15 @@ bool Tokenizer::simplifyUsing()
                 } while (type && type->str() == "[");
             }
 
+            // check for function pointer
+            if (type && type->str() == "(") {
+                if (Token::simpleMatch(type->link(), ") (")) {
+                    fpArgList = type->link()->next();
+                    fpQual = type;
+                    type = type->link()->next()->link()->next();
+                }
+            }
+
             // make sure we are in a good state
             if (!tok1 || !tok1->next())
                 break; // bail
@@ -3325,6 +3336,14 @@ bool Tokenizer::simplifyUsing()
                         tok1->deleteThis();
                         substitute = true;
                     }
+                // function pointer
+                } else if (fpArgList && fpQual && Token::Match(tok1->next(), "%name%")) {
+                    TokenList::copyTokens(tok1->next(), fpArgList, usingEnd->previous());
+                    Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());
+                    tok1->deleteThis();
+                    Token* const rightPar = copyEnd->next()->insertToken(")");
+                    Token::createMutualLinks(tok1->next(), rightPar);                    
+                    substitute = true;
                 } else {
                     // add some qualification back if needed
                     std::string removed1 = std::move(removed);
