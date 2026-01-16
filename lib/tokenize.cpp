@@ -3351,7 +3351,7 @@ bool Tokenizer::simplifyUsing()
                     // function pointer
                     Token* const dest = tok1->tokAt(tok1->strAt(2) == "const" ? 3 : 2);
                     Token* const copyEndArgs = TokenList::copyTokens(dest, fpArgList, usingEnd->previous());
-                    Token* const copyEndRet = TokenList::copyTokens(tok1, start, fpArgList->previous());                    
+                    Token* const copyEndRet = TokenList::copyTokens(tok1, start, fpArgList->previous());
                     Token* const leftPar = copyEndRet->insertToken("(");
                     Token* const rightPar = copyEndArgs->link()->tokAt(-1)->insertToken(")");
                     Token::createMutualLinks(leftPar, rightPar);

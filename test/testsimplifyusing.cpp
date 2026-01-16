@@ -893,8 +893,8 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         const char code2[] = "using f_t = int(int);\n"
-                            "f_t* fp1;\n"
-                            "f_t* const fp2;\n";
+                             "f_t* fp1;\n"
+                             "f_t* const fp2;\n";
         const char expected2[] = "int ( * fp1 ) ( int ) ; int ( * const fp2 ) ( int ) ;";
         ASSERT_EQUALS(expected2, tok(code2));
         ASSERT_EQUALS("", errout_str());
