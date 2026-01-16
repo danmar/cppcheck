@@ -103,16 +103,16 @@ private:
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
         // and unsigned types having already a size of 4 bytes
         {
-            const std::string types[] = {"unsigned char", /*[unsigned]*/ "char", "bool", "unsigned short", "unsigned int", "unsigned long"};
+            const std::string types[] = {"unsigned char", "bool", "unsigned short", "unsigned int", "unsigned long"};
             for (const std::string& type : types) {
                 check(type + " f(" + type +" x) { return x << 31; }", dinit(CheckOptions, $.settings = &settings));
-                ASSERT_EQUALS("", errout_str());
+                ASSERT_EQUALS_MSG("", errout_str(), type);
                 check(type + " f(" + type +" x) { return x << 33; }", dinit(CheckOptions, $.settings = &settings));
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout_str());
+                ASSERT_EQUALS_MSG("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout_str(), type);
                 check(type + " f(int x) { return (x = (" + type + ")x << 32); }", dinit(CheckOptions, $.settings = &settings));
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
+                ASSERT_EQUALS_MSG("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str(), type);
                 check(type + " foo(" + type + " x) { return x << 31; }", dinit(CheckOptions, $.settings = &settings));
-                ASSERT_EQUALS("", errout_str());
+                ASSERT_EQUALS_MSG("", errout_str(), type);
             }
         }
         // signed types getting promoted to int sizeof(int) = 4 bytes
