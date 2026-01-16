@@ -378,6 +378,8 @@ bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLog
             continue;
         if (settings.library.isentrypoint(it->first))
             continue;
+        if (settings.library.ignorefunction(it->first))
+            continue;
         if (!func.usedSameFile) {
             if (isOperatorFunction(it->first))
                 continue;
@@ -488,6 +490,9 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
         const std::string &functionName = stripTemplateParameters(decl->first);
 
         if (settings.library.isentrypoint(functionName))
+            continue;
+
+        if (settings.library.ignorefunction(functionName))
             continue;
 
         if (calls.find(functionName) == calls.end() && !isOperatorFunction(functionName)) {
