@@ -72,7 +72,7 @@ private:
         TEST_CASE(simplifyUsing33);
         TEST_CASE(simplifyUsing34);
         TEST_CASE(simplifyUsing35);
-        TEST_CASE(simplifyUsing36);        
+        TEST_CASE(simplifyUsing36);
         TEST_CASE(simplifyUsing37);
 
         TEST_CASE(simplifyUsing8970);
