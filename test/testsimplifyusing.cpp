@@ -893,11 +893,11 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         const char code2[] = "using f_t = int(int);\n"
-                            "f_t* fp;\n";
-        const char expected2[] = "int ( * fp1 ) ( int ) ; int ( * const fp2 ) ( int ) ;";
-        const char actual2[] = "using f_t = int ( ) ; f_t * fp ;";
+                             "f_t* fp;\n";
+        const char expected2[] = "int ( * fp ) ( int ) ;";
+        const char actual2[] = "using f_t = int ( int ) ; f_t * fp ;";
         TODO_ASSERT_EQUALS(expected2, actual2, tok(code2));
-        TODO_ASSERT_EQUALS("", "[test.cpp:1:1]: (debug) Failed to parse 'using f_t = int ( ) ;'. The checking continues anyway. [simplifyUsing]\n", errout_str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:1:1]: (debug) Failed to parse 'using f_t = int ( int ) ;'. The checking continues anyway. [simplifyUsing]\n", errout_str());
     }
 
     void simplifyUsing8970() {
