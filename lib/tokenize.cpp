@@ -103,14 +103,14 @@ static void skipEnumBody(T *&tok)
 /**
  * is tok the start brace { of a class, struct, union, or enum
  */
-static const Token* isClassStructUnionEnumStart(const Token * tok)
+static bool isClassStructUnionEnumStart(const Token * tok)
 {
     if (!Token::Match(tok->previous(), "class|struct|union|enum|%name%|>|>> {"))
-        return nullptr;
+        return false;
     const Token * tok2 = tok->previous();
     while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|)|;|>|>>"))
         tok2 = tok2->previous();
-    return Token::Match(tok2, "class|struct|union|enum") ? tok2 : nullptr;
+    return Token::Match(tok2, "class|struct|union|enum") && !Token::simpleMatch(tok2->tokAt(-1), "->");
 }
 
 //---------------------------------------------------------------------------
@@ -8783,16 +8783,12 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
     }
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (tok->str() == "{") {
-            if (const Token* start = isClassStructUnionEnumStart(tok)) {
-                if (Token::simpleMatch(start->tokAt(-1), "->"))
-                    continue;
-                for (const Token* tok2 = tok->next(); tok2 != tok->link(); tok2 = tok2->next()) {
-                    if (tok2->str() == "{")
-                        tok2 = tok2->link();
-                    else if (tok2->isKeyword() && nonGlobalKeywords.count(tok2->str()) && !Token::Match(tok2->tokAt(-2), "operator %str%"))
-                        syntaxError(tok2, "keyword '" + tok2->str() + "' is not allowed in class/struct/union/enum scope");
-                }
+        if (tok->str() == "{" && isClassStructUnionEnumStart(tok)) {
+            for (const Token* tok2 = tok->next(); tok2 != tok->link(); tok2 = tok2->next()) {
+                if (tok2->str() == "{")
+                    tok2 = tok2->link();
+                else if (tok2->isKeyword() && nonGlobalKeywords.count(tok2->str()) && !Token::Match(tok2->tokAt(-2), "operator %str%"))
+                    syntaxError(tok2, "keyword '" + tok2->str() + "' is not allowed in class/struct/union/enum scope");
             }
         }
     }
