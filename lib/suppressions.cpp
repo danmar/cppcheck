@@ -710,9 +710,6 @@ std::string polyspace::Parser::nextToken()
         return mPeeked;
     }
 
-    if (mComment.compare(0, 2, "/*") == 0 || mComment.compare(0, 2, "//") == 0)
-        mComment = mComment.substr(2);
-
     std::string::size_type pos = 0;
     while (mComment[pos] == ' ') {
         pos++;
@@ -877,7 +874,7 @@ void polyspace::Parser::collect(SuppressionList &suppressions) const
 
 void polyspace::Parser::parse(const std::string &comment, int line, const std::string &filename)
 {
-    mComment = comment;
+    mComment = comment.substr(2);
     mLine = line;
     mFilename = filename;
     mHasPeeked = false;
