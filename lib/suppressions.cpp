@@ -651,6 +651,17 @@ std::string SuppressionList::Suppression::toString() const
 
 polyspace::Parser::Parser(const Settings &settings)
 {
+    const auto it = std::find_if(settings.addonInfos.cbegin(),
+                                 settings.addonInfos.cend(),
+                                 [] (const AddonInfo &info) {
+        return info.name == "misra";
+    });
+
+    if (it != settings.addonInfos.cend()) {
+        mFamilyMap["MISRA-C3"] = "misra-c2012-";
+        mFamilyMap["MISRA2012"] = "misra-c2012-";
+    }
+
     const auto matchArg = [&](const std::string &arg) {
         const std::string args = settings.premiumArgs;
         const std::string::size_type pos = args.find(arg);
@@ -663,11 +674,6 @@ polyspace::Parser::Parser(const Settings &settings)
 
         return pos == args.size() - arg.size() || args[pos + arg.size()] == ' ';
     };
-
-    if (settings.addons.count("misra") != 0) {
-        mFamilyMap["MISRA-C3"] = "misra-c2012-";
-        mFamilyMap["MISRA2012"] = "misra-c2012-";
-    }
 
     if (matchArg("--misra-c-2012")) {
         mFamilyMap["MISRA-C3"] = "premium-misra-c-2012-";
