@@ -1911,208 +1911,211 @@ private:
         }
     }
 
-    void polyspaceMisraC2012() const {
+    struct PolyspaceComment {
+        std::string text;
+        int line;
+
+        PolyspaceComment(const std::string &&text, int line)
+            : text(text)
+            , line(line)
+        {}
+    };
+
+    struct PolyspaceParseResult {
+        std::string errorId;
+        int lineNumber;
+        SuppressionList::Type type = SuppressionList::Type::unique;
+        int lineBegin = SuppressionList::Suppression::NO_LINE;
+        int lineEnd = SuppressionList::Suppression::NO_LINE;
+
+        PolyspaceParseResult(const std::string &&errorId,
+                             int lineNumber,
+                             SuppressionList::Type type = SuppressionList::Type::unique,
+                             int lineBegin = SuppressionList::Suppression::NO_LINE,
+                             int lineEnd = SuppressionList::Suppression::NO_LINE)
+            : errorId(errorId)
+            , lineNumber(lineNumber)
+            , type(type)
+            , lineBegin(lineBegin)
+            , lineEnd(lineEnd)
+        {}
+    };
+
+    void testPolyspaceSuppression(const Settings &settings,
+                                  std::initializer_list<PolyspaceComment> comments,
+                                  std::initializer_list<PolyspaceParseResult> results) const
+    {
         SuppressionList list;
-        Settings settings;
-        settings.addons.emplace("misra");
         polyspace::Parser parser(settings);
-        parser.parse("/* polyspace MISRA2012 : 2.7 */", 1, "file.c");
+
+        const std::string fileName = "file.c";
+        for (const auto &comment : comments)
+            parser.parse(comment.text, comment.line, fileName);
+
         parser.collect(list);
         const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT(s->isInline);
-        ASSERT(s->isPolyspace);
-        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
-        ASSERT_EQUALS(1, s->lineNumber);
-        ASSERT_EQUALS_ENUM(SuppressionList::Type::unique, s->type);
-        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineBegin);
-        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineEnd);
+
+        ASSERT_EQUALS(results.size(), supprs.size());
+
+        auto supprIt = supprs.cbegin();
+        const auto *resultIt = results.begin();
+
+        for (; supprIt != supprs.cend(); supprIt++, resultIt++) {
+            ASSERT(supprIt->isPolyspace);
+            ASSERT(supprIt->isInline);
+            ASSERT_EQUALS(fileName, supprIt->fileName);
+            ASSERT_EQUALS(resultIt->errorId, supprIt->errorId);
+            ASSERT_EQUALS_ENUM(resultIt->type, supprIt->type);
+            ASSERT_EQUALS(resultIt->lineNumber, supprIt->lineNumber);
+            ASSERT_EQUALS(resultIt->lineBegin, supprIt->lineBegin);
+            ASSERT_EQUALS(resultIt->lineEnd, supprIt->lineEnd);
+        }
+    }
+
+    void polyspaceMisraC2012() const {
+        Settings settings;
+        AddonInfo info;
+        info.name = "misra";
+        settings.addonInfos.push_back(info);
+
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace MISRA2012 : 2.7 */", 1 } },
+            { { "misra-c2012-2.7", 1 } }
+            );
     }
 
     void polyspacePremiumMisraC2012() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-c-2012";
-        polyspace::Parser parser(settings);
-        parser.parse("/* polyspace MISRA2012 : 2.7 */", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace MISRA2012 : 2.7 */", 1 } },
+            { { "premium-misra-c-2012-2.7", 1 } }
+            );
     }
 
     void polyspaceMisraC2023() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-c-2023";
-        polyspace::Parser parser(settings);
-        parser.parse("// polyspace MISRA-C-2023 : *", 2, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-misra-c-2023-*", s->errorId);
-        ASSERT_EQUALS(2, s->lineNumber);
-        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineBegin);
-        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineEnd);
+        testPolyspaceSuppression(
+            settings,
+            { { "// polyspace MISRA-C-2023 : *", 2 } },
+            { { "premium-misra-c-2023-*", 2 } }
+            );
     }
 
     void polyspaceMisraCpp2008() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-cpp-2008";
-        polyspace::Parser parser(settings);
-        parser.parse("// polyspace MISRA-CPP : 7-1-1", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "// polyspace MISRA-CPP : 7-1-1", 1 } },
+            { { "premium-misra-cpp-2008-7-1-1", 1 } }
+            );
     }
 
     void polyspaceMisraCpp2023() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-cpp-2023";
-        polyspace::Parser parser(settings);
-        parser.parse("// polyspace MISRA-CPP-2023 : 4.6.1", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-misra-cpp-2023-4.6.1", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "// polyspace MISRA-CPP-2023 : 4.6.1", 1 } },
+            { { "premium-misra-cpp-2023-4.6.1", 1 } }
+            );
     }
 
     void polyspaceCertC() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--cert-c";
-        polyspace::Parser parser(settings);
-        parser.parse("// polyspace CERT-C : PRE30", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-cert-c-PRE30", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "// polyspace CERT-C : PRE30", 1 } },
+            { { "premium-cert-c-PRE30", 1 } }
+            );
     }
 
     void polyspaceCertCpp() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--cert-cpp";
-        polyspace::Parser parser(settings);
-        parser.parse("// polyspace CERT-CPP : CTR51", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-cert-cpp-CTR51", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "// polyspace CERT-CPP : CTR51", 1 } },
+            { { "premium-cert-cpp-CTR51", 1 } }
+            );
     }
 
     void polyspaceAutosar() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--autosar";
-        polyspace::Parser parser(settings);
-        parser.parse("// polyspace AUTOSAR-CPP14 : a2-10-1", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-autosar-a2-10-1", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "// polyspace AUTOSAR-CPP14 : a2-10-1", 1 } },
+            { { "premium-autosar-a2-10-1", 1 } }
+            );
     }
 
     void polyspaceIgnored() const {
-        SuppressionList list;
-        const Settings settings;
-        polyspace::Parser parser(settings);
-        parser.parse("// polyspace DEFECT : INT_OVFL", 1, "file.c");
-        parser.collect(list);
-        ASSERT(list.getSuppressions().empty());
+        Settings settings;
+        testPolyspaceSuppression(
+            settings,
+            { { "// polyspace DEFECT : INT_OVFL AUTOSAR-CPP14 : a2-10-1", 1 } },
+            {}
+            );
     }
 
     void polyspaceMultiple1() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-c-2012";
-        polyspace::Parser parser(settings);
-        parser.parse("/* polyspace MISRA2012 : 2.7, 9.1 */", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(2, supprs.size());
-        auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
-        s++;
-        ASSERT_EQUALS("premium-misra-c-2012-9.1", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace MISRA2012 : 2.7, 9.1 */", 1 } },
+            { { "premium-misra-c-2012-2.7", 1 },
+                { "premium-misra-c-2012-9.1", 1 } }
+            );
     }
 
     void polyspaceMultiple2() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-c-2012 --misra-cpp-2008";
-        polyspace::Parser parser(settings);
-        parser.parse("/* polyspace MISRA2012 : 2.7 MISRA-CPP : 7-1-1 */", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(2, supprs.size());
-        auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
-        s++;
-        ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace MISRA2012 : 2.7 MISRA-CPP : 7-1-1 */", 1 } },
+            { { "premium-misra-c-2012-2.7", 1 },
+                { "premium-misra-cpp-2008-7-1-1", 1 } }
+            );
     }
 
     void polyspaceMultiple3() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-c-2012 --misra-cpp-2008";
-        polyspace::Parser parser(settings);
-        parser.parse("/* polyspace MISRA2012 : 2.7 [Justified:Low] \"comment 1\" polyspace MISRA-CPP : 7-1-1 \"comment 2\"*/", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(2, supprs.size());
-        auto s = supprs.cbegin();
-        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
-        s++;
-        ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace MISRA2012 : 2.7 [Justified:Low] \"comment 1\" polyspace MISRA-CPP : 7-1-1 \"comment 2\"*/", 1 } },
+            { { "premium-misra-c-2012-2.7", 1 },
+                { "premium-misra-cpp-2008-7-1-1", 1 }, }
+            );
     }
 
     void polyspaceRange() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-c-2012";
-        polyspace::Parser parser(settings);
-        parser.parse("/* polyspace +3 MISRA2012 : 2.7 */", 1, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT(s->isInline);
-        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
-        ASSERT_EQUALS(1, s->lineNumber);
-        ASSERT_EQUALS_ENUM(SuppressionList::Type::block, s->type);
-        ASSERT_EQUALS(1, s->lineBegin);
-        ASSERT_EQUALS(4, s->lineEnd);
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace +3 MISRA2012 : 2.7 */", 1 } },
+            { { "premium-misra-c-2012-2.7", 1, SuppressionList::Type::block, 1, 4 } }
+            );
     }
 
     void polyspaceBlock() const {
-        SuppressionList list;
         Settings settings;
         settings.premiumArgs = "--misra-c-2012";
-        polyspace::Parser parser(settings);
-        parser.parse("/* polyspace-begin MISRA2012 : 2.7 */", 1, "file.c");
-        parser.parse("/* polyspace-end MISRA2012 : 2.7 */", 5, "file.c");
-        parser.collect(list);
-        const auto &supprs = list.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto s = supprs.cbegin();
-        ASSERT(s->isInline);
-        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
-        ASSERT_EQUALS(1, s->lineNumber);
-        ASSERT_EQUALS_ENUM(SuppressionList::Type::block, s->type);
-        ASSERT_EQUALS(1, s->lineBegin);
-        ASSERT_EQUALS(5, s->lineEnd);
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace-begin MISRA2012 : 2.7 */", 1 },
+                { "/* polyspace-end MISRA2012 : 2.7 */", 5 } },
+            { { "premium-misra-c-2012-2.7", 1, SuppressionList::Type::block, 1, 5 } }
+            );
     }
 };
 
