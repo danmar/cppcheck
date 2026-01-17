@@ -38,6 +38,17 @@
 #include <math.h>
 #include <stddef.h>
 
+void test_int32_min() {
+    // cppcheck-suppress shiftNegativeLHS
+    // cppcheck-suppress shiftTooManyBits ; tests that INT32_MIN is a 32-bit expression (not 64-bit expression)
+    (void)(INT32_MIN >> 40);
+}
+
+void test_int64_min() {
+    // cppcheck-suppress compareValueOutOfTypeRangeError ; tests that INT64_MIN is a signed expression
+    if (INT64_MIN < 0) {}
+}
+
 size_t invalidFunctionArgStr_wcslen(void)
 {
     const wchar_t terminated0[] = L"ABCDEF49620910";
