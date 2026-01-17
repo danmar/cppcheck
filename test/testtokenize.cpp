@@ -7683,6 +7683,12 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("struct S { unsigned u:2, :30; };")); // #14393
 
+        ASSERT_NO_THROW(tokenizeAndStringify("struct S {};\n" // #14400
+                                             "auto f(bool b) -> struct S {\n"
+                                             "    if (b) {}\n"
+                                             "    return {};\n"
+                                             "};\n"));
+
         ignore_errout();
     }
 
