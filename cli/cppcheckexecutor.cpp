@@ -329,11 +329,8 @@ static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppres
         if (!s.fileName.empty()) {
             callStack.emplace_back(s.fileName, s.lineNumber, 0);
         }
-        if (s.isPolyspace) {
-            errorLogger.reportErr(::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched polyspace suppression: " + s.errorId, "unmatchedPolyspaceSuppression", Certainty::normal));
-        } else {
-            errorLogger.reportErr(::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
-        }
+        const std::string unmatchedSuppressionId = s.isPolyspace ? "unmatchedPolyspaceSuppression" : "unmatchedSuppression";
+        errorLogger.reportErr(::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, unmatchedSuppressionId, Certainty::normal));
         err = true;
     }
     return err;
