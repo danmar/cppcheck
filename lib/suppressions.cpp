@@ -874,6 +874,9 @@ void polyspace::Parser::collect(SuppressionList &suppressions) const
 
 void polyspace::Parser::parse(const std::string &comment, int line, const std::string &filename)
 {
+    if (mFamilyMap.empty())
+        return;
+
     mComment = comment.substr(2);
     mLine = line;
     mFilename = filename;
