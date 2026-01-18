@@ -3996,6 +3996,12 @@ private:
               "    return static_cast<const D&>(b).i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9:10]: (style) Parameter 'b' can be declared as reference to const [constParameterReference]\n", errout_str());
+
+        check("void f(int *p) {\n" // #14409
+              "    int*& pp{ p };\n"
+              "    if (*pp) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {

@@ -1857,10 +1857,13 @@ void CheckOther::checkConstPointer()
         if (!var->isLocal() && !var->isArgument())
             continue;
         const Token* const nameTok = var->nameToken();
-        if (tok == nameTok) {
+        if (tok == nameTok && var->isLocal() && !astIsRangeBasedForDecl(nameTok)) {
+            if (var->isReference() && var->isPointer()) {
+                nonConstPointers.emplace(var);
+                continue;
+            }
             // declarations of (static) pointers are (not) split up, array declarations are never split up
-            if (var->isLocal() && (!var->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
-                !astIsRangeBasedForDecl(nameTok))
+            if ((!var->isStatic() || Token::simpleMatch(nameTok->next(), "[")))
                 continue;
         }
         // Skip function pointers
