@@ -3211,6 +3211,8 @@ bool Tokenizer::simplifyUsing()
             }
 
             Token * arrayStart = nullptr;
+            Token * fpArgList = nullptr;
+            Token * fpQual = nullptr;
 
             // parse the type
             Token *type = start;
@@ -3310,6 +3312,18 @@ bool Tokenizer::simplifyUsing()
                 } while (type && type->str() == "[");
             }
 
+            // check for function pointer
+            if (type && type->str() == "(") {
+                if (Token::simpleMatch(type->link(), ") (")) {
+                    fpArgList = type->link()->next();
+                    fpQual = type;
+                    type = type->link()->linkAt(1)->next();
+                } else if (type->link()->next() == usingEnd) {
+                    fpArgList = type;
+                    type = usingEnd;
+                }
+            }
+
             // make sure we are in a good state
             if (!tok1 || !tok1->next())
                 break; // bail
@@ -3325,6 +3339,24 @@ bool Tokenizer::simplifyUsing()
                         tok1->deleteThis();
                         substitute = true;
                     }
+                } else if (fpArgList && fpQual && Token::Match(tok1->next(), "%name%")) {
+                    // function pointer
+                    TokenList::copyTokens(tok1->next(), fpArgList, usingEnd->previous());
+                    Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());
+                    tok1->deleteThis();
+                    Token* const rightPar = copyEnd->next()->insertToken(")");
+                    Token::createMutualLinks(tok1->next(), rightPar);
+                    substitute = true;
+                } else if (fpArgList && !fpQual && Token::Match(tok1->next(), "* const| %name%")) {
+                    // function pointer
+                    Token* const dest = tok1->tokAt(tok1->strAt(2) == "const" ? 3 : 2);
+                    Token* const copyEndArgs = TokenList::copyTokens(dest, fpArgList, usingEnd->previous());
+                    Token* const copyEndRet = TokenList::copyTokens(tok1, start, fpArgList->previous());
+                    Token* const leftPar = copyEndRet->insertToken("(");
+                    Token* const rightPar = copyEndArgs->link()->tokAt(-1)->insertToken(")");
+                    Token::createMutualLinks(leftPar, rightPar);
+                    tok1->deleteThis();
+                    substitute = true;
                 } else {
                     // add some qualification back if needed
                     std::string removed1 = std::move(removed);
@@ -6931,8 +6963,7 @@ void Tokenizer::simplifyFunctionParameters()
         }
 
         // Find the function e.g. foo( x ) or foo( x, y )
-        else if (Token::Match(tok, "%name% ( %name% [,)]") &&
-                 !(tok->strAt(-1) == ":" || tok->strAt(-1) == "," || tok->strAt(-1) == "::")) {
+        else if (Token::Match(tok, "%name% ( %name% [,)]") && !Token::Match(tok->tokAt(-1), ":|,|::|=")) {
             // We have found old style function, now we need to change it
 
             // First step: Get list of argument names in parentheses

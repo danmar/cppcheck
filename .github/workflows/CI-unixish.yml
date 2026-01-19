@@ -716,7 +716,7 @@ jobs:
           ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json --enable=internal lib || ec=1
           # check gui with qt settings
           mkdir b2
-          ./cppcheck $selfcheck_options $cppcheck_options $gui_options --cppcheck-build-dir=b2 --addon=naming.json --suppress=simplifyUsing:*/moc_*.cpp -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options $gui_options --cppcheck-build-dir=b2 --addon=naming.json -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui || ec=1
           # self check test and tools
           ./cppcheck $selfcheck_options $cppcheck_options -Ifrontend -Icli test/*.cpp  || ec=1
           ./cppcheck $selfcheck_options $cppcheck_options -Icli tools/dmake/*.cpp || ec=1

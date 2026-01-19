@@ -73,6 +73,7 @@ private:
         TEST_CASE(simplifyUsing34);
         TEST_CASE(simplifyUsing35);
         TEST_CASE(simplifyUsing36);
+        TEST_CASE(simplifyUsing37);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -879,6 +880,23 @@ private:
                             "int c = B<int>::a;\n";
         const char expected[] = "int c ; c = B < int > :: a ;";
         ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyUsing37() {
+        const char code1[] = "using fp1_t = int(*)(int);\n"
+                             "using fp2_t = int(* const)(int);\n"
+                             "fp1_t fp1;\n"
+                             "fp2_t fp2;\n";
+        const char expected1[] = "int ( * fp1 ) ( int ) ; int ( * const fp2 ) ( int ) ;";
+        ASSERT_EQUALS(expected1, tok(code1));
+        ASSERT_EQUALS("", errout_str());
+
+        const char code2[] = "using f_t = int(int);\n"
+                             "f_t* fp1;\n"
+                             "f_t* const fp2;\n";
+        const char expected2[] = "int ( * fp1 ) ( int ) ; int ( * const fp2 ) ( int ) ;";
+        ASSERT_EQUALS(expected2, tok(code2));
         ASSERT_EQUALS("", errout_str());
     }
 
