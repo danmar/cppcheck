@@ -1924,17 +1924,20 @@ private:
     struct PolyspaceParseResult {
         std::string errorId;
         int lineNumber;
+        std::string extraComment;
         SuppressionList::Type type = SuppressionList::Type::unique;
         int lineBegin = SuppressionList::Suppression::NO_LINE;
         int lineEnd = SuppressionList::Suppression::NO_LINE;
 
         PolyspaceParseResult(const std::string &&errorId,
                              int lineNumber,
+                             const std::string &&extraComment = "",
                              SuppressionList::Type type = SuppressionList::Type::unique,
                              int lineBegin = SuppressionList::Suppression::NO_LINE,
                              int lineEnd = SuppressionList::Suppression::NO_LINE)
             : errorId(errorId)
             , lineNumber(lineNumber)
+            , extraComment(extraComment)
             , type(type)
             , lineBegin(lineBegin)
             , lineEnd(lineEnd)
@@ -1965,6 +1968,7 @@ private:
             ASSERT(supprIt->isInline);
             ASSERT_EQUALS(fileName, supprIt->fileName);
             ASSERT_EQUALS(resultIt->errorId, supprIt->errorId);
+            ASSERT_EQUALS(resultIt->extraComment, supprIt->extraComment);
             ASSERT_EQUALS_ENUM(resultIt->type, supprIt->type);
             ASSERT_EQUALS(resultIt->lineNumber, supprIt->lineNumber);
             ASSERT_EQUALS(resultIt->lineBegin, supprIt->lineBegin);
@@ -2092,8 +2096,8 @@ private:
         testPolyspaceSuppression(
             settings,
             { { "/* polyspace MISRA2012 : 2.7 [Justified:Low] \"comment 1\" polyspace MISRA-CPP : 7-1-1 \"comment 2\"*/", 1 } },
-            { { "premium-misra-c-2012-2.7", 1 },
-                { "premium-misra-cpp-2008-7-1-1", 1 }, }
+            { { "premium-misra-c-2012-2.7", 1, "comment 1" },
+                { "premium-misra-cpp-2008-7-1-1", 1, "comment 2" }, }
             );
     }
 
@@ -2103,7 +2107,7 @@ private:
         testPolyspaceSuppression(
             settings,
             { { "/* polyspace +3 MISRA2012 : 2.7 */", 1 } },
-            { { "premium-misra-c-2012-2.7", 1, SuppressionList::Type::block, 1, 4 } }
+            { { "premium-misra-c-2012-2.7", 1, "", SuppressionList::Type::block, 1, 4 } }
             );
     }
 
@@ -2114,7 +2118,7 @@ private:
             settings,
             { { "/* polyspace-begin MISRA2012 : 2.7 */", 1 },
                 { "/* polyspace-end MISRA2012 : 2.7 */", 5 } },
-            { { "premium-misra-c-2012-2.7", 1, SuppressionList::Type::block, 1, 5 } }
+            { { "premium-misra-c-2012-2.7", 1, "", SuppressionList::Type::block, 1, 5 } }
             );
     }
 };
