@@ -209,7 +209,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         }
 
         if (polyspace::isPolyspaceComment(tok->str())) {
-            polyspaceParser.parse(tok->str(), tok->location.line, tokens.file(tok->location));
+            polyspaceParser.parse(tok->str(), tok->location.line, getRelativeFilename(tokens, tok, settings));
             continue;
         }
 
