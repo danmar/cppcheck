@@ -2629,6 +2629,14 @@ private:
         check("void f(const std::array<int, 10> a[]) {}\n"); // #13524
         ASSERT_EQUALS("", errout_str());
 
+        check("struct S {\n" // #10733
+              "    std::vector<int> v;\n"
+              "    using F = void (*)();\n"
+              "    void func(F f);\n"
+              "};\n"
+              "void S::func(S::F f) {}\n");
+        ASSERT_EQUALS("", errout_str());
+
         /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
