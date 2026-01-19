@@ -303,10 +303,25 @@ namespace polyspace {
         std::string family;
         std::string resultName;
         std::string filename;
+        std::string extraComment;
         int lineBegin;
         int lineEnd;
 
         bool matches(const Suppression &other) const;
+    };
+
+    enum class CommentKind : std::uint8_t {
+        Invalid, Regular, Begin, End,
+    };
+
+    struct CPPCHECKLIB Annotation {
+        std::string family;
+        std::vector<std::string> resultNames;
+        std::string extraComment;
+        std::string filename;
+        CommentKind kind;
+        int line;
+        int range;
     };
 
     class CPPCHECKLIB Parser {
@@ -319,22 +334,15 @@ namespace polyspace {
     private:
         std::string peekToken();
         std::string nextToken();
-        void finishSuppression();
-        bool parseEntry();
 
-        enum class CommentKind : std::uint8_t {
-            Regular, Begin, End,
-        };
+        void handleAnnotation(const Annotation &annotation);
+        bool parseAnnotation(Annotation &annotation);
+        CommentKind parseKind();
+        int parseRange();
 
         std::list<Suppression> mStarted;
         std::list<Suppression> mDone;
         std::string mComment;
-        std::string mFilename;
-        int mLine{};
-        int mRange{};
-        CommentKind mKind{};
-        std::string mFamily;
-        std::string mResultName;
         std::string mPeeked;
         bool mHasPeeked{};
         std::map<std::string, std::string> mFamilyMap;

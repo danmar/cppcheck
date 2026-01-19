@@ -651,13 +651,13 @@ std::string SuppressionList::Suppression::toString() const
 
 polyspace::Parser::Parser(const Settings &settings)
 {
-    const auto it = std::find_if(settings.addonInfos.cbegin(),
-                                 settings.addonInfos.cend(),
-                                 [] (const AddonInfo &info) {
+    const auto haveMisraAddon = std::any_of(settings.addonInfos.cbegin(),
+                                            settings.addonInfos.cend(),
+                                            [] (const AddonInfo &info) {
         return info.name == "misra";
     });
 
-    if (it != settings.addonInfos.cend()) {
+    if (haveMisraAddon) {
         mFamilyMap["MISRA-C3"] = "misra-c2012-";
         mFamilyMap["MISRA2012"] = "misra-c2012-";
     }
@@ -780,64 +780,27 @@ std::string polyspace::Parser::nextToken()
     return token;
 }
 
-void polyspace::Parser::finishSuppression()
+bool polyspace::Parser::parseAnnotation(polyspace::Annotation &annotation)
 {
-    Suppression suppr = { mFamily, mResultName, mFilename, 0, 0 };
+    annotation.family = nextToken();
+    annotation.resultNames.clear();
+    annotation.extraComment = "";
 
-    switch (mKind) {
-    case CommentKind::Regular:
-    {
-        suppr.lineBegin = mLine;
-        suppr.lineEnd = mLine + mRange;
-        mDone.push_back(suppr);
-        return;
-    }
-    case CommentKind::Begin:
-    {
-        suppr.lineBegin = mLine;
-        mStarted.push_back(suppr);
-        return;
-    }
-    case CommentKind::End:
-    {
-        auto it = std::find_if(
-            mStarted.begin(),
-            mStarted.end(),
-            [&] (const Suppression &other) {
-                return suppr.matches(other);
-            }
-            );
-
-        if (it == mStarted.end())
-            return;
-
-        suppr.lineBegin = it->lineBegin;
-        suppr.lineEnd = mLine;
-        mStarted.erase(it);
-        mDone.push_back(suppr);
-        return;
-    }
-    }
-}
-
-bool polyspace::Parser::parseEntry()
-{
-    mFamily = nextToken();
-    if (mFamily.empty())
+    if (annotation.family.empty())
         return false;
 
     if (nextToken() != ":")
         return false;
 
-    // Parse result name, multiple names may be separated by commas
-    while (!mComment.empty()) {
-        mResultName = nextToken();
-        if (mResultName.empty())
+    for (;;) {
+        const std::string resultName = nextToken();
+
+        if (resultName.empty())
             return false;
 
-        finishSuppression();
+        annotation.resultNames.push_back(resultName);
 
-        if (peekToken() == ",") {
+        if (peekToken().substr(0, 1) == ",") {
             (void) nextToken();
             continue;
         }
@@ -845,11 +808,103 @@ bool polyspace::Parser::parseEntry()
         break;
     }
 
-    // Skip status and severity
-    if (!peekToken().empty() && mPeeked[0] == '[')
+    if (peekToken().substr(0, 1) == "[")
         (void) nextToken();
 
+    if (peekToken().substr(0, 1) == "\"") {
+        std::string extraComment = nextToken().substr(1);
+
+        if (extraComment.size() > 1)
+            extraComment.pop_back();
+
+        annotation.extraComment = extraComment;
+    }
+
     return true;
+}
+
+polyspace::CommentKind polyspace::Parser::parseKind()
+{
+    const std::string token = nextToken();
+
+    if (token == "polyspace")
+        return CommentKind::Regular;
+
+    if (token == "polyspace-begin")
+        return CommentKind::Begin;
+
+    if (token == "polyspace-end")
+        return CommentKind::End;
+
+    return CommentKind::Invalid;
+}
+
+int polyspace::Parser::parseRange()
+{
+    if (peekToken()[0] == '+') {
+        try {
+            const int range = std::stoi(peekToken().substr(1));
+            (void) nextToken();
+            return range;
+        } catch (...) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+void polyspace::Parser::handleAnnotation(const polyspace::Annotation &annotation)
+{
+    for (const auto &resultName : annotation.resultNames) {
+        Suppression suppr = {
+            annotation.family,
+            resultName,
+            annotation.filename,
+            annotation.extraComment,
+            0,
+            0,
+        };
+
+        switch (annotation.kind) {
+        case CommentKind::Regular:
+        {
+            suppr.lineBegin = annotation.line;
+            suppr.lineEnd = annotation.line + annotation.range;
+            mDone.push_back(suppr);
+            break;
+        }
+        case CommentKind::Begin:
+        {
+            suppr.lineBegin = annotation.line;
+            mStarted.push_back(suppr);
+            break;
+        }
+        case CommentKind::End:
+        {
+            auto it = std::find_if(
+                mStarted.begin(),
+                mStarted.end(),
+                [&] (const Suppression &other) {
+                    return suppr.matches(other);
+                }
+                );
+
+            if (it == mStarted.end())
+                break;
+
+            suppr.lineBegin = it->lineBegin;
+            suppr.lineEnd = annotation.line;
+            mStarted.erase(it);
+            mDone.push_back(suppr);
+            break;
+        }
+        case CommentKind::Invalid:
+        {
+            assert(false); // Invalid comments are not handled
+        }
+        }
+    }
 }
 
 void polyspace::Parser::collect(SuppressionList &suppressions) const
@@ -864,6 +919,7 @@ void polyspace::Parser::collect(SuppressionList &suppressions) const
         suppr.isInline = true;
         suppr.isPolyspace = true;
         suppr.fileName = polyspaceSuppr.filename;
+        suppr.extraComment = polyspaceSuppr.extraComment;
 
         suppr.lineNumber = polyspaceSuppr.lineBegin;
         if (polyspaceSuppr.lineBegin == polyspaceSuppr.lineEnd) {
@@ -884,39 +940,28 @@ void polyspace::Parser::parse(const std::string &comment, int line, const std::s
         return;
 
     mComment = comment.substr(2);
-    mLine = line;
-    mFilename = filename;
     mHasPeeked = false;
 
     while (true) {
-        const std::string kindStr = nextToken();
-        if (kindStr.empty())
+        const CommentKind kind = parseKind();
+        if (kind == CommentKind::Invalid)
             return;
 
-        if (kindStr == "polyspace") mKind = CommentKind::Regular;
-        else if (kindStr == "polyspace-begin") mKind = CommentKind::Begin;
-        else if (kindStr == "polyspace-end") mKind = CommentKind::End;
-        else return;
+        const int range = parseRange();
+        if (range < 0)
+            return;
 
-        mRange = 0;
-        if (peekToken()[0] == '+') {
-            try { mRange = std::stoi(mPeeked.substr(1)); } catch (...) { return; }
-            (void) nextToken();
-        }
+        Annotation annotation;
+        annotation.filename = filename;
+        annotation.kind = kind;
+        annotation.line = line;
+        annotation.range = range;
 
-        while (parseEntry()) {
-            if (peekToken().empty() || mPeeked[0] == '\"')
+        while (parseAnnotation(annotation)) {
+            handleAnnotation(annotation);
+            if (!annotation.extraComment.empty())
                 break;
         }
-
-        if (!peekToken().empty() && mPeeked[0] == '\"') {
-            (void) nextToken();
-            if (peekToken().empty())
-                return;
-            continue;
-        }
-
-        break;
     }
 }
 
