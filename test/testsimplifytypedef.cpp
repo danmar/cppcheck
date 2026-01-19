@@ -259,6 +259,7 @@ private:
         TEST_CASE(typedefInfo1);
         TEST_CASE(typedefInfo2);
         TEST_CASE(typedefInfo3);
+        TEST_CASE(typedefInfo4);
     }
 
     class TokenizerTest : public Tokenizer
@@ -4609,7 +4610,7 @@ private:
                       "      <token line=\"2\" column=\"35\" str=\")\"/>\n"
                       "    </info>\n"
                       "    <info name=\"int16_t\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\" isFunctionPointer=\"0\"/>\n"
-                      "    <info name=\"pfp16\" file=\"file.c\" line=\"4\" column=\"20\" used=\"0\" isFunctionPointer=\"1\">\n"
+                      "    <info name=\"pfp16\" file=\"file.c\" line=\"4\" column=\"4\" used=\"0\" isFunctionPointer=\"1\">\n"
                       "      <token line=\"4\" column=\"4\" str=\"typedef\"/>\n"
                       "      <token line=\"4\" column=\"12\" str=\"void\"/>\n"
                       "      <token line=\"4\" column=\"12\" str=\"(\"/>\n"
@@ -4637,6 +4638,17 @@ private:
                                                 "     b = a + 2;\n"
                                                 "}\n");
         ASSERT_EQUALS("",xml);
+    }
+
+    void typedefInfo4() {
+        const std::string xml = dumpTypedefInfo("typedef struct coord {\n"
+                                                "    uint16_t x;\n"
+                                                "    uint16_t y;\n"
+                                                "} coord;\n"
+                                                "coord c;");
+        ASSERT_EQUALS("  <typedef-info>\n"
+                      "    <info name=\"coord\" file=\"file.c\" line=\"1\" column=\"1\" tagline=\"1\" tagcolumn=\"16\" used=\"1\" isFunctionPointer=\"0\"/>\n"
+                      "  </typedef-info>\n", xml);
     }
 };
 

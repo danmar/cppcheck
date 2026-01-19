@@ -1104,6 +1104,10 @@ void Tokenizer::simplifyTypedef()
                 typedefInfo.filename = list.file(typedefToken);
                 typedefInfo.lineNumber = typedefToken->linenr();
                 typedefInfo.column = typedefToken->column();
+                if (Token::Match(typedefToken->next(), "struct|enum|class|union %name% {") && typedefToken->strAt(2) == typedefInfo.name) {
+                    typedefInfo.tagLine = typedefToken->tokAt(2)->linenr();
+                    typedefInfo.tagColumn = typedefToken->tokAt(2)->column();
+                }
                 typedefInfo.used = t.second.isUsed();
                 typedefInfo.isFunctionPointer = isFunctionPointer(t.second.nameToken());
                 if (typedefInfo.isFunctionPointer) {
@@ -1638,8 +1642,12 @@ void Tokenizer::simplifyTypedefCpp()
         TypedefInfo typedefInfo;
         typedefInfo.name = typeName->str();
         typedefInfo.filename = list.file(typeName);
-        typedefInfo.lineNumber = typeName->linenr();
-        typedefInfo.column = typeName->column();
+        typedefInfo.lineNumber = typeDef->linenr();
+        typedefInfo.column = typeDef->column();
+        if (Token::Match(typeDef->next(), "struct|enum|class|union %name% {") && typeDef->strAt(2) == typedefInfo.name) {
+            typedefInfo.tagLine = typeDef->tokAt(2)->linenr();
+            typedefInfo.tagColumn = typeDef->tokAt(2)->column();
+        }
         typedefInfo.used = false;
         typedefInfo.isFunctionPointer = isFunctionPointer(typeName);
         if (typedefInfo.isFunctionPointer) {
@@ -6326,7 +6334,15 @@ std::string Tokenizer::dumpTypedefInfo() const
         outs += " column=\"";
         outs += std::to_string(typedefInfo.column);
         outs += "\"";
+        if (typedefInfo.tagLine > -1 && typedefInfo.tagColumn > -1) {
+            outs += " tagline=\"";
+            outs += std::to_string(typedefInfo.tagLine);
+            outs += "\"";
 
+            outs += " tagcolumn=\"";
+            outs += std::to_string(typedefInfo.tagColumn);
+            outs += "\"";
+        }
         outs += " used=\"";
         outs += std::to_string(typedefInfo.used?1:0);
         outs += "\"";
