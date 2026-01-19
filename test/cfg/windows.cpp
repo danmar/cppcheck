@@ -54,6 +54,13 @@ void invalid_socket()
     // cppcheck-suppress resourceLeak
 }
 
+void invalid_socket_noleak(int a, int t, int p) { // #14155
+    SOCKET s = socket(a, t, p);
+    if (s == INVALID_SOCKET)
+        return;
+    closesocket(s);
+}
+
 void resourceLeak_OpenThread(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwThreadId)
 {
     HANDLE proc = OpenThread(dwDesiredAccess, bInheritHandle, dwThreadId);
