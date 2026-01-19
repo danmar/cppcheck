@@ -130,6 +130,7 @@ private:
         TEST_CASE(polyspaceMultiple3);
         TEST_CASE(polyspaceRange);
         TEST_CASE(polyspaceBlock);
+        TEST_CASE(polyspaceExtraComments);
     }
 
     void suppressionsBadId1() const {
@@ -2119,6 +2120,19 @@ private:
             { { "/* polyspace-begin MISRA2012 : 2.7 */", 1 },
                 { "/* polyspace-end MISRA2012 : 2.7 */", 5 } },
             { { "premium-misra-c-2012-2.7", 1, "", SuppressionList::Type::block, 1, 5 } }
+            );
+    }
+
+    void polyspaceExtraComments() const {
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2012 --misra-cpp-2008";
+        testPolyspaceSuppression(
+            settings,
+            { { "/* polyspace MISRA2012 : 2.7 MISRA-CPP : 7-1-1 \"comment 1\" polyspace MISRA2012 : 9.1, 8.13 \"comment 2\" */", 1 }, },
+            { { "premium-misra-c-2012-2.7", 1, "" },
+                { "premium-misra-cpp-2008-7-1-1", 1, "comment 1" },
+                { "premium-misra-c-2012-9.1", 1, "comment 2" },
+                { "premium-misra-c-2012-8.13", 1, "comment 2" }, }
             );
     }
 };
