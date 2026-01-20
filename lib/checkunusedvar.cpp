@@ -1198,6 +1198,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         const Token *nextStructuredBindingTok = nullptr;
         std::vector<std::pair<const Token*, const Token*>> unusedStructuredBindingTokens;
         size_t structuredBindingTokCount = 0;
+        std::set<const Variable*> diagVars; // prevent duplicate warnings
 
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (nextStructuredBindingTok) {
@@ -1366,8 +1367,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (!expr->variable() || !expr->variable()->isMaybeUnused()) {
                     if (structuredBindingTokCount > 0)
                         unusedStructuredBindingTokens.emplace_back(tok, expr);
-                    else
+                    else {
                         unreadVariableError(tok, expr->expressionString(), false);
+                        diagVars.emplace(expr->variable());
+                    }
                 }
             }
         }
@@ -1383,6 +1386,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
              it != variables.varUsage().cend();
              ++it) {
             const Variables::VariableUsage &usage = it->second;
+
+            if (diagVars.find(usage._var) != diagVars.end())
+                continue;
 
             // variable has been marked as unused so ignore it
             if (usage._var->nameToken()->isAttributeUnused() || usage._var->nameToken()->isAttributeUsed())
