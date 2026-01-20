@@ -110,44 +110,59 @@ std::string ImportProject::collectArgs(const std::string &cmd, std::vector<std::
 
 void ImportProject::parseArgs(FileSettings &fs, const std::vector<std::string> &args)
 {
-    std::string defs;
-    std::string optArg;
-    auto argPtr = args.cbegin();
+    const auto getOptArg = [&args](std::initializer_list<std::string> optNames,
+                                   std::size_t &i) {
+        const auto &arg = args[i];
+        const auto *const it = std::find_if(optNames.begin(),
+                                            optNames.end(),
+                                            [&arg] (const std::string &optName) {
+            return startsWith(arg, optName);
+        });
 
-    // Check for an option and extract its argument
-    const auto getOptArg = [&](const std::string &name) {
-        if (argPtr == args.cend())
-            return false;
-        if (!startsWith(*argPtr, name))
-            return false;
-        if (argPtr->size() == name.size()) {
-            // Flag and argument are separated
-            argPtr++;
-            if (argPtr == args.cend())
-                return false;
-            optArg = *argPtr;
-        } else {
-            // Flag and argument are concatenated
-            optArg = argPtr->substr(name.size());
-        }
-        return true;
+        if (it == optNames.end())
+            return std::string();
+
+        const std::size_t optLen = it->size();
+        if (arg.size() == optLen)
+            return ++i >= args.size() ? std::string() : args[i];
+
+        return arg.substr(optLen);
     };
 
-    for (; argPtr != args.cend(); argPtr++) {
-        // https://github.com/llvm/llvm-project/issues/172018
-        // NOLINTBEGIN(bugprone-use-after-move)
-        if (getOptArg("-I") || getOptArg("/I")) {
-            if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), optArg) == fs.includePaths.cend())
+    std::string defs;
+    for (std::size_t i = 0; i < args.size(); i++) {
+        std::string optArg;
+
+        if (!(optArg = getOptArg({ "-I", "/I" }, i)).empty()) {
+            if (std::none_of(fs.includePaths.cbegin(), fs.includePaths.cend(),
+                             [&](const std::string &path) {
+                return path == optArg;
+            }))
                 fs.includePaths.push_back(std::move(optArg));
-        } else if (getOptArg("-isystem")) {
+            continue;
+        }
+
+        if (!(optArg = getOptArg({ "-isystem" }, i)).empty()) {
             fs.systemIncludePaths.push_back(std::move(optArg));
-        } else if (getOptArg("-D") || getOptArg("/D")) {
+            continue;
+        }
+
+        if (!(optArg = getOptArg({ "-D", "/D" }, i)).empty()) {
             defs += optArg + ";";
-        } else if (getOptArg("-U") || getOptArg("/U")) {
+            continue;
+        }
+
+        if (!(optArg = getOptArg({ "-U", "/U" }, i)).empty()) {
             fs.undefs.insert(std::move(optArg));
-        } else if (getOptArg("-std=") || getOptArg("/std:")) {
+            continue;
+        }
+
+        if (!(optArg = getOptArg({ "-std=", "/std:" }, i)).empty()) {
             fs.standard = std::move(optArg);
-        } else if (getOptArg("-f")) {
+            continue;
+        }
+
+        if (!(optArg = getOptArg({ "-f" }, i)).empty()) {
             if (optArg == "pic")
                 defs += "__pic__;";
             else if (optArg == "PIC")
@@ -156,14 +171,14 @@ void ImportProject::parseArgs(FileSettings &fs, const std::vector<std::string> &
                 defs += "__pie__;";
             else if (optArg == "PIE")
                 defs += "__PIE__;";
-        } else if (getOptArg("-m")) {
-            if (optArg == "unicode")
-                defs += "UNICODE;";
+            continue;
         }
 
-        if (argPtr == args.cend())
-            break;
-        // NOLINTEND(bugprone-use-after-move)
+        if (!(optArg = getOptArg({ "-m" }, i)).empty()) {
+            if (optArg == "unicode")
+                defs += "UNICODE;";
+            continue;
+        }
     }
 
     fsSetDefines(fs, std::move(defs));
