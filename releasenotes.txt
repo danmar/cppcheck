@@ -19,3 +19,7 @@ Changed interface:
 
 Infrastructure & dependencies:
 -
+
+Other:
+- The built-in "win*" and "unix*" platforms will now default to signed char type instead of unknown signedness. If you require unsigned chars please specify "--funsigned-char"
+-

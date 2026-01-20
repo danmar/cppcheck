@@ -73,7 +73,7 @@ bool Platform::set(Type t)
         sizeof_wchar_t = 2;
         sizeof_size_t = 4;
         sizeof_pointer = 4;
-        defaultSign = '\0';
+        defaultSign = 's';
         char_bit = 8;
         calculateBitMembers();
         return true;
@@ -90,7 +90,7 @@ bool Platform::set(Type t)
         sizeof_wchar_t = 2;
         sizeof_size_t = 8;
         sizeof_pointer = 8;
-        defaultSign = '\0';
+        defaultSign = 's';
         char_bit = 8;
         calculateBitMembers();
         return true;
@@ -107,7 +107,7 @@ bool Platform::set(Type t)
         sizeof_wchar_t = 4;
         sizeof_size_t = 4;
         sizeof_pointer = 4;
-        defaultSign = '\0';
+        defaultSign = 's';
         char_bit = 8;
         calculateBitMembers();
         return true;
@@ -124,7 +124,7 @@ bool Platform::set(Type t)
         sizeof_wchar_t = 4;
         sizeof_size_t = 8;
         sizeof_pointer = 8;
-        defaultSign = '\0';
+        defaultSign = 's';
         char_bit = 8;
         calculateBitMembers();
         return true;
