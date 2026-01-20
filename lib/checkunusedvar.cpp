@@ -1198,7 +1198,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         const Token *nextStructuredBindingTok = nullptr;
         std::vector<std::pair<const Token*, const Token*>> unusedStructuredBindingTokens;
         size_t structuredBindingTokCount = 0;
-        std::set<const Variable*> diagVars; // prevent duplicate warnings
+        std::set<const Variable*> diagUnreadVariable; // prevent duplicate warnings
 
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (nextStructuredBindingTok) {
@@ -1369,7 +1369,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         unusedStructuredBindingTokens.emplace_back(tok, expr);
                     else {
                         unreadVariableError(tok, expr->expressionString(), false);
-                        diagVars.emplace(expr->variable());
+                        diagUnreadVariable.emplace(expr->variable());
                     }
                 }
             }
@@ -1386,9 +1386,6 @@ void CheckUnusedVar::checkFunctionVariableUsage()
              it != variables.varUsage().cend();
              ++it) {
             const Variables::VariableUsage &usage = it->second;
-
-            if (diagVars.find(usage._var) != diagVars.end())
-                continue;
 
             // variable has been marked as unused so ignore it
             if (usage._var->nameToken()->isAttributeUnused() || usage._var->nameToken()->isAttributeUsed())
@@ -1426,7 +1423,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                      !(var->valueType() && var->valueType()->container) &&
                      !(var->isStatic() && isReturnedByRef(var, scope->function)))
                 unassignedVariableError(usage._var->nameToken(), varname);
-            else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
+            else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var && diagUnreadVariable.find(usage._var) == diagUnreadVariable.end()) {
                 const Token* vnt = var->nameToken();
                 bool error = false;
                 if (vnt->next()->isSplittedVarDeclEq() || (!var->isReference() && vnt->strAt(1) == "=")) {
