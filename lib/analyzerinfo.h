@@ -88,7 +88,6 @@ protected:
 
 private:
     std::ofstream mOutputStream;
-    std::string mAnalyzerInfoFile;
 };
 
 /// @}

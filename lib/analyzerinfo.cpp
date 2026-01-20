@@ -78,7 +78,6 @@ std::string AnalyzerInformation::getFilesTxt(const std::list<std::string> &sourc
 
 void AnalyzerInformation::close()
 {
-    mAnalyzerInfoFile.clear();
     if (mOutputStream.is_open()) {
         mOutputStream << "</analyzerinfo>\n";
         mOutputStream.close();
@@ -152,19 +151,17 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
         return true;
     close();
 
-    mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg,fileIndex);
+    const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg,fileIndex);
 
     tinyxml2::XMLDocument analyzerInfoDoc;
-    const tinyxml2::XMLError xmlError = analyzerInfoDoc.LoadFile(mAnalyzerInfoFile.c_str());
+    const tinyxml2::XMLError xmlError = analyzerInfoDoc.LoadFile(analyzerInfoFile.c_str());
     if (xmlError == tinyxml2::XML_SUCCESS && skipAnalysis(analyzerInfoDoc, hash, errors))
         return false;
 
-    mOutputStream.open(mAnalyzerInfoFile);
+    mOutputStream.open(analyzerInfoFile);
     if (mOutputStream.is_open()) {
         mOutputStream << "<?xml version=\"1.0\"?>\n";
         mOutputStream << "<analyzerinfo hash=\"" << hash << "\">\n";
-    } else {
-        mAnalyzerInfoFile.clear();
     }
 
     return true;
