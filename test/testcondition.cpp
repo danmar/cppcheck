@@ -110,6 +110,7 @@ private:
         TEST_CASE(alwaysTrueContainer);
         TEST_CASE(alwaysTrueLoop);
         TEST_CASE(alwaysTrueTryCatch);
+        TEST_CASE(alwaysTrueSideEffect);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
 
@@ -5586,6 +5587,18 @@ private:
               "    }\n"
               "    catch (const std::exception& e) {}\n"
               "    if (s != \"abc\") {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void alwaysTrueSideEffect() {
+        check("bool check(const char* const);\n" // #14416
+              "void create(const char*);\n"
+              "void f(const char* n) {\n"
+              "    if (!check(n)) {\n"
+              "        create(n);\n"
+              "        if (check(n)) {}\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
