@@ -5895,7 +5895,7 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
             callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
             same++;
         } else if (callarg->isArrayOrPointer()) {
-            if (ptrequals && constEquals && funcarg->typeStartToken()->str() == "void") // cppcheck-suppress knownConditionTrueFalse (#14418)
+            if (ptrequals && constEquals && funcarg->typeStartToken()->str() == "void") // cppcheck-suppress knownConditionTrueFalse // #14418
                 fallback1++;
             else if (constEquals && funcarg->isStlStringType() && Token::Match(callarg->typeStartToken(), "char|wchar_t"))
                 fallback2++;
