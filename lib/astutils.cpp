@@ -2006,9 +2006,7 @@ bool isOppositeExpression(const Token * const tok1, const Token * const tok2, co
 static bool functionModifiesArguments(const Function* f)
 {
     return std::any_of(f->argumentList.cbegin(), f->argumentList.cend(), [](const Variable& var) {
-        if (var.isReference() || var.isPointer())
-            return !var.isConst();
-        return true;
+        return var.isReference() && !var.isConst();
     });
 }
 
@@ -2089,7 +2087,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             return false;
         });
     }
-    return true;
+    return false;
 }
 
 bool isConstExpression(const Token *tok, const Library& library)
