@@ -1546,8 +1546,8 @@ bool isUsedAsBool(const Token* const tok, const Settings& settings)
         return !Token::simpleMatch(parent->astOperand1(), "dynamic_cast") && isUsedAsBool(parent, settings);
     if (parent->isUnaryOp("*"))
         return isUsedAsBool(parent, settings);
-    if (Token::Match(parent, "==|!=") && (tok->astSibling()->isNumber() || tok->astSibling()->isKeyword()) && tok->astSibling()->hasKnownIntValue() &&
-        tok->astSibling()->getKnownIntValue() == 0)
+    if (Token::Match(parent, "==|!=") && tok->valueType() && tok->valueType()->pointer &&
+        tok->astSibling()->hasKnownIntValue() && tok->astSibling()->getKnownIntValue() == 0)
         return true;
     if (parent->str() == "(" && astIsRHS(tok) && Token::Match(parent->astOperand1(), "if|while"))
         return true;
