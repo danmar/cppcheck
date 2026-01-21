@@ -19,6 +19,8 @@
 #ifndef filelisterH
 #define filelisterH
 
+#include "config.h"
+
 #include <list>
 #include <set>
 #include <string>
@@ -30,7 +32,7 @@ class FileWithDetails;
 /// @{
 
 /** @brief Cross-platform FileLister */
-class FileLister {
+class CPPCHECKLIB FileLister {
 public:
     /**
      * @brief Recursively add source files to a map.
