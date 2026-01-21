@@ -484,6 +484,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace("analyzer.h");
     libfiles_h.emplace("calculate.h");
     libfiles_h.emplace("config.h");
+    libfiles_h.emplace("constnessptr.h");
     libfiles_h.emplace("filesettings.h");
     libfiles_h.emplace("findtoken.h");
     libfiles_h.emplace("json.h");
