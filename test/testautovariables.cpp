@@ -3957,6 +3957,15 @@ private:
             "[test.cpp:6:30] -> [test.cpp:6:30] -> [test.cpp:6:21] -> [test.cpp:5:21] -> [test.cpp:8:12]: (error) Returning object that points to local variable 'a' that will be invalid when returning. [returnDanglingLifetime]\n",
             errout_str());
 
+        check("struct S { const std::string& r; };\n" // #14209
+              "S f() {\n"
+              "    std::string s;\n"
+              "    return S{ s };\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4:15] -> [test.cpp:3:17] -> [test.cpp:4:13]: (error) Returning object that points to local variable 's' that will be invalid when returning. [returnDanglingLifetime]\n",
+            errout_str());
+
         check("struct A { int& x; };\n" // #14247
               "A f() {\n"
               "    int x = 0;\n"
