@@ -2482,13 +2482,6 @@ static bool isArray(const Token* tok)
     return false;
 }
 
-static inline
-// limit it to CLang as compiling with GCC might fail with
-// error: inlining failed in call to always_inline 'bool isMutableExpression(const Token*)': function not considered for inlining
-// error: inlining failed in call to ‘always_inline’ ‘bool isMutableExpression(const Token*)’: recursive inlining
-#if defined(__clang__)
-__attribute__((always_inline))
-#endif
 bool isMutableExpression(const Token* tok)
 {
     if (!tok)
@@ -2632,7 +2625,7 @@ static bool hasOverloadedMemberAccess(const Token* tok)
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings &settings, int depth)
 {
-    if (!isMutableExpression(tok))
+    if (!tok->isMutableExpr())
         return false;
 
     if (indirect == 0 && isConstVarExpression(tok))
@@ -2924,7 +2917,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
 {
     if (depth < 0)
         return true;
-    if (!isMutableExpression(tok))
+    if (!tok->isMutableExpr())
         return false;
     if (tok->exprId() != exprid || (!tok->varId() && !tok->isName())) {
         if (globalvar && Token::Match(tok, "%name% (") &&

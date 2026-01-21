@@ -2753,3 +2753,10 @@ const SmallVector<ReferenceToken>& Token::refs(bool temporary) const
         mImpl->mRefs.reset(new SmallVector<ReferenceToken>(followAllReferences(this, false)));
     return *mImpl->mRefs;
 }
+
+bool Token::isMutableExpr() const
+{
+    if (mImpl->mMutableExpr == -1)
+        mImpl->mMutableExpr = isMutableExpression(this);
+    return !!mImpl->mMutableExpr;
+}

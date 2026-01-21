@@ -173,6 +173,8 @@ private:
         std::unique_ptr<SmallVector<ReferenceToken>> mRefs;
         std::unique_ptr<SmallVector<ReferenceToken>> mRefsTemp;
 
+        std::int8_t mMutableExpr{-1};
+
         void setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value);
         bool getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const;
 
@@ -1363,6 +1365,9 @@ public:
 
     // provides and caches result of a followAllReferences() call
     const SmallVector<ReferenceToken>& refs(bool temporary = true) const;
+
+    // provides and caches the result of a isMutableExpression() call
+    bool isMutableExpr() const;
 
     /**
      * Sets the original name.
