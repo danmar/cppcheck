@@ -195,7 +195,7 @@ bool Tokenizer::duplicateTypedef(Token *&tokPtr, const Token *name, const Token 
                 if (end->strAt(1) == "(")
                     end = end->linkAt(1);
 
-                end = (end)?end->next():nullptr;
+                end = end ? end->next() : nullptr;
             }
             if (end)
                 end = end->next();
@@ -631,7 +631,7 @@ namespace {
                 }
             }
             // TODO: handle all typedefs
-            if ((false))
+            if ((false)) // NOLINT(readability-redundant-parentheses)
                 printTypedef(typedefToken, std::cout);
             mFail = true;
         }

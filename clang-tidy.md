@@ -130,6 +130,9 @@ Does not improve the readability.
 `modernize-use-designated-initializers`<br/>
 `readability-enum-initial-value`<br/>
 `modernize-use-trailing-return-type`<br/>
+`misc-unconventional-assign-operator`<br/>
+`bugprone-throwing-static-initialization`<br/>
+`bugprone-command-processor`<br/>
 
 To be evaluated (need to remove exclusion).
 
@@ -155,6 +158,10 @@ These apply to codebases which use later standards then C++11 (C++17 is used whe
 `portability-avoid-pragma-once`<br/>
 
 We are not interested in this.
+
+`readability-redundant-parentheses`<br/>
+
+Reports false positives - see https://github.com/llvm/llvm-project/issues/164125.
 
 ### Disabled for performance reasons
 

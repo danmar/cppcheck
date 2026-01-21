@@ -2495,8 +2495,8 @@ static void valueFlowLifetimeFunction(Token *tok, const TokenList &tokenlist, Er
         std::vector<const Token *> args = getArguments(tok);
         const std::size_t n = args.size();
         if (n > 1 && Token::typeStr(args[n - 2]) == Token::typeStr(args[n - 1]) &&
-            (((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) ||
-              (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1]))))) {
+            ((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) ||
+             (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1])))) {
             LifetimeStore{
                 args.back(), "Added to container '" + memtok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}
             .byDerefCopy(memtok, tokenlist, errorLogger, settings);

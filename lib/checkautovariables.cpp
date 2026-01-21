@@ -308,7 +308,7 @@ void CheckAutoVariables::autoVariables()
                     for (const ValueFlow::Value &v : tok->values()) {
                         if (v.isImpossible())
                             continue;
-                        if ((v.isTokValue() && (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString)))) ||
+                        if ((v.isTokValue() && (isArrayVar(v.tokvalue) || (v.tokvalue->tokType() == Token::eString))) ||
                             (v.isLocalLifetimeValue() && v.lifetimeKind == ValueFlow::Value::LifetimeKind::Address && !Token::simpleMatch(v.tokvalue, "("))) {
                             errorInvalidDeallocation(tok, &v);
                             break;

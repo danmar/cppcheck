@@ -1681,7 +1681,7 @@ bool CheckIO::ArgumentInfo::isArrayOrPointer() const
 bool CheckIO::ArgumentInfo::isComplexType() const
 {
     if (variableInfo->type())
-        return (true);
+        return true;
 
     const Token* varTypeTok = typeToken;
     if (varTypeTok->str() == "std")
