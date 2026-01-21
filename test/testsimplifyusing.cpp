@@ -902,8 +902,8 @@ private:
         const char code3[] = "using FP = std::string (*)();\n"
                              "using FPC = std::string (*const)();\n"
                              "FP fp;\n"
-                             "FPC fpc;\n";
-        const char expected3[] = "std :: string ( * fp ) ( ) ; std :: string ( * const fpc ) ( ) ;";
+                             "FPC fpc{};\n";
+        const char expected3[] = "std :: string ( * fp ) ( ) ; std :: string ( * const fpc ) ( ) { } ;";
         ASSERT_EQUALS(expected3, tok(code3));
         ASSERT_EQUALS("", errout_str());
     }
