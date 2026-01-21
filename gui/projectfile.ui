@@ -966,6 +966,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="mSafetyProfiles">
+            <property name="text">
+             <string>Safety profiles (defined in C++ core guidelines)</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
