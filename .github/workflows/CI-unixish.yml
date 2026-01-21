@@ -12,6 +12,10 @@ on:
       - '2.*'
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -591,24 +595,24 @@ jobs:
           pushd addons/test
           # We'll force C89 standard to enable an additional verification for
           # rules 5.4 and 5.5 which have standard-dependent options.
-          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64
           python3 ../misra.py -verify misra/misra-test.c.dump
           # Test slight MISRA differences in C11 standard
           ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test-c11.c --std=c11 --platform=unix64
           python3 ../misra.py -verify misra/misra-test-c11.c.dump
           # TODO: do we need to verify something here?
           ../../cppcheck --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.h
-          ../../cppcheck --dump misra/misra-test.cpp 
+          ../../cppcheck --dump misra/misra-test.cpp
           python3 ../misra.py -verify misra/misra-test.cpp.dump
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
           ../../cppcheck --addon=misra --enable=style --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
-          ../../cppcheck --dump misc-test.cpp 
+          ../../cppcheck --dump misc-test.cpp
           python3 ../misc.py -verify misc-test.cpp.dump
-          ../../cppcheck --dump naming_test.c 
+          ../../cppcheck --dump naming_test.c
           python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
-          ../../cppcheck --dump naming_test.cpp 
+          ../../cppcheck --dump naming_test.cpp
           python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump
 
       # TODO: run with "-n auto" when misra_test.py can be run in parallel
@@ -699,14 +703,14 @@ jobs:
           cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
           gui_options="-DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt"
           ec=0
-          
-          # TODO: add --check-config          
-         
+
+          # TODO: add --check-config
+
           # early exit
           if [ $ec -eq 1 ]; then
             exit $ec
           fi
-          
+
           # self check externals
           ./cppcheck $selfcheck_options externals || ec=1
           # self check lib/cli
