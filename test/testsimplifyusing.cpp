@@ -898,6 +898,14 @@ private:
         const char expected2[] = "int ( * fp1 ) ( int ) ; int ( * const fp2 ) ( int ) ;";
         ASSERT_EQUALS(expected2, tok(code2));
         ASSERT_EQUALS("", errout_str());
+
+        const char code3[] = "using FP = std::string (*)();\n"
+                             "using FPC = std::string (*const)();\n"
+                             "FP fp;\n"
+                             "FPC fpc;\n";
+        const char expected3[] = "std :: string ( * fp ) ( ) ; std :: string ( * const fpc ) ( ) ;";
+        ASSERT_EQUALS(expected3, tok(code3));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyUsing8970() {

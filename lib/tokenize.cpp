@@ -3342,10 +3342,11 @@ bool Tokenizer::simplifyUsing()
                 } else if (fpArgList && fpQual && Token::Match(tok1->next(), "%name%")) {
                     // function pointer
                     TokenList::copyTokens(tok1->next(), fpArgList, usingEnd->previous());
-                    Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());
-                    tok1->deleteThis();
+                    Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());                    
+                    Token* const leftPar = copyEnd->tokAt(copyEnd->strAt(-1) == "(" ? -1 : -2);
                     Token* const rightPar = copyEnd->next()->insertToken(")");
-                    Token::createMutualLinks(tok1->next(), rightPar);
+                    Token::createMutualLinks(leftPar, rightPar);
+                    tok1->deleteThis();
                     substitute = true;
                 } else if (fpArgList && !fpQual && Token::Match(tok1->next(), "* const| %name%")) {
                     // function pointer
