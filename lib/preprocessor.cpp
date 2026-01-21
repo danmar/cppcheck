@@ -428,12 +428,15 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
     }
 
     std::set<std::string> configset;
+    bool isNotDefinedMacro = false;
     for (; sameline(iftok,cond); cond = cond->next) {
         if (cond->op == '!') {
             if (!sameline(iftok,cond->next) || !cond->next->name)
                 break;
-            if (cond->next->str() == "defined")
+            if (cond->next->str() == "defined") {
+                isNotDefinedMacro = true;
                 continue;
+            }
             configset.insert(cond->next->str() + "=0");
             continue;
         }
@@ -444,8 +447,15 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             break;
         if (dtok->op == '(')
             dtok = dtok->next;
-        if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
-            configset.insert(dtok->str());
+
+        if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end()) {
+            if (!isNotDefinedMacro) {
+                configset.insert(dtok->str() + "=" + dtok->str()); // if defined is set to itself.
+            } else {
+                configset.insert(dtok->str());
+            }
+        }
+        isNotDefinedMacro = false;
     }
     std::string cfgStr;
     for (const std::string &s : configset) {
@@ -464,10 +474,11 @@ static bool hasDefine(const std::string &userDefines, const std::string &cfg)
 
     std::string::size_type pos = 0;
     while (pos < userDefines.size()) {
-        pos = userDefines.find(cfg, pos);
+        const std::string::size_type eq = cfg.find('=');
+        pos = (eq == std::string::npos) ? userDefines.find(cfg, pos) : userDefines.find(cfg.substr(0, eq), pos);
         if (pos == std::string::npos)
             break;
-        const std::string::size_type pos2 = pos + cfg.size();
+        const std::string::size_type pos2 = (eq == std::string::npos) ? pos + cfg.size() : pos + eq;
         if ((pos == 0 || userDefines[pos-1U] == ';') && (pos2 == userDefines.size() || userDefines[pos2] == '='))
             return true;
         pos = pos2;
@@ -553,8 +564,11 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 const simplecpp::Token *expr1 = cmdtok->next;
                 if (sameline(tok,expr1) && expr1->name && !sameline(tok,expr1->next))
                     config = expr1->str();
-                if (defined.find(config) != defined.end())
+                if (defined.find(config) != defined.end()) {
                     config.clear();
+                } else if ((cmdtok->str() == "ifdef") && sameline(cmdtok,expr1) && !config.empty()) {
+                    config.append("=" + expr1->str()); //Set equal to itself if ifdef.
+                }
             } else if (cmdtok->str() == "if") {
                 config = readcondition(cmdtok, defined, undefined);
             }
