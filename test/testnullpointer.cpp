@@ -3944,6 +3944,15 @@ private:
               "void f() { std::string s = g(0L); }\n");
         ASSERT_EQUALS("[test.cpp:2:29]: (error) Null pointer dereference: g(0L) [nullPointer]\n",
                       errout_str());
+        
+        check("const char* g() { return nullptr; }\n" // #14098
+              "std::string f() {\n"
+              "    std::string s{ g() };\n"
+              "    return s + std::string(g());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:21]: (error) Null pointer dereference: g() [nullPointer]\n"
+                      "[test.cpp:4:29]: (error) Null pointer dereference: g() [nullPointer]\n",
+                      errout_str());
     }
 
     void nullpointerStdStream() {
