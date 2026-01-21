@@ -3944,7 +3944,7 @@ private:
               "void f() { std::string s = g(0L); }\n");
         ASSERT_EQUALS("[test.cpp:2:29]: (error) Null pointer dereference: g(0L) [nullPointer]\n",
                       errout_str());
-        
+
         check("const char* g() { return nullptr; }\n" // #14098
               "std::string f() {\n"
               "    std::string s{ g() };\n"
