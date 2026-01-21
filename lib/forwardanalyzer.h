@@ -20,20 +20,19 @@
 #define forwardanalyzerH
 
 #include "analyzer.h"
+#include "valueptr.h"
 
 class ErrorLogger;
 class Settings;
 class Token;
 class TokenList;
-template<class T> class ValuePtr;
 
 Analyzer::Result valueFlowGenericForward(Token* start,
-                                         const Token* end,
-                                         const ValuePtr<Analyzer>& a,
+                                         const Token* end,ValuePtr<Analyzer> a,
                                          const TokenList& tokenList,
                                          ErrorLogger& errorLogger,
                                          const Settings& settings);
 
-Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings);
+Analyzer::Result valueFlowGenericForward(Token* start, ValuePtr<Analyzer> a, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings);
 
 #endif

@@ -32,6 +32,9 @@ class CPPCHECKLIB ValuePtr {
         static T* apply(const T* x) {
             return new U(*static_cast<const U*>(x));
         }
+        static T* move(T* x) {
+            return new U(std::move(*static_cast<const U*>(x)));
+        }
     };
 
 public:
@@ -46,6 +49,10 @@ public:
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
     ValuePtr(const U& value) : mPtr(cloner<U>::apply(&value)), mClone(&cloner<U>::apply)
+    {}
+
+    template<class U>
+    ValuePtr(U&& value) : mPtr(cloner<U>::move(&value)), mClone(&cloner<U>::apply)
     {}
 
     ValuePtr(const ValuePtr& rhs) : mPtr(nullptr), mClone(rhs.mClone) {

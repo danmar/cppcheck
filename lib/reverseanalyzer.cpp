@@ -37,8 +37,8 @@
 
 namespace {
     struct ReverseTraversal {
-        ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
-            : analyzer(analyzer), tokenlist(tokenlist), errorLogger(errorLogger), settings(settings)
+        ReverseTraversal(ValuePtr<Analyzer> analyzer, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
+            : analyzer(std::move(analyzer)), tokenlist(tokenlist), errorLogger(errorLogger), settings(settings)
         {}
         ValuePtr<Analyzer> analyzer;
         const TokenList& tokenlist;
@@ -254,7 +254,7 @@ namespace {
                             if (a) {
                                 valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()),
                                                         assignTok->astOperand2()->scope()->bodyEnd,
-                                                        a,
+                                                        std::move(a),
                                                         tokenlist,
                                                         errorLogger,
                                                         settings);
@@ -268,11 +268,11 @@ namespace {
                             if (a) {
                                 valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()),
                                                         assignTok->astOperand2()->scope()->bodyEnd,
-                                                        a,
+                                                        std::move(a),
                                                         tokenlist,
                                                         errorLogger,
                                                         settings);
-                                valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, a, tokenlist, errorLogger, settings);
+                                valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, std::move(a), tokenlist, errorLogger, settings);
                             }
                         }
                     }
@@ -305,7 +305,7 @@ namespace {
                             break;
                         if (condAction.isModified())
                             break;
-                        valueFlowGenericForward(condTok, analyzer, tokenlist, errorLogger, settings);
+                        valueFlowGenericForward(condTok, std::move(analyzer), tokenlist, errorLogger, settings);
                     }
                     Token* thenEnd;
                     const bool hasElse = Token::simpleMatch(tok->link()->tokAt(-2), "} else {");
@@ -334,7 +334,7 @@ namespace {
                         break;
 
                     if (!thenAction.isModified() && !elseAction.isModified())
-                        valueFlowGenericForward(condTok, analyzer, tokenlist, errorLogger, settings);
+                        valueFlowGenericForward(condTok, std::move(analyzer), tokenlist, errorLogger, settings);
                     else if (condAction.isRead())
                         break;
                     // If the condition modifies the variable then bail
@@ -353,7 +353,7 @@ namespace {
                     }
                     Token* condTok = getCondTokFromEnd(tok->link());
                     if (condTok) {
-                        Analyzer::Result r = valueFlowGenericForward(condTok, analyzer, tokenlist, errorLogger, settings);
+                        Analyzer::Result r = valueFlowGenericForward(condTok, std::move(analyzer), tokenlist, errorLogger, settings);
                         if (r.action.isModified())
                             break;
                     }
@@ -406,10 +406,10 @@ namespace {
     };
 }
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
+void valueFlowGenericReverse(Token* start, const Token* end, ValuePtr<Analyzer> a, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
 {
     if (a->invalid())
         return;
-    ReverseTraversal rt{a, tokenlist, errorLogger, settings};
+    ReverseTraversal rt{std::move(a), tokenlist, errorLogger, settings};
     rt.traverse(start, end);
 }
