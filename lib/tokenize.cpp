@@ -3342,7 +3342,7 @@ bool Tokenizer::simplifyUsing()
                 } else if (fpArgList && fpQual && Token::Match(tok1->next(), "%name%")) {
                     // function pointer
                     TokenList::copyTokens(tok1->next(), fpArgList, usingEnd->previous());
-                    Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());                    
+                    Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());
                     Token* leftPar = copyEnd->previous();
                     while (leftPar->str() != "(")
                         leftPar = leftPar->previous();
