@@ -310,7 +310,8 @@ void CheckNullPointer::nullPointerByDeRefAndCheck()
 
             return true;
         };
-        std::vector<const Token *> tokens = findTokensSkipDeadAndUnevaluatedCode(mSettings->library, scope->bodyStart, scope->bodyEnd, pred);
+        const Token* const start = (scope->function && scope->function->isConstructor()) ? scope->function->token : scope->bodyStart; // Check initialization list
+        std::vector<const Token *> tokens = findTokensSkipDeadAndUnevaluatedCode(mSettings->library, start, scope->bodyEnd, pred);
         for (const Token *tok : tokens) {
             const ValueFlow::Value *value = tok->getValue(0);
 

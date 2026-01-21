@@ -3742,6 +3742,15 @@ private:
                "    return 1 ? 1 : *(int*)0 = 1;\n"
                "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check ("struct S {\n" // #13220
+               "    explicit S(int* p) : i(*p) {\n"
+               "        if (p) {}\n"
+               "    }\n"
+               "    int i;\n"
+               "};\n");
+        ASSERT_EQUALS("[test.cpp:3:13] -> [test.cpp:2:29]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p. [nullPointerRedundantCheck]\n",
+                      errout_str());
     }
 
     void nullpointerDelete() {
