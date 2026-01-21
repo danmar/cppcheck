@@ -3343,7 +3343,9 @@ bool Tokenizer::simplifyUsing()
                     // function pointer
                     TokenList::copyTokens(tok1->next(), fpArgList, usingEnd->previous());
                     Token* const copyEnd = TokenList::copyTokens(tok1, start, fpQual->link()->previous());                    
-                    Token* const leftPar = copyEnd->tokAt(copyEnd->strAt(-1) == "(" ? -1 : -2);
+                    Token* leftPar = copyEnd->previous();
+                    while (leftPar->str() != "(")
+                        leftPar = leftPar->previous();
                     Token* const rightPar = copyEnd->next()->insertToken(")");
                     Token::createMutualLinks(leftPar, rightPar);
                     tok1->deleteThis();
