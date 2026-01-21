@@ -2700,7 +2700,8 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 if (isDesignatedInitializerArg)
                     ls.argtok = ls.argtok->astOperand2();
                 const Variable &var = *it;
-                if (var.valueType() && var.valueType()->container && var.valueType()->container->stdStringLike && !var.valueType()->container->view)
+                if (ls.argtok->valueType() && ls.argtok->valueType()->pointer &&
+                    var.valueType() && var.valueType()->container && var.valueType()->container->stdStringLike && !var.valueType()->container->view)
                     return; // TODO: check in isLifetimeBorrowed()?
                 if (var.isReference() || var.isRValueReference()) {
                     ls.byRef(tok, tokenlist, errorLogger, settings);
