@@ -697,7 +697,7 @@ cli/executor.o: cli/executor.cpp cli/executor.h lib/addoninfo.h lib/checkers.h l
 cli/filelister.o: cli/filelister.cpp cli/filelister.h lib/config.h lib/filesettings.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/filelister.cpp
 
-cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/config.h lib/errortypes.h lib/filesettings.h lib/mathlib.h lib/path.h lib/platform.h lib/standards.h
+cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/config.h lib/filesettings.h lib/mathlib.h lib/path.h lib/platform.h lib/standards.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/main.cpp
 
 cli/processexecutor.o: cli/processexecutor.cpp cli/executor.h cli/processexecutor.h lib/addoninfo.h lib/check.h lib/checkers.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h
