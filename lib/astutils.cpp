@@ -2625,6 +2625,8 @@ static bool hasOverloadedMemberAccess(const Token* tok)
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings &settings, int depth)
 {
+    if (!tok)
+        return false;
     if (!tok->isMutableExpr())
         return false;
 
@@ -2917,6 +2919,8 @@ static bool isExpressionChangedAt(const F& getExprTok,
 {
     if (depth < 0)
         return true;
+    if (!tok)
+        return false;
     if (!tok->isMutableExpr())
         return false;
     if (tok->exprId() != exprid || (!tok->varId() && !tok->isName())) {
