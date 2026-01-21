@@ -2570,10 +2570,6 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         }
         if (Token::simpleMatch(tok->tokAt(-2), "std :: tie"))
             return true;
-        // if the library says 0 is invalid
-        // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
-        if (indirect == 0 && requireNonNull)
-            return false;
         // possible pass-by-reference => inconclusive
         if (possiblyPassedByReference) {
             if (inconclusive != nullptr)
