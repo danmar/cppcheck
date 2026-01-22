@@ -73,7 +73,15 @@ For release builds it is recommended that you use:
 For building the tests use the flag.
 -DBUILD_TESTS=ON
 
-Using cmake you can generate project files for Visual Studio,XCode,etc.
+Using cmake you can generate project files for Visual Studio, XCode, etc.
+
+Finally, you can install cppcheck on your system with (optionally):
+
+```shell
+cmake --install .
+```
+
+The above command is assuming you are still in the `build` directory.
 
 #### Building a specific configuration
 
