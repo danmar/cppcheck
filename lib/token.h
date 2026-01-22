@@ -80,7 +80,6 @@ enum class TokenDebug : std::uint8_t { None, ValueFlow, ValueType };
  * The Token class also has other functions for management of token list, matching tokens, etc.
  */
 class CPPCHECKLIB Token {
-    friend class TestToken;
 
 public:
     enum CppcheckAttributesType : std::uint8_t { LOW, HIGH };
@@ -916,6 +915,7 @@ private:
         return tok->link();
     }
 
+protected:
     /**
      * Needle is build from multiple alternatives. If one of
      * them is equal to haystack, return value is 1. If there
