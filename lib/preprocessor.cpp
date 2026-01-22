@@ -473,12 +473,12 @@ static bool hasDefine(const std::string &userDefines, const std::string &cfg)
     }
 
     std::string::size_type pos = 0;
+    const std::string cfgname = cfg.substr(0, cfg.find('='));
     while (pos < userDefines.size()) {
-        const std::string::size_type eq = cfg.find('=');
-        pos = (eq == std::string::npos) ? userDefines.find(cfg, pos) : userDefines.find(cfg.substr(0, eq), pos);
+        pos = userDefines.find(cfgname, pos);
         if (pos == std::string::npos)
             break;
-        const std::string::size_type pos2 = (eq == std::string::npos) ? pos + cfg.size() : pos + eq;
+        const std::string::size_type pos2 = pos + cfgname.size();
         if ((pos == 0 || userDefines[pos-1U] == ';') && (pos2 == userDefines.size() || userDefines[pos2] == '='))
             return true;
         pos = pos2;
@@ -608,6 +608,24 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 }
             }
 
+            // check if config already exists in the ret set, but as a more general or more specific version
+            if (cmdtok->str() != "ifndef")
+            {
+                const std::string::size_type eq = config.find('=');
+                const std::string config2 = (eq != std::string::npos) ? config.substr(0, eq) : config + "=" + config;
+                const std::set<std::string>::iterator it2 = ret.find(config2);
+                if (it2 != ret.end()) {
+                    if (eq == std::string::npos) {
+                        // The instance in ret is more specific than the one in config (no =value), replace it with the one in config
+                        ret.erase(it2);
+                    } else {
+                        // The instance in ret is more general than the one in config (have =value), keep the one in ret
+                        config.clear();
+                        continue;
+                    }
+                }
+            }
+
             configs_if.push_back((cmdtok->str() == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str() == "ifndef") ? std::move(config) : std::string());
             ret.insert(cfg(configs_if,userDefines));
@@ -641,8 +659,18 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 configs_if.push_back(std::move(config));
                 ret.insert(cfg(configs_if, userDefines));
             } else if (!configs_ifndef.empty()) {
-                configs_if.push_back(configs_ifndef.back());
-                ret.insert(cfg(configs_if, userDefines));
+                //Check if ifndef already existing in ret as more general/specific version
+                const std::string &confCandidate = configs_ifndef.back();
+                if (ret.find(confCandidate) == ret.end()) {
+                    // No instance of config_ifndef in ret. Check if a more specific version exists, in that case replace it
+                    const std::set<std::string>::iterator it = ret.find(confCandidate + "=" + confCandidate);
+                    if (it != ret.end()) {
+                        // The instance in ret is more specific than the one in confCandidate (no =value), replace it with the one in confCandidate
+                        ret.erase(it);
+                    }
+                    configs_if.push_back(configs_ifndef.back());
+                    ret.insert(cfg(configs_if, userDefines));
+                }
             }
         } else if (cmdtok->str() == "endif" && !sameline(tok, cmdtok->next)) {
             if (!configs_if.empty())
