@@ -1115,7 +1115,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 "misra-c++-2023",
                 "misra-cpp-2023",
                 "bughunting",
-                "safety",  // TODO: deprecate in favor of the regular --saftey/--no-safety
+                "safety",  // TODO: deprecate in favor of the regular --safety/--no-safety
+                "safety-profiles",
                 "debug-progress"};
             // valid options --premium-..=
             const std::set<std::string> valid2{
@@ -1133,7 +1134,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.premiumArgs += " ";
             const std::string p(argv[i] + 10);
             const std::string p2(p.find('=') != std::string::npos ? p.substr(0, p.find('=')) : "");
-            const bool isCodingStandard = startsWith(p, "autosar") || startsWith(p,"cert-") || startsWith(p,"misra-");
+            const bool isCodingStandard = startsWith(p, "autosar") || startsWith(p,"cert-") || startsWith(p,"misra-") || p == "safety-profiles";
             const std::string p3(endsWith(p,":all") && isCodingStandard ? p.substr(0,p.rfind(':')) : p);
             if (!valid.count(p3) && !valid2.count(p2)) {
                 mLogger.printError("invalid --premium option '" + (p2.empty() ? p : p2) + "'.");

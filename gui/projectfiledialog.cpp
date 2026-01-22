@@ -69,6 +69,7 @@ const char CODING_STANDARD_MISRA_CPP_2023[] = "misra-cpp-2023";
 const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
 const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
 const char CODING_STANDARD_AUTOSAR[] = "autosar";
+const char CODING_STANDARD_SAFETY_PROFILES[] = "safety-profiles";
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -459,6 +460,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mCertC2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_C));
     mUI->mCertCpp2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_CPP));
     mUI->mAutosar->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_AUTOSAR));
+    mUI->mSafetyProfiles->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_SAFETY_PROFILES));
 
     if (projectFile->getCertIntPrecision() <= 0)
         mUI->mEditCertIntPrecision->setText(QString());
@@ -468,6 +470,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mCertC2016->setEnabled(mPremium);
     mUI->mCertCpp2016->setEnabled(mPremium);
     mUI->mAutosar->setEnabled(mPremium);
+    mUI->mSafetyProfiles->setEnabled(mPremium);
     mUI->mLabelCertIntPrecision->setVisible(mPremium);
     mUI->mEditCertIntPrecision->setVisible(mPremium);
     mUI->mBughunting->setChecked(mPremium && projectFile->getBughunting());
@@ -560,6 +563,8 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         codingStandards << CODING_STANDARD_MISRA_CPP_2023;
     if (mUI->mAutosar->isChecked())
         codingStandards << CODING_STANDARD_AUTOSAR;
+    if (mUI->mSafetyProfiles->isChecked())
+        codingStandards << CODING_STANDARD_SAFETY_PROFILES;
     projectFile->setCodingStandards(std::move(codingStandards));
     projectFile->setCertIntPrecision(mUI->mEditCertIntPrecision->text().toInt());
     projectFile->setBughunting(mUI->mBughunting->isChecked());
