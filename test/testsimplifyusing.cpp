@@ -74,6 +74,7 @@ private:
         TEST_CASE(simplifyUsing35);
         TEST_CASE(simplifyUsing36);
         TEST_CASE(simplifyUsing37);
+        TEST_CASE(simplifyUsing38);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -905,6 +906,16 @@ private:
                              "FPC fpc{};\n";
         const char expected3[] = "std :: string ( * fp ) ( ) ; std :: string ( * const fpc ) ( ) { } ;";
         ASSERT_EQUALS(expected3, tok(code3));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyUsing38() {
+        const char code[] = "using std::begin;\n" // #14424
+                            "using std::end;\n"
+                            "Unknown begin;\n"
+                            "int end;\n";
+        const char expected[] = "Unknown begin ; int end ;";
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
