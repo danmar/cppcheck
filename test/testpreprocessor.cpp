@@ -333,9 +333,9 @@ private:
         TEST_CASE(getConfigsU5);
         TEST_CASE(getConfigsU6);
         TEST_CASE(getConfigsU7);
-        TEST_CASE(getConfigsIssue14317);
 
-        TEST_CASE(getCodeIssue14317);
+        TEST_CASE(getConfigsAndCodeIssue14317);
+        TEST_CASE(getConfigsMostGeneralConfigIssue14317);
 
         TEST_CASE(if_sizeof);
 
@@ -2403,31 +2403,20 @@ private:
         ASSERT_EQUALS("\nY\n", getConfigsStr(code, "-DX"));
     }
 
-    void getConfigsIssue14317() {
+    void getConfigsAndCodeIssue14317() {
         const char filedata[] = "bool test() {\n"
-            "return\n"
-            "#if defined(isless)\n"
-            "0 != isless(1.0, 2.0)\n"
-            "#else\n"
-            "0\n"
-            "#endif\n"
-            ";\n"
-            "}\n";
+                                "return\n"
+                                "#if defined(isless)\n"
+                                "0 != isless(1.0, 2.0)\n"
+                                "#else\n"
+                                "0\n"
+                                "#endif\n"
+                                ";\n"
+                                "}\n";
+        // Test getConfigsStr()
         ASSERT_EQUALS("\nisless=isless\n", getConfigsStr(filedata));
-    }
 
-    void getCodeIssue14317() {
-        // Handling include guards..
-        const char filedata[] = "bool test() {\n"
-        "return\n"
-        "#if defined(isless)\n"
-        "0 != isless(1.0, 2.0)\n"
-        "#else\n"
-        "0\n"
-        "#endif\n"
-        ";\n"
-        "}\n";
-
+        // Test getcode()
         // Preprocess => actual result..
         const std::map<std::string, std::string> actual = getcode(settings0, *this, filedata);
 
@@ -2435,6 +2424,30 @@ private:
         ASSERT_EQUALS(2, actual.size());
         ASSERT_EQUALS("bool test ( ) {\nreturn\n\n\n\n0\n\n;\n}", actual.at(""));
         ASSERT_EQUALS("bool test ( ) {\nreturn\n\n0 != $isless ( 1.0 , 2.0 )\n\n\n\n;\n}", actual.at("isless=isless"));
+    }
+
+    void getConfigsMostGeneralConfigIssue14317() {
+        // Verifies that the most general X (out of X=X and X) and Y=Y is returned
+        // For Z: First Z=Z is added to ret, then the ifndef else branch replaces Z=Z with the more general Z
+        const char filedata[] = "#ifdef X\n"
+                                "print(X);\n"
+                                "#endif\n"
+                                "#if X\n"
+                                "print(X+1);\n"
+                                "#endif\n"
+                                "#if defined(Y)\n"
+                                "print(Y);\n"
+                                "#endif\n"
+                                "#ifdef Z\n"
+                                "print(Z);\n"
+                                "#endif\n"
+                                "#ifndef Z\n"
+                                "print(Z+1);\n"
+                                "#else\n"
+                                "print(Z+2);\n"
+                                "#endif\n";
+        // Test getConfigsStr()
+        ASSERT_EQUALS("\nX\nY=Y\nZ\n", getConfigsStr(filedata));
     }
 
     void if_sizeof() { // #4071
