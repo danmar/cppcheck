@@ -223,10 +223,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return true;
 
     // std::string dereferences nullpointers
-    if (Token::Match(parent->tokAt(-3), "std :: string|wstring (|{ %name% )|}"))
+    if (Token::Match(parent->tokAt(-3), "std :: string|wstring (|{"))
         return true;
-    if (Token::Match(parent->previous(), "%name% (|{ %name% )|}")) {
-        const Variable* var = tok->tokAt(-2)->variable();
+    if (Token::Match(parent->previous(), "%name% (|{")) {
+        const Variable* var = parent->previous()->variable();
         if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
             return true;
     }
