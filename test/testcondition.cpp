@@ -3640,6 +3640,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2:16] -> [test.cpp:3:9]: (warning) Identical condition 'handle!=nullptr', second condition is always false [identicalConditionAfterEarlyExit]\n", errout_str());
 
+        check("void f(const char* p) {\n" // #13716
+              "    if (!p) {}\n"
+              "    if (p == NULL) {}\n"
+              "    if (p == nullptr) {}\n"
+              "    if (p == 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2:9] -> [test.cpp:3:11]: (style) The if condition is the same as the previous if condition [duplicateCondition]\n",
+                      errout_str());
+
         check("int f(const char* p) {\n" // #13717
               "    if (p) {}\n"
               "    else if (!p) {}\n"
