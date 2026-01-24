@@ -8978,8 +8978,12 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok->next());
         if (Token::Match(tok, "%name% %op% %name%") && !tok->isKeyword() && tok->next()->isIncDecOp())
             syntaxError(tok->next());
-        if (!tok->isKeyword() && Token::Match(tok, "%name% .|-> %name% %name%") && !tok->tokAt(2)->isKeyword())
-            syntaxError(tok);
+        if (!tok->isKeyword() && Token::Match(tok, "%name% .|-> %name% %name%") && !tok->tokAt(2)->isKeyword()) {
+            if (tok->tokAt(3)->isUpperCaseName())
+                unknownMacroError(tok->tokAt(3));
+            else
+                syntaxError(tok);
+        }
         if (Token::Match(tok, "[!|+-/%^~] )|]"))
             syntaxError(tok);
         if (Token::Match(tok, "==|!=|<=|>= %comp%") && tok->strAt(-1) != "operator")
