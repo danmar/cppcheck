@@ -50,7 +50,7 @@ private:
         TEST_CASE(wrong_root_node);
     }
 
-    class PlatformTest : public Platform
+    class PlatformTest final : public Platform
     {
         friend class TestPlatform;
     };

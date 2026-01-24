@@ -49,7 +49,7 @@ public:
     {}
 
 private:
-    class CmdLineLoggerTest : public CmdLineLogger
+    class CmdLineLoggerTest final : public CmdLineLogger
     {
     public:
         CmdLineLoggerTest() = default;
@@ -91,7 +91,7 @@ private:
         std::string buf;
     };
 
-    class CmdLineParserTest : public CmdLineParser
+    class CmdLineParserTest final : public CmdLineParser
     {
         friend class TestCmdlineParser;
     public:

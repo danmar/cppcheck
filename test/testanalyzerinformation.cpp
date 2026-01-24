@@ -33,7 +33,7 @@ public:
     TestAnalyzerInformation() : TestFixture("TestAnalyzerInformation") {}
 
 private:
-    class AnalyzerInformationTest : public AnalyzerInformation
+    class AnalyzerInformationTest final : public AnalyzerInformation
     {
         friend class TestAnalyzerInformation;
     };

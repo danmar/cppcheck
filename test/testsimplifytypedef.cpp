@@ -261,7 +261,7 @@ private:
         TEST_CASE(typedefInfo3);
     }
 
-    class TokenizerTest : public Tokenizer
+    class TokenizerTest final : public Tokenizer
     {
         friend class TestSimplifyTypedef;
     public:
