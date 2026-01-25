@@ -7668,6 +7668,11 @@ private:
                                                    "}"),
                               SYNTAX);
 
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f(T* p) {\n"
+                                                   "    g(p->x TSRMLS_CC);"
+                                                   "}"),
+                              UNKNOWN_MACRO);
+
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));
 
