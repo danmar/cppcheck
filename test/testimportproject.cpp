@@ -38,6 +38,7 @@ public:
     using ImportProject::importCppcheckGuiProject;
     using ImportProject::importVcxproj;
     using ImportProject::SharedItemsProject;
+    using ImportProject::collectArgs;
 };
 
 
@@ -75,6 +76,13 @@ private:
         TEST_CASE(importCppcheckGuiProjectPremiumMisra);
         TEST_CASE(ignorePaths);
         TEST_CASE(testVcxprojUnicode);
+        TEST_CASE(testCollectArgs1);
+        TEST_CASE(testCollectArgs2);
+        TEST_CASE(testCollectArgs3);
+        TEST_CASE(testCollectArgs4);
+        TEST_CASE(testCollectArgs5);
+        TEST_CASE(testCollectArgs6);
+        TEST_CASE(testCollectArgs7);
     }
 
     void setDefines() const {
@@ -577,6 +585,99 @@ private:
         ASSERT(project.fileSettings.back().defines.find(";UNICODE=1;") == std::string::npos);
         ASSERT(project.fileSettings.back().defines.find(";_UNICODE=1") == std::string::npos);
         ASSERT_EQUALS(project.fileSettings.back().useMfc, true);
+    }
+
+    void testCollectArgs1() const
+    {
+        std::vector<std::string> args;
+        const std::string cmd = "  gcc -o main main.c  ";
+        const std::string error = TestImporter::collectArgs(cmd, args);
+
+        ASSERT_EQUALS("", error);
+        ASSERT_EQUALS(4, args.size());
+        ASSERT_EQUALS("gcc", args[0]);
+        ASSERT_EQUALS("-o", args[1]);
+        ASSERT_EQUALS("main", args[2]);
+        ASSERT_EQUALS("main.c", args[3]);
+    }
+
+    void testCollectArgs2() const
+    {
+        std::vector<std::string> args;
+        const std::string cmd = "gcc -o main \"directory with space\"/main.c";
+        const std::string error = TestImporter::collectArgs(cmd, args);
+
+        ASSERT_EQUALS("", error);
+        ASSERT_EQUALS(4, args.size());
+        ASSERT_EQUALS("gcc", args[0]);
+        ASSERT_EQUALS("-o", args[1]);
+        ASSERT_EQUALS("main", args[2]);
+        ASSERT_EQUALS("directory with space/main.c", args[3]);
+    }
+
+    void testCollectArgs3() const
+    {
+        std::vector<std::string> args;
+        const std::string cmd = "gcc -o main directory\\ with\\ space/main.c";
+        const std::string error = TestImporter::collectArgs(cmd, args);
+
+        ASSERT_EQUALS("", error);
+        ASSERT_EQUALS(4, args.size());
+        ASSERT_EQUALS("gcc", args[0]);
+        ASSERT_EQUALS("-o", args[1]);
+        ASSERT_EQUALS("main", args[2]);
+        ASSERT_EQUALS("directory with space/main.c", args[3]);
+    }
+
+    void testCollectArgs4() const
+    {
+        std::vector<std::string> args;
+        const std::string cmd = "gcc -o main \'directory with space\'/main.c";
+        const std::string error = TestImporter::collectArgs(cmd, args);
+
+        ASSERT_EQUALS("", error);
+        ASSERT_EQUALS(4, args.size());
+        ASSERT_EQUALS("gcc", args[0]);
+        ASSERT_EQUALS("-o", args[1]);
+        ASSERT_EQUALS("main", args[2]);
+        ASSERT_EQUALS("directory with space/main.c", args[3]);
+    }
+
+    void testCollectArgs5() const
+    {
+        std::vector<std::string> args;
+        const std::string cmd = "gcc -o main directory_with_quote\\\"/main.c";
+        const std::string error = TestImporter::collectArgs(cmd, args);
+
+        ASSERT_EQUALS("", error);
+        ASSERT_EQUALS(4, args.size());
+        ASSERT_EQUALS("gcc", args[0]);
+        ASSERT_EQUALS("-o", args[1]);
+        ASSERT_EQUALS("main", args[2]);
+        ASSERT_EQUALS("directory_with_quote\"/main.c", args[3]);
+    }
+
+    void testCollectArgs6() const
+    {
+        std::vector<std::string> args;
+        const std::string cmd = "gcc -o main windows\\\\path\\\\main.c";
+        const std::string error = TestImporter::collectArgs(cmd, args);
+
+        ASSERT_EQUALS("", error);
+        ASSERT_EQUALS(4, args.size());
+        ASSERT_EQUALS("gcc", args[0]);
+        ASSERT_EQUALS("-o", args[1]);
+        ASSERT_EQUALS("main", args[2]);
+        ASSERT_EQUALS("windows\\path\\main.c", args[3]);
+    }
+
+    void testCollectArgs7() const
+    {
+        std::vector<std::string> args;
+        const std::string cmd = "gcc -o main \"non-terminated-quote/main.c";
+        const std::string error = TestImporter::collectArgs(cmd, args);
+
+        ASSERT_EQUALS("Missing closing quote in command string", error);
     }
 
     // TODO: test fsParseCommand()

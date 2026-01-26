@@ -69,7 +69,6 @@ public:
         CPPCHECK_GUI
     };
 
-    static void fsParseCommand(FileSettings& fs, const std::string& command, bool doUnescape);
     static void fsSetDefines(FileSettings& fs, std::string defs);
     static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
@@ -103,6 +102,8 @@ public:
 protected:
     bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
+    static std::string collectArgs(const std::string &cmd, std::vector<std::string> &args);
+    static void parseArgs(FileSettings &fs, const std::vector<std::string> &args);
 
 private:
     struct SharedItemsProject {
