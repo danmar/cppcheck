@@ -899,12 +899,18 @@ private:
         ASSERT_EQUALS(expected2, tok(code2));
         ASSERT_EQUALS("", errout_str());
 
-        const char code3[] = "using FP = std::string (*)();\n"
+        const char code3[] = "using FP = std::string (*)();\n" // #14421
                              "using FPC = std::string (*const)();\n"
                              "FP fp;\n"
                              "FPC fpc{};\n";
         const char expected3[] = "std :: string ( * fp ) ( ) ; std :: string ( * const fpc ) ( ) { } ;";
         ASSERT_EQUALS(expected3, tok(code3));
+        ASSERT_EQUALS("", errout_str());
+
+        const char code4[] = "using F = void(*)(char);\n" // #14429
+                             "F f(int);\n";
+        const char expected4[] = "void * f ( char ) ;";
+        ASSERT_EQUALS(expected4, tok(code4));
         ASSERT_EQUALS("", errout_str());
     }
 
