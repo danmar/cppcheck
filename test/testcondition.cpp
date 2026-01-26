@@ -5882,6 +5882,17 @@ private:
               "    if (strlen(s2) > 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void g(int*);\n" // #14428
+              "int f(int* const p) {\n"
+              "    int i = 0;\n"
+              "    if (*p == 0)\n"
+              "        g(p);\n"
+              "    if (*p == 0)\n"
+              "        i = 1;\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkInvalidTestForOverflow() {
