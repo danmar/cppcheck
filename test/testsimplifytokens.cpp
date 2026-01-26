@@ -42,6 +42,7 @@ private:
         mNewTemplate = true;
         TEST_CASE(combine_strings);
         TEST_CASE(combine_wstrings);
+        TEST_CASE(combine_wstrings_Windows);
         TEST_CASE(combine_ustrings);
         TEST_CASE(combine_Ustrings);
         TEST_CASE(combine_u8strings);
@@ -248,6 +249,15 @@ private:
         ASSERT(tokenizer.tokenize(code));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+    }
+
+    void combine_wstrings_Windows() {
+#if defined(_WIN32) && defined(UNICODE)
+        const char code[] = "const auto* f() {\n"
+                            "    return _T(\"abc\") _T(\"def\") _T(\"ghi\");\n"
+                            "}";
+        ASSERT_EQUALS("const auto * f ( ) { return L\"abcdefghi\" ; }", tok(code, dinit(TokOptions, $.type = Platform::Type::Native)));
+#endif
     }
 
     void combine_ustrings() {

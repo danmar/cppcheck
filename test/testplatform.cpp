@@ -37,6 +37,7 @@ private:
         TEST_CASE(valid_config_win32w);
         TEST_CASE(valid_config_unix32);
         TEST_CASE(valid_config_win64);
+        TEST_CASE(valid_config_native);
         TEST_CASE(valid_config_file_1);
         TEST_CASE(valid_config_file_2);
         TEST_CASE(valid_config_file_3);
@@ -203,6 +204,16 @@ private:
         ASSERT_EQUALS(32, platform.float_bit);
         ASSERT_EQUALS(64, platform.double_bit);
         ASSERT_EQUALS(64, platform.long_double_bit);
+    }
+
+    void valid_config_native() const {
+        Platform platform;
+        PLATFORM(platform, Platform::Type::Native);
+#ifdef _WIN32
+        ASSERT(platform.isWindows());
+#else
+        ASSERT(!platform.isWindows());
+#endif
     }
 
     void valid_config_file_1() const {
