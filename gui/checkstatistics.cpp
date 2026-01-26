@@ -18,6 +18,8 @@
 
 #include "checkstatistics.h"
 
+#include "utils.h"
+
 #include <QDebug>
 #include <QList>
 #include <QSet>
@@ -101,6 +103,7 @@ unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type
         qDebug() << "Unknown error type - returning zero statistics.";
         return 0;
     }
+    cppcheck::unreachable();
 }
 
 QStringList CheckStatistics::getTools() const

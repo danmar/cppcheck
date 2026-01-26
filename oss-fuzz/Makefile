@@ -305,7 +305,7 @@ $(libcppdir)/pathanalysis.o: ../lib/pathanalysis.cpp ../lib/astutils.h ../lib/co
 $(libcppdir)/pathmatch.o: ../lib/pathmatch.cpp ../lib/config.h ../lib/path.h ../lib/pathmatch.h ../lib/standards.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/pathmatch.cpp
 
-$(libcppdir)/platform.o: ../lib/platform.cpp ../externals/tinyxml2/tinyxml2.h ../lib/config.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/xml.h
+$(libcppdir)/platform.o: ../lib/platform.cpp ../externals/tinyxml2/tinyxml2.h ../lib/config.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/utils.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/platform.cpp
 
 $(libcppdir)/preprocessor.o: ../lib/preprocessor.cpp ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/checkers.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/settings.h ../lib/standards.h ../lib/suppressions.h ../lib/utils.h

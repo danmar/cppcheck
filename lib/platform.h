@@ -24,6 +24,7 @@
 #include "config.h"
 #include "mathlib.h"
 #include "standards.h"
+#include "utils.h"
 
 #include <cassert>
 #include <climits>
@@ -195,6 +196,7 @@ public:
         case Type::File:
             return "platformFile";
         }
+        cppcheck::unreachable();
     }
 
     long long unsignedCharMax() const {
