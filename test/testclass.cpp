@@ -6827,6 +6827,11 @@ private:
         ASSERT_EQUALS("[test.cpp:5:10]: (style) Either there is a missing 'override', or the member function 'S::g' can be static. [functionStatic]\n"
                       "[test.cpp:6:10]: (style) Either there is a missing 'override', or the member function 'S::h' can be static. [functionStatic]\n",
                       errout_str());
+
+        checkConst("struct S : U {\n" // #14425
+                   "    void f() { this->g(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void const97() { // #13301

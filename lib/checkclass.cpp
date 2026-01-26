@@ -2353,6 +2353,8 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function()) {
+        if (Token::simpleMatch(tok->astParent(), ".") && Token::simpleMatch(tok->astParent()->astOperand1(), "this"))
+            return true;
         for (const Function &func : scope->functionList) {
             if (func.name() == tok->str()) {
                 const Token* tok2 = tok->tokAt(2);
