@@ -3091,8 +3091,6 @@ static const Token* findExpressionChangedImpl(const Token* expr,
         }
         bool global = false;
         if (tok->variable()) {
-            if (tok->variable()->isConst())
-                return false;
             global = !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
                      !(tok->variable()->isMember() && !tok->variable()->isStatic());
         } else if (tok->isIncompleteVar() && !tok->isIncompleteConstant()) {
