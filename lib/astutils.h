@@ -319,6 +319,8 @@ Token* getTokenArgumentFunction(Token* tok, int& argn);
 
 std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr);
 
+bool isMutableExpression(const Token* tok);
+
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
  * the return value is false and the output parameter inconclusive is set to true
