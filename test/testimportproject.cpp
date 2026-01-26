@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -75,6 +76,7 @@ private:
         TEST_CASE(importCppcheckGuiProjectPremiumMisra);
         TEST_CASE(ignorePaths);
         TEST_CASE(testVcxprojUnicode);
+        TEST_CASE(testVcxprojConditions);
     }
 
     void setDefines() const {
@@ -579,28 +581,37 @@ private:
         ASSERT_EQUALS(project.fileSettings.back().useMfc, true);
     }
 
+
+    void testVcxprojConditions() const
+    {
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition("'$(Configuration)'=='Debug'", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition("'$(Platform)'=='Win32'", "Debug", "Win32"));
+        ASSERT(!cppcheck::testing::evaluateVcxprojCondition("'$(Configuration)'=='Release'", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' == 'Debug' ", "Debug", "Win32"));
+        ASSERT(!cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' != 'Debug' ", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition("'$(Configuration)|$(Platform)' == 'Debug|Win32' ", "Debug", "Win32"));
+        ASSERT(!cppcheck::testing::evaluateVcxprojCondition("!('$(Configuration)|$(Platform)' == 'Debug|Win32' )", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' == 'Debug' And '$(Platform)' == 'Win32'", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' == 'Debug' Or '$(Platform)' == 'Win32'", "Release", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.StartsWith('Debug'))", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.EndsWith('AddressSanitizer'))", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.Contains('Address'))", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.Contains ( 'Address'  ) )", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.Contains('Address')) And '$(Platform)' == 'Win32'", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" ($(Configuration.Contains('Address')) ) And ( '$(Platform)' == 'Win32')", "Debug-AddressSanitizer", "Win32"));
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("And", "", ""), std::runtime_error, "Invalid condition: 'And'");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("Or", "", ""), std::runtime_error, "Invalid condition: 'Or'");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("!", "", ""), std::runtime_error, "Invalid condition: '!'");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("'' == '' And ", "", ""), std::runtime_error, "Missing operator");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("('' == ''", "", ""), std::runtime_error, "'(' without closing ')'!");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("'' == '')", "", ""), std::runtime_error, "unmatched ')' in condition '' == '')");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("''", "", ""), std::runtime_error, "Invalid condition: ''''");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("'' == '", "", ""), std::runtime_error, "Invalid condition: ''' == ''");
+        ASSERT_THROW_EQUALS_2(cppcheck::testing::evaluateVcxprojCondition("$(Configuration.Lower())", "", ""), std::runtime_error, "Missing operator");
+    }
+
     // TODO: test fsParseCommand()
 
-    // TODO: test vcxproj conditions
-    /*
-        <?xml version="1.0" encoding="utf-8"?>
-        <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-        <ItemGroup Label="ProjectConfigurations">
-        <ProjectConfiguration Include="Debug|x64">
-        <Configuration>Debug</Configuration>
-        <Platform>x64</Platform>
-        </ProjectConfiguration>
-        </ItemGroup>
-        <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-        <ClCompile>
-        <PreprocessorDefinitions>CPPCHECKLIB_IMPORT</PreprocessorDefinitions>
-        </ClCompile>
-        </ItemDefinitionGroup>
-        <ItemGroup>
-        <ClCompile Include="main.c" />
-        </ItemGroup>
-        </Project>
-     */
 };
 
 REGISTER_TEST(TestImportProject)
