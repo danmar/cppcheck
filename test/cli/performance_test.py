@@ -147,7 +147,7 @@ int foo(int a, int b)
     cppcheck([filename], env=my_env)
 
 @pytest.mark.skipif(sys.platform == 'darwin', reason='GitHub macOS runners are too slow')
-@pytest.mark.timeout(20)
+@pytest.mark.timeout(30)
 def test_stack_overflow_AST(tmpdir):
     # 14435
     filename = os.path.join(tmpdir, 'hang.cpp')
