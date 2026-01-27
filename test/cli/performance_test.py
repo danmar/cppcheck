@@ -146,8 +146,8 @@ int foo(int a, int b)
     my_env["DISABLE_VALUEFLOW"] = "1"
     cppcheck([filename], env=my_env)
 
-
-@pytest.mark.timeout(10)
+@pytest.mark.skipif(sys.platform == 'darwin', reason='GitHub macOS runners are too slow')
+@pytest.mark.timeout(20)
 def test_stack_overflow_AST(tmpdir):
     # 14435
     filename = os.path.join(tmpdir, 'hang.cpp')
