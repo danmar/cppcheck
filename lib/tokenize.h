@@ -696,6 +696,8 @@ private:
         std::string filename;
         int lineNumber;
         int column;
+        int tagLine{-1};
+        int tagColumn{-1};
         bool used;
         bool isFunctionPointer;
         std::vector<TypedefToken> typedefInfoTokens;
