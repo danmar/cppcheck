@@ -5515,6 +5515,19 @@ private:
             "    f(s);\n"
             "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        setMultiline();
+        ctu("void g(char* p) {\n"
+            "    memset(p + 10, 0, 10);\n"
+            "}\n"
+            "void f() {\n"
+            "    char a[10] = {};\n"
+            "    g(a);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2:12]: error: Pointer arithmetic overflow; 'p' buffer size is 10 [ctuPointerArith]\n"
+                      "[test.cpp:6:6]: note: Calling function g, 1st argument is accessed out of bounds\n"
+                      "[test.cpp:2:12]: note: Using argument p\n",
+                      errout_str());
     }
 
     void objectIndex() {
