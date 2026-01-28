@@ -53,7 +53,7 @@ jobs:
         run: |
           rem TODO: enable rules?
           rem specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_TESTING=Off -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
 
       - name: Build GUI release
         run: |
@@ -92,7 +92,7 @@ jobs:
 
       - name: Run CMake
         run: |
-          cmake -S . -B build.cxxstd -G "Visual Studio 17 2022" -A x64 -DCMAKE_CXX_STANDARD=${{ matrix.cxxstd }} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
+          cmake -S . -B build.cxxstd -G "Visual Studio 17 2022" -A x64 -DCMAKE_CXX_STANDARD=${{ matrix.cxxstd }} -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=Off -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
 
       - name: Build
         run: |
