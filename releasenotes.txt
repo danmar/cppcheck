@@ -15,6 +15,7 @@ GUI:
 
 Changed interface:
 - removed CMake option "DISABLE_CRTDBG_MAP_ALLOC"
+- CMake option "BUILD_TESTS" has been deprecated and will be removed in Cppcheck 2.22 - use "BUILD_TESTING" instead
 -
 
 Infrastructure & dependencies:
