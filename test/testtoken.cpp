@@ -36,6 +36,11 @@ public:
     TestToken() : TestFixture("TestToken") {}
 
 private:
+    class TokenTest final : public Token
+    {
+        friend class TestToken;
+    };
+
     const TokenList list{settingsDefault, Standards::Language::C};
 
     std::vector<std::string> arithmeticalOps;
@@ -165,15 +170,15 @@ private:
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token one(list, std::move(tokensFrontBack));
             one.str("one");
-            ASSERT_EQUALS(1, Token::multiCompare(&one, "one|two", 0));
+            ASSERT_EQUALS(1, TokenTest::multiCompare(&one, "one|two", 0));
         }
 
         {
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token two(list, std::move(tokensFrontBack));
             two.str("two");
-            ASSERT_EQUALS(1, Token::multiCompare(&two, "one|two", 0));
-            ASSERT_EQUALS(1, Token::multiCompare(&two, "verybig|two|", 0));
+            ASSERT_EQUALS(1, TokenTest::multiCompare(&two, "one|two", 0));
+            ASSERT_EQUALS(1, TokenTest::multiCompare(&two, "verybig|two|", 0));
         }
 
         // Test for empty string found
@@ -181,45 +186,45 @@ private:
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token notfound(list, std::move(tokensFrontBack));
             notfound.str("notfound");
-            ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one|two|", 0));
+            ASSERT_EQUALS(0, TokenTest::multiCompare(&notfound, "one|two|", 0));
 
             // Test for not found
-            ASSERT_EQUALS(-1, Token::multiCompare(&notfound, "one|two", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&notfound, "one|two", 0));
         }
 
         {
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token s(list, std::move(tokensFrontBack));
             s.str("s");
-            ASSERT_EQUALS(-1, Token::multiCompare(&s, "verybig|two", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&s, "verybig|two", 0));
         }
 
         {
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token ne(list, std::move(tokensFrontBack));
             ne.str("ne");
-            ASSERT_EQUALS(-1, Token::multiCompare(&ne, "one|two", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&ne, "one|two", 0));
         }
 
         {
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token a(list, std::move(tokensFrontBack));
             a.str("a");
-            ASSERT_EQUALS(-1, Token::multiCompare(&a, "abc|def", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&a, "abc|def", 0));
         }
 
         {
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token abcd(list, std::move(tokensFrontBack));
             abcd.str("abcd");
-            ASSERT_EQUALS(-1, Token::multiCompare(&abcd, "abc|def", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&abcd, "abc|def", 0));
         }
 
         {
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token def(list, std::move(tokensFrontBack));
             def.str("default");
-            ASSERT_EQUALS(-1, Token::multiCompare(&def, "abc|def", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&def, "abc|def", 0));
         }
 
         // %op%
@@ -227,15 +232,15 @@ private:
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token plus(list, std::move(tokensFrontBack));
             plus.str("+");
-            ASSERT_EQUALS(1, Token::multiCompare(&plus, "one|%op%", 0));
-            ASSERT_EQUALS(1, Token::multiCompare(&plus, "%op%|two", 0));
+            ASSERT_EQUALS(1, TokenTest::multiCompare(&plus, "one|%op%", 0));
+            ASSERT_EQUALS(1, TokenTest::multiCompare(&plus, "%op%|two", 0));
         }
         {
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token x(list, std::move(tokensFrontBack));
             x.str("x");
-            ASSERT_EQUALS(-1, Token::multiCompare(&x, "one|%op%", 0));
-            ASSERT_EQUALS(-1, Token::multiCompare(&x, "%op%|two", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&x, "one|%op%", 0));
+            ASSERT_EQUALS(-1, TokenTest::multiCompare(&x, "%op%|two", 0));
         }
 
     }
@@ -314,7 +319,7 @@ private:
         auto tokensFrontBack = std::make_shared<TokensFrontBack>();
         Token tok(list, std::move(tokensFrontBack));
         tok.str("||");
-        ASSERT_EQUALS(true, Token::multiCompare(&tok, "+|%or%|%oror%", 0) >= 0);
+        ASSERT_EQUALS(true, TokenTest::multiCompare(&tok, "+|%or%|%oror%", 0) >= 0);
     }
 
     void charTypes() const {
