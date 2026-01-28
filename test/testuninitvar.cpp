@@ -2035,7 +2035,7 @@ private:
                        "        return;\n"
                        "    char c = *s;\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory is allocated but not initialized: s\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:15]: (error) Memory is allocated but not initialized: s [uninitdata]\n", errout_str());
 
         // #3708 - false positive when using ptr typedef
         checkUninitVar("void f() {\n"
