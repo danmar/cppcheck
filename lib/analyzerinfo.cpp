@@ -25,6 +25,7 @@
 
 #include <cstring>
 #include <exception>
+#include <iostream>
 #include <map>
 #include <sstream>
 #include <utility>
@@ -84,29 +85,48 @@ void AnalyzerInformation::close()
     }
 }
 
-bool AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors)
+bool AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors, bool debug)
 {
     const tinyxml2::XMLElement * const rootNode = analyzerInfoDoc.FirstChildElement();
-    if (rootNode == nullptr)
+    if (rootNode == nullptr) {
+        if (debug)
+            std::cout << "discarding cached result - no root node found" << std::endl;
         return false;
+    }
 
-    const char *attr = rootNode->Attribute("hash");
-    if (!attr || attr != std::to_string(hash))
+    const char * const attr = rootNode->Attribute("hash");
+    if (!attr) {
+        if (debug)
+            std::cout << "discarding cached result - no 'hash' attribute found" << std::endl;
         return false;
-
-    // Check for invalid license error or internal error, in which case we should retry analysis
-    for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(), "error") == 0 &&
-            (e->Attribute("id", "premium-invalidLicense") ||
-             e->Attribute("id", "premium-internalError") ||
-             e->Attribute("id", "internalError")
-            ))
-            return false;
+    }
+    if (attr != std::to_string(hash)) {
+        if (debug)
+            std::cout << "discarding cached result - hash mismatch" << std::endl;
+        return false;
     }
 
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(), "error") == 0)
-            errors.emplace_back(e);
+        if (std::strcmp(e->Name(), "error") != 0)
+            continue;
+
+        // Check for invalid license error or internal error, in which case we should retry analysis
+        static std::array<const char*, 3> s_ids{
+            "premium-invalidLicense",
+            "premium-internalError",
+            "internalError"
+        };
+        for (const auto* id : s_ids)
+        {
+            if (e->Attribute("id", id)) {
+                if (debug)
+                    std::cout << "discarding cached result - '" << id << "' encountered" << std::endl;
+                errors.clear();
+                return false;
+            }
+        }
+
+        errors.emplace_back(e);
     }
 
     return true;
@@ -145,24 +165,39 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
     return Path::join(buildDir, std::move(filename)) + ".analyzerinfo";
 }
 
-bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, int fileIndex, std::size_t hash, std::list<ErrorMessage> &errors)
+bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, int fileIndex, std::size_t hash, std::list<ErrorMessage> &errors, bool debug)
 {
+    if (mOutputStream.is_open())
+        throw std::runtime_error("analyzer information file is already open");
+
     if (buildDir.empty() || sourcefile.empty())
         return true;
-    close();
 
     const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg,fileIndex);
 
-    tinyxml2::XMLDocument analyzerInfoDoc;
-    const tinyxml2::XMLError xmlError = analyzerInfoDoc.LoadFile(analyzerInfoFile.c_str());
-    if (xmlError == tinyxml2::XML_SUCCESS && skipAnalysis(analyzerInfoDoc, hash, errors))
-        return false;
+    {
+        tinyxml2::XMLDocument analyzerInfoDoc;
+        const tinyxml2::XMLError xmlError = analyzerInfoDoc.LoadFile(analyzerInfoFile.c_str());
+        if (xmlError == tinyxml2::XML_SUCCESS) {
+            if (skipAnalysis(analyzerInfoDoc, hash, errors, debug)) {
+                if (debug)
+                    std::cout << "skipping analysis - loaded " << errors.size() << " cached finding(s) from '" << analyzerInfoFile << "'" << std::endl;
+                return false;
+            }
+        }
+        else if (xmlError != tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
+            if (debug)
+                std::cout << "discarding cached result - failed to load '" << analyzerInfoFile << "' (" << tinyxml2::XMLDocument::ErrorIDToName(xmlError) << ")" << std::endl;
+        }
+        else if (debug)
+            std::cout << "no cached result '" << analyzerInfoFile << "' found" << std::endl;
+    }
 
     mOutputStream.open(analyzerInfoFile);
-    if (mOutputStream.is_open()) {
-        mOutputStream << "<?xml version=\"1.0\"?>\n";
-        mOutputStream << "<analyzerinfo hash=\"" << hash << "\">\n";
-    }
+    if (!mOutputStream.is_open())
+        throw std::runtime_error("failed to open '" + analyzerInfoFile + "'");
+    mOutputStream << "<?xml version=\"1.0\"?>\n";
+    mOutputStream << "<analyzerinfo hash=\"" << hash << "\">\n";
 
     return true;
 }
@@ -179,6 +214,7 @@ void AnalyzerInformation::setFileInfo(const std::string &check, const std::strin
         mOutputStream << "  <FileInfo check=\"" << check << "\">\n" << fileInfo << "  </FileInfo>\n";
 }
 
+// TODO: report errors
 bool AnalyzerInformation::Info::parse(const std::string& filesTxtLine) {
     const std::string::size_type sep1 = filesTxtLine.find(sep);
     if (sep1 == std::string::npos)
@@ -206,6 +242,7 @@ bool AnalyzerInformation::Info::parse(const std::string& filesTxtLine) {
     return true;
 }
 
+// TODO: how to report errors properly?
 // TODO: bail out on unexpected data
 void AnalyzerInformation::processFilesTxt(const std::string& buildDir, const std::function<void(const char* checkattr, const tinyxml2::XMLElement* e, const Info& filesTxtInfo)>& handler)
 {
@@ -215,6 +252,7 @@ void AnalyzerInformation::processFilesTxt(const std::string& buildDir, const std
     while (std::getline(fin, filesTxtLine)) {
         AnalyzerInformation::Info filesTxtInfo;
         if (!filesTxtInfo.parse(filesTxtLine)) {
+            std::cerr << "failed to parse '" + filesTxtLine + "' from '" + filesTxt + "'";
             return;
         }
 
@@ -222,21 +260,32 @@ void AnalyzerInformation::processFilesTxt(const std::string& buildDir, const std
 
         tinyxml2::XMLDocument doc;
         const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
-        if (error != tinyxml2::XML_SUCCESS)
+        if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
             return;
 
-        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
-        if (rootNode == nullptr)
+        if (error != tinyxml2::XML_SUCCESS) {
+            std::cerr << "failed to load '" + xmlfile + "' from '" + filesTxt + "'";
             return;
+        }
+
+        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
+        if (rootNode == nullptr) {
+            std::cerr << "no root node found in '" + xmlfile + "' from '" + filesTxt + "'";
+            continue;
+        }
 
         for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
             if (std::strcmp(e->Name(), "FileInfo") != 0)
                 continue;
             const char *checkattr = e->Attribute("check");
-            if (checkattr == nullptr)
+            if (checkattr == nullptr) {
+                std::cerr << "'check' attribute missing in 'FileInfo' in '" + xmlfile + "' from '" + filesTxt + "'";
                 continue;
+            }
             handler(checkattr, e, filesTxtInfo);
         }
     }
+
+    // TODO: error on empty file?
 }
 

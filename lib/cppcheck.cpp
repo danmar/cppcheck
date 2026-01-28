@@ -974,7 +974,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     mLogger->setAnalyzerInfo(nullptr);
 
                     std::list<ErrorMessage> errors;
-                    analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors);
+                    analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors, mSettings.debugainfo);
                     analyzerInformation->setFileInfo("CheckUnusedFunctions", mUnusedFunctionsCheck->analyzerInfo(tokenizer));
                     analyzerInformation->close();
                 }
@@ -1020,7 +1020,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             // Calculate hash so it can be compared with old hash / future hashes
             const std::size_t hash = calculateHash(preprocessor, file.spath());
             std::list<ErrorMessage> errors;
-            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors)) {
+            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors, mSettings.debugainfo)) {
                 while (!errors.empty()) {
                     mErrorLogger.reportErr(errors.front());
                     errors.pop_front();
