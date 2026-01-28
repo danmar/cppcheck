@@ -10443,7 +10443,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
     if (!mSettings.platform.isWindows())
         return;
 
-    const bool ansi = mSettings.platform.type == Platform::Type::Win32A;
+    const bool ansi = (mSettings.platform.type == Platform::Type::Win32A); // TODO: check for UNICODE define instead
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->strAt(1) != "(")
             continue;
