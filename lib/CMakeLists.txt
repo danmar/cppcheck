@@ -1,3 +1,7 @@
+if(BUILD_CORE_DLL)
+    set(BUILD_SHARED_LIBS On)
+endif()
+
 file(GLOB_RECURSE hdrs "*.h")
 file(GLOB_RECURSE srcs "*.cpp")
 
@@ -61,4 +65,10 @@ endif()
 
 if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(cppcheck-core PRIVATE precompiled.h)
+endif()
+
+if(BUILD_CORE_DLL)
+    install(TARGETS cppcheck-core
+        RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+        COMPONENT applications)
 endif()
