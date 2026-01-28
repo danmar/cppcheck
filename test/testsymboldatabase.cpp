@@ -464,6 +464,7 @@ private:
         TEST_CASE(enum17);
         TEST_CASE(enum18);
         TEST_CASE(enum19);
+        TEST_CASE(enum20); // #14419
 
         TEST_CASE(struct1);
 
@@ -6857,6 +6858,23 @@ private:
             const Token* K = Token::findsimplematch(J, "K");
             ASSERT(K && K->valueType() && K->valueType()->isEnum());
             ASSERT_EQUALS(K->valueType()->type, ValueType::CHAR);
+        }
+    }
+
+    void enum20() { // #14419
+        {
+            GET_SYMBOL_DB("enum class myclass : uint8_t { A = 0U };\n");
+            const Token *A = Token::findsimplematch(tokenizer.tokens(), "A");
+            ASSERT(A && A->valueType() && A->valueType()->isEnum());
+            ASSERT_EQUALS_ENUM(ValueType::CHAR, A->valueType()->type);
+            ASSERT_EQUALS_ENUM(ValueType::UNSIGNED, A->valueType()->sign);
+        }
+        {
+            GET_SYMBOL_DB("enum myclass : uint8_t { A = 0U };\n");
+            const Token *A = Token::findsimplematch(tokenizer.tokens(), "A");
+            ASSERT(A && A->valueType() && A->valueType()->isEnum());
+            ASSERT_EQUALS_ENUM(ValueType::CHAR, A->valueType()->type);
+            ASSERT_EQUALS_ENUM(ValueType::UNSIGNED, A->valueType()->sign);
         }
     }
 
