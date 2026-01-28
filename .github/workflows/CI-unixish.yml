@@ -154,7 +154,7 @@ jobs:
       - name: Run CMake on ubuntu (no CLI)
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          cmake -S . -B cmake.output_nocli -G "Unix Makefiles" -DBUILD_CLI=Off
+          cmake -S . -B cmake.output_nocli -G "Unix Makefiles" -DBUILD_TESTING=Off -DBUILD_CLI=Off
 
       - name: Run CMake on ubuntu (no CLI / with tests)
         if: matrix.os == 'ubuntu-22.04'
@@ -169,18 +169,18 @@ jobs:
       - name: Run CMake on ubuntu (no CLI / with GUI)
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          cmake -S . -B cmake.output_nocli_gui -G "Unix Makefiles" -DBUILD_CLI=Off -DBUILD_GUI=On
+          cmake -S . -B cmake.output_nocli_gui -G "Unix Makefiles" -DBUILD_TESTING=Off -DBUILD_CLI=Off -DBUILD_GUI=On
 
       - name: Run CMake on ubuntu (no GUI)
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          cmake -S . -B cmake.output_nogui -G "Unix Makefiles" -DBUILD_GUI=Off
+          cmake -S . -B cmake.output_nogui -G "Unix Makefiles" -DBUILD_TESTING=Off -DBUILD_GUI=Off
 
       - name: Run CMake on ubuntu (no GUI / with triage)
         if: matrix.os == 'ubuntu-22.04'
         run: |
           # cannot build triage without GUI
-          if cmake -S . -B cmake.output_nogui_triage -G "Unix Makefiles" -DBUILD_GUI=Off -DBUILD_TRIAGE=On; then
+          if cmake -S . -B cmake.output_nogui_triage -G "Unix Makefiles" -DBUILD_TESTING=Off -DBUILD_GUI=Off -DBUILD_TRIAGE=On; then
             exit 1
           else
             exit 0
@@ -189,7 +189,7 @@ jobs:
       - name: Run CMake on ubuntu (no CLI / no GUI)
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          cmake -S . -B cmake.output_nocli_nogui -G "Unix Makefiles" -DBUILD_GUI=Off
+          cmake -S . -B cmake.output_nocli_nogui -G "Unix Makefiles" -DBUILD_TESTING=Off -DBUILD_GUI=Off
 
   build_cmake_cxxstd:
 
@@ -373,7 +373,7 @@ jobs:
         run: |
           # make sure we fail when Boost is requested and not available.
           # will fail because no package configuration is available.
-          if cmake -S . -B cmake.output.boost-force-noavail -G "Unix Makefiles" -DUSE_BOOST=On; then
+          if cmake -S . -B cmake.output.boost-force-noavail -G "Unix Makefiles" -DBUILD_TESTING=Off -DUSE_BOOST=On; then
             exit 1
           else
             exit 0
@@ -386,12 +386,12 @@ jobs:
 
       - name: Run CMake on macOS (force Boost)
         run: |
-          cmake -S . -B cmake.output.boost-force -G "Unix Makefiles" -DUSE_BOOST=On
+          cmake -S . -B cmake.output.boost-force -G "Unix Makefiles" -DBUILD_TESTING=Off -DUSE_BOOST=On
 
       - name: Run CMake on macOS (no Boost)
         run: |
           # make sure Boost is not used when disabled even though it is available
-          cmake -S . -B cmake.output.boost-no -G "Unix Makefiles" -DUSE_BOOST=Off
+          cmake -S . -B cmake.output.boost-no -G "Unix Makefiles" -DBUILD_TESTING=Off -DUSE_BOOST=Off
           if grep -q '\-DHAVE_BOOST' ./cmake.output.boost-no/compile_commands.json; then
             exit 1
           else
