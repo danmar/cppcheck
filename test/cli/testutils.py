@@ -247,6 +247,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
         cache_content = get_cache_contents()
 
+        # TODO: check that the cached results were actually used - run with --debug-analyzerinfo, check timestamps, etc.
         return_code_1, stdout_1, stderr_1 = run_cppcheck()
 
         # TODO: the following asserts do not show a diff when the test fails
