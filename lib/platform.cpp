@@ -62,79 +62,17 @@ bool Platform::set(Type t)
         return true;
     case Type::Win32W:
     case Type::Win32A:
-        type = t;
-        windows = true;
-        sizeof_bool = 1; // 4 in Visual C++ 4.2
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 4;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 8;
-        sizeof_wchar_t = 2;
-        sizeof_size_t = 4;
-        sizeof_pointer = 4;
-        defaultSign = 's';
-        char_bit = 8;
-        calculateBitMembers();
-        return true;
     case Type::Win64:
-        type = t;
-        windows = true;
-        sizeof_bool = 1;
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 4;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 8;
-        sizeof_wchar_t = 2;
-        sizeof_size_t = 8;
-        sizeof_pointer = 8;
-        defaultSign = 's';
-        char_bit = 8;
-        calculateBitMembers();
-        return true;
     case Type::Unix32:
-        type = t;
-        windows = false;
-        sizeof_bool = 1;
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 4;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 12;
-        sizeof_wchar_t = 4;
-        sizeof_size_t = 4;
-        sizeof_pointer = 4;
-        defaultSign = 's';
-        char_bit = 8;
-        calculateBitMembers();
-        return true;
     case Type::Unix64:
         type = t;
-        windows = false;
-        sizeof_bool = 1;
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 8;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 16;
-        sizeof_wchar_t = 4;
-        sizeof_size_t = 8;
-        sizeof_pointer = 8;
-        defaultSign = 's';
-        char_bit = 8;
+        // read from platform file
         calculateBitMembers();
         return true;
     case Type::File:
+        type = t;
         // sizes are not set.
+        calculateBitMembers();
         return false;
     }
     // unsupported platform
@@ -144,29 +82,58 @@ bool Platform::set(Type t)
 bool Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool debug)
 {
     // TODO: needs to be invalidated in case it was already set
-    if (platformstr == "win32A")
-        set(Type::Win32A);
-    else if (platformstr == "win32W")
-        set(Type::Win32W);
-    else if (platformstr == "win64")
-        set(Type::Win64);
-    else if (platformstr == "unix32")
-        set(Type::Unix32);
-    else if (platformstr == "unix64")
-        set(Type::Unix64);
-    else if (platformstr == "native")
-        set(Type::Native);
-    else if (platformstr == "unspecified")
-        set(Type::Unspecified);
+    Type t;
+    std::string platformFile;
+
+    if (platformstr == "win32A") {
+        // TODO: deprecate if we have proper UNICODE support in win32.cfg
+        //std::cout << "Platform 'win32A' is deprecated and will be removed in a future version." << std::endl;
+        t = Type::Win32A;
+        platformFile = "win32";
+    }
+    else if (platformstr == "win32W") {
+        // TODO: deprecate if we have proper UNICODE support in win32.cfg
+        //std::cout << "Platform 'win32W' is deprecated and will be removed in a future version." << std::endl;
+        t = Type::Win32W;
+        platformFile = "win32";
+    }
+    else if (platformstr == "win32") {
+        t = Type::Win32A;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "win64") {
+        t = Type::Win64;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "unix32") {
+        t = Type::Unix32;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "unix64") {
+        t = Type::Unix64;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "native") {
+        t = Type::Native;
+    }
+    else if (platformstr == "unspecified") {
+        t = Type::Unspecified;
+    }
     else if (paths.empty()) {
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;
     }
-    else if (!loadFromFile(paths, platformstr, debug)) {
-        errstr = "unrecognized platform: '" + platformstr + "'.";
+    else {
+        t = Type::File;
+        platformFile = platformstr;
+    }
+
+    if (!platformFile.empty() && !loadFromFile(paths, platformFile, debug)) {
+        errstr = "unrecognized platform: '" + platformFile + "'.";
         return false;
     }
 
+    set(t);
     return true;
 }
 
@@ -268,6 +235,7 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     if (!rootnode || std::strcmp(rootnode->Name(), "platform") != 0)
         return false;
 
+    // TODO: warn about missing fields
     bool error = false;
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const char* name = node->Name();

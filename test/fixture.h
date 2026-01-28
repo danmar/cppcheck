@@ -344,6 +344,6 @@ protected:
 #define REGISTER_TEST( CLASSNAME ) namespace { class CLASSNAME ## Instance : public TestInstance { public: CLASSNAME ## Instance() : TestInstance(#CLASSNAME) {} TestFixture* create() override { impl.reset(new CLASSNAME); return impl.get(); } }; CLASSNAME ## Instance instance_ ## CLASSNAME; }
 // *INDENT-ON*
 
-#define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {exename}), errstr); } while (false)
+#define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {Path::getPathFromFilename(exename)}), errstr); } while (false)
 
 #endif // fixtureH
