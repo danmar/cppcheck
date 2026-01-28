@@ -107,7 +107,7 @@ def test_addon_relative_path():
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
     assert stdout == ('Checking %s ...\n'
-                      'Checking %s: SOME_CONFIG...\n' % (filename, filename))
+                      'Checking %s: SOME_CONFIG=SOME_CONFIG...\n' % (filename, filename))
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
                       '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
@@ -125,7 +125,7 @@ def test_addon_with_gui_project(tmp_path):
     assert ret == 0, stdout
     assert stdout.strip().split('\n') == [
         'Checking %s ...' % filename,
-        'Checking %s: SOME_CONFIG...' % filename
+        'Checking %s: SOME_CONFIG=SOME_CONFIG...' % filename
     ]
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
                       '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
