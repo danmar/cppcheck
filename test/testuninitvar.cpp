@@ -2139,6 +2139,24 @@ private:
                        "        *(p + i) = 0;\n"
                        "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkUninitVar("int* f() {\n" // #14448
+                       "    int* p = (int*)malloc(4);\n"
+                       "    if (!p)\n"
+                       "        return nullptr;\n"
+                       "    if (*p) {}\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5:9]: (error) Memory is allocated but not initialized: *p [uninitdata]\n", errout_str());
+
+        checkUninitVar("int* f() {\n"
+                       "    int* p = (int*)malloc(4);\n"
+                       "    if (p == nullptr)\n"
+                       "        return nullptr;\n"
+                       "    if (*p) {}\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5:9]: (error) Memory is allocated but not initialized: *p [uninitdata]\n", errout_str());
     }
 
     // class / struct..
