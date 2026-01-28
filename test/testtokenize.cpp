@@ -420,6 +420,7 @@ private:
         TEST_CASE(astdesignatedinit);
         TEST_CASE(astrvaluedecl);
         TEST_CASE(astorkeyword);
+        TEST_CASE(astenumdecl);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7371,6 +7372,11 @@ private:
 
     void astorkeyword() {
         ASSERT_EQUALS("ifsp.\"\"==sp.0==||(", testAst("void f() { if (s.p == \"\" or s.p == 0) {} }"));
+    }
+
+    void astenumdecl() {
+        ASSERT_EQUALS("A0U=", testAst("enum class myclass : unsigned char { A = 0U, };"));
+        ASSERT_EQUALS("A0U=", testAst("enum myclass : unsigned char { A = 0U, };"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)

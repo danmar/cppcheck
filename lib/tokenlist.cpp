@@ -1585,6 +1585,13 @@ static Token * createAstAtToken(Token *tok)
         if (Token::Match(tok2, "%var% [;,)]"))
             return tok2;
     }
+    if (Token::Match(tok, "enum class| %name%| :")) {
+        if (Token::simpleMatch(tok->next(), "class"))
+            tok = tok->next();
+        if (Token::Match(tok->next(), "%name%"))
+            tok = tok->next();
+        return tok->next();
+    }
     if (Token *const endTok = skipMethodDeclEnding(tok)) {
         Token *tok2 = tok;
         do {

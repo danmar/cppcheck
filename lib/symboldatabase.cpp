@@ -6849,7 +6849,7 @@ void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, cons
         if (valuetype.type == ValueType::Type::UNKNOWN_TYPE)
             valuetype.fromLibraryType(type->expressionString(), mSettings);
 
-        if (valuetype.isIntegral()) {
+        if (valuetype.sign == ValueType::UNKNOWN_SIGN && valuetype.isIntegral()) {
             if (type->isSigned())
                 valuetype.sign = ValueType::Sign::SIGNED;
             else if (type->isUnsigned())
