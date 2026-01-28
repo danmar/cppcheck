@@ -22,6 +22,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
 #include "path.h"
 #include "platform.h"
 #include "settings.h"
@@ -413,17 +414,21 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
 
     if (len == 3 && cond->name && (next1->str() == "==" || next1->str() == "<=" || next1->str() == ">=") && next2->number) {
         if (defined.find(cond->str()) == defined.end())
-            return cond->str() + '=' + cond->next->next->str();
+            return cond->str() + '=' + next1->next->str();
     }
+
+    const auto lessGreaterThanConfig = [](const simplecpp::Token* dtok, const simplecpp::Token* ctok) {
+        int v = MathLib::toBigNumber(ctok->next->str());
+        if (ctok->op == '<')
+            v -= 1;
+        else
+            v += 1;
+        return dtok->str() + '=' + std::to_string(v);
+    };
 
     if (len == 3 && cond->name && (next1->op == '<' || next1->op == '>') && next2->number) {
         if (defined.find(cond->str()) == defined.end()) {
-            int v = strToInt<int>(cond->next->next->str());
-            if (next1->op == '<')
-                v -= 1;
-            else
-                v += 1;
-            return cond->str() + '=' + std::to_string(v);
+            return lessGreaterThanConfig(cond, next1);
         }
     }
 
@@ -437,15 +442,33 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             configset.insert(cond->next->str() + "=0");
             continue;
         }
-        if (cond->str() != "defined")
+        if (cond->str() == "==" || cond->str() == "<=" || cond->str() == ">=") {
+            if (cond->next->number) {
+                const simplecpp::Token *dtok = cond->previous;
+                if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
+                    configset.insert(dtok->str() + '=' + cond->next->str());
+            }
             continue;
-        const simplecpp::Token *dtok = cond->next;
-        if (!dtok)
-            break;
-        if (dtok->op == '(')
-            dtok = dtok->next;
-        if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
-            configset.insert(dtok->str());
+        }
+        if (cond->op == '<' || cond->op == '>') {
+            if (cond->next->number) {
+                const simplecpp::Token *dtok = cond->previous;
+                if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end()) {
+                    configset.insert(lessGreaterThanConfig(dtok, cond));
+                }
+            }
+            continue;
+        }
+        if (cond->str() == "defined") {
+            const simplecpp::Token *dtok = cond->next;
+            if (!dtok)
+                break;
+            if (dtok->op == '(')
+                dtok = dtok->next;
+            if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
+                configset.insert(dtok->str());
+            continue;
+        }
     }
     std::string cfgStr;
     for (const std::string &s : configset) {
