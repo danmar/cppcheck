@@ -569,7 +569,14 @@ private:
                                "  std::cout << *p << 1;\n"
                                "}");
                 ASSERT_EQUALS("[test.cpp:3:17]: (error) Uninitialized variable: p [legacyUninitvar]\n", errout_str());
-            }
+            }           
+
+            checkUninitVar("void f() {\n" // #13908
+                           "    int* i = new int;\n"
+                           "    std::cout << i << \", \" << *i;\n"
+                           "    delete i;\n"
+                           "}\n";
+            ASSERT_EQUALS("[test.cpp:3:32]: (error) Memory is allocated but not initialized: i [uninitdata]\n", errout_str());
         }
 
         // #8494 : Overloaded & operator
@@ -3163,21 +3170,13 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void uninitvar12() {
-        const char code[] = "void fp() {\n" // 10218
+    void uninitvar12() { // 10218
+        const char code[] = "void fp() {\n"
                             "  std::stringstream ss;\n"
                             "  for (int i; ss >> i;) {}\n"
                             "}";
         checkUninitVar(code);
         ASSERT_EQUALS("", errout_str());
-
-        const char code2[] = "void f() {\n" // #13908
-                             "    int* i = new int;\n"
-                             "    std::cout << i << \", \" << *i;\n"
-                             "    delete i;\n"
-                            "}\n";
-        checkUninitVar(code2);
-        ASSERT_EQUALS("[test.cpp:3:32]: (error) Memory is allocated but not initialized: i [uninitdata]\n", errout_str());
     }
 
     void uninitvar13() { // #9772 - FP
