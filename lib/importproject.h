@@ -64,6 +64,7 @@ public:
         FAILURE,
         COMPILE_DB,
         VS_SLN,
+        VS_SLNX,
         VS_VCXPROJ,
         BORLAND,
         CPPCHECK_GUI
@@ -114,6 +115,7 @@ private:
     };
 
     bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
+    bool importSlnx(const std::string& filename, const std::vector<std::string>& fileFilters);
     SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
