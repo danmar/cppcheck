@@ -3163,13 +3163,21 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void uninitvar12() { // 10218
-        const char code[] = "void fp() {\n"
+    void uninitvar12() {
+        const char code[] = "void fp() {\n" // 10218
                             "  std::stringstream ss;\n"
                             "  for (int i; ss >> i;) {}\n"
                             "}";
         checkUninitVar(code);
         ASSERT_EQUALS("", errout_str());
+
+        const char code2[] = "void f() {\n" // #13908
+                             "    int* i = new int;\n"
+                             "    std::cout << i << \", \" << *i;\n"
+                             "    delete i;\n"
+                            "}\n";
+        checkUninitVar(code2);
+        ASSERT_EQUALS("[test.cpp:3:32]: (error) Memory is allocated but not initialized: i [uninitdata]\n", errout_str());
     }
 
     void uninitvar13() { // #9772 - FP
