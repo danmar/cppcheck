@@ -348,9 +348,9 @@ QString ThreadHandler::buildThreadDetailsText() const
 
     for (const auto &details : mThreadDetails) {
         result += QString("Thread %1 (%2): %3\n")
-            .arg(details.second.index)
-            .arg(details.second.startTime.toString(Qt::TextDate))
-            .arg(QString::fromStdString(details.second.file));
+                  .arg(details.second.index)
+                  .arg(details.second.startTime.toString(Qt::TextDate))
+                  .arg(QString::fromStdString(details.second.file));
     }
 
     return result;

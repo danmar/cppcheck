@@ -4,7 +4,7 @@
 #include <QWidget>
 
 namespace Ui {
-class ThreadDetails;
+    class ThreadDetails;
 }
 
 class ThreadDetails : public QWidget
