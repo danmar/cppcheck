@@ -4871,6 +4871,8 @@ void Tokenizer::setVarIdPass1()
                                               mTemplateSimplifier->getUsedVariables(),
                                               variableMap.map(true),
                                               mTemplateVarIdUsage);
+                        if (!tok3->next())
+                            syntaxError(tok3);
                     }
                 }
 
