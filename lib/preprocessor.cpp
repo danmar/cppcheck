@@ -200,6 +200,8 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
 
     bool onlyComments = true;
 
+    polyspace::Parser polyspaceParser(settings);
+
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment) {
             onlyComments = false;
@@ -207,20 +209,24 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         }
 
         std::list<SuppressionList::Suppression> inlineSuppressions;
-        if (!parseInlineSuppressionCommentToken(tokens, tok, inlineSuppressions, bad))
-            continue;
+        if (polyspace::isPolyspaceComment(tok->str())) {
+            inlineSuppressions = polyspaceParser.parse(tok->str(), tok->location.line, getRelativeFilename(tokens, tok, settings));
+        } else {
+            if (!parseInlineSuppressionCommentToken(tokens, tok, inlineSuppressions, bad))
+                continue;
 
-        if (!sameline(tok->previous, tok)) {
-            // find code after comment..
-            if (tok->next) {
-                tok = tok->next;
+            if (!sameline(tok->previous, tok)) {
+                // find code after comment..
+                if (tok->next) {
+                    tok = tok->next;
 
-                while (tok->comment) {
-                    parseInlineSuppressionCommentToken(tokens, tok, inlineSuppressions, bad);
-                    if (tok->next) {
-                        tok = tok->next;
-                    } else {
-                        break;
+                    while (tok->comment) {
+                        parseInlineSuppressionCommentToken(tokens, tok, inlineSuppressions, bad);
+                        if (tok->next) {
+                            tok = tok->next;
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
@@ -249,8 +255,9 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         for (SuppressionList::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
 
-            if (SuppressionList::Type::blockBegin == suppr.type)
-            {
+            if (SuppressionList::Type::block == suppr.type) {
+                suppressions.addSuppression(std::move(suppr));
+            } else if (SuppressionList::Type::blockBegin == suppr.type) {
                 inlineSuppressionsBlockBegin.push_back(std::move(suppr));
             } else if (SuppressionList::Type::blockEnd == suppr.type) {
                 bool throwError = true;
