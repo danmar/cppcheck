@@ -4806,6 +4806,19 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #14392
+              "    bool g() const { return m; }\n"
+              "    bool m{};\n"
+              "};\n"
+              "bool f(S s) {\n"
+              "    if (s.g()) {\n"
+              "        bool b = s.g();\n"
+              "        return b;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6:12] -> [test.cpp:7:21]: (style) Assigned value 's.g()' is always true [knownConditionTrueFalse]\n", errout_str());
     }
 
     void alwaysTrueSymbolic()

@@ -40,5 +40,6 @@ naming-privateMemberVariable:externals/tinyxml2/tinyxml2.h
 functionStatic:externals/tinyxml2/tinyxml2.cpp
 funcArgNamesDifferent:externals/tinyxml2/tinyxml2.cpp
 nullPointerRedundantCheck:externals/tinyxml2/tinyxml2.cpp
+knownConditionTrueFalse:externals/tinyxml2/tinyxml2.cpp
 useStlAlgorithm:externals/simplecpp/simplecpp.cpp
 missingMemberCopy:externals/simplecpp/simplecpp.h
