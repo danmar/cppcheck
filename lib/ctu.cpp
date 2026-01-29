@@ -559,6 +559,20 @@ static bool findPath(const std::string &callId,
     return false;
 }
 
+static std::string getInvalidValueString(CTU::FileInfo::InvalidValueType invalidValue)
+{
+    using InvalidValueType = CTU::FileInfo::InvalidValueType;
+    switch (invalidValue) {
+    case InvalidValueType::null:
+        return "null";
+    case InvalidValueType::uninit:
+        return "uninitialized";
+    case InvalidValueType::bufferOverflow:
+        return "accessed out of bounds";
+    }
+    cppcheck::unreachable();
+}
+
 std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueType invalidValue,
                                                                   const CTU::FileInfo::UnsafeUsage &unsafeUsage,
                                                                   const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
@@ -581,7 +595,7 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
 
     std::list<ErrorMessage::FileLocation> locationList;
 
-    const std::string value1 = (invalidValue == InvalidValueType::null) ? "null" : "uninitialized";
+    const std::string value1 = getInvalidValueString(invalidValue);
 
     for (int index = 9; index >= 0; index--) {
         if (!path[index])
