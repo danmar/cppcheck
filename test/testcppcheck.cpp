@@ -618,7 +618,7 @@ private:
         // the internal errorlist is cleared after each check() call
         ASSERT_EQUALS(1, errorLogger.errmsgs.size());
         auto it = errorLogger.errmsgs.cbegin();
-        ASSERT_EQUALS("test.cpp:0:0: information: The configuration 'X' was not checked because its code equals another one. [purgedConfiguration]",
+        ASSERT_EQUALS("test.cpp:0:0: information: The configuration 'X=X' was not checked because its code equals another one. [purgedConfiguration]",
                       it->toString(false, templateFormat, ""));
     }
 
