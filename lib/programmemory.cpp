@@ -194,10 +194,34 @@ void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred
     if (mValues->empty())
         return;
 
-    // TODO: how to delay until we actuallly modify?
-    copyOnWrite();
+    auto it = std::find_if(mValues->cbegin(), mValues->cend(), [&pred](const std::pair<const ExprIdToken, ValueFlow::Value>& entry) {
+        return pred(entry.first);
+    });
+    if (it == mValues->cend())
+        return;
 
-    for (auto it = mValues->begin(); it != mValues->end();) {
+    // remove the (first) matching entry
+    if (mValues.use_count() == 1)
+    {
+        it = mValues->erase(it);
+    }
+    else
+    {
+        const auto& exprIdTok = it->first;
+
+        copyOnWrite();
+
+        it = mValues->cbegin();
+        for (; it != mValues->cend(); ++it) {
+            if (it->first == exprIdTok) {
+                it = mValues->erase(it);
+                break;
+            }
+        }
+    }
+
+    // remove the remaining matches
+    for (; it != mValues->cend();) {
         if (pred(it->first))
             it = mValues->erase(it);
         else
