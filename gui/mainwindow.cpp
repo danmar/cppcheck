@@ -53,6 +53,7 @@
 #include "threadresult.h"
 #include "translationhandler.h"
 #include "utils.h"
+#include "threaddetails.h"
 
 #include "ui_mainwindow.h"
 
@@ -183,6 +184,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI->mActionShowHidden, &QAction::triggered, mUI->mResults, &ResultsView::showHiddenResults);
     connect(mUI->mActionViewStats, &QAction::triggered, this, &MainWindow::showStatistics);
     connect(mUI->mActionLibraryEditor, &QAction::triggered, this, &MainWindow::showLibraryEditor);
+    connect(mUI->mActionShowThreadDetails, &QAction::triggered, this, &MainWindow::showThreadDetails);
 
     connect(mUI->mActionReanalyzeModified, &QAction::triggered, this, &MainWindow::reAnalyzeModified);
     connect(mUI->mActionReanalyzeAll, &QAction::triggered, this, &MainWindow::reAnalyzeAll);
@@ -2107,6 +2109,15 @@ void MainWindow::showLibraryEditor()
 {
     LibraryDialog libraryDialog(this);
     libraryDialog.exec();
+}
+
+void MainWindow::showThreadDetails()
+{
+    auto *td = new ThreadDetails;
+    connect(mThread, &ThreadHandler::threadDetailsUpdated,
+            td, &ThreadDetails::threadDetailsUpdated, Qt::QueuedConnection);
+    td->show();
+    mThread->emitThreadDetailsUpdated();
 }
 
 void MainWindow::filterResults()

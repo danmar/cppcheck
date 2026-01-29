@@ -192,6 +192,7 @@
     <addaction name="mActionShowScratchpad"/>
     <addaction name="mActionViewStats"/>
     <addaction name="mActionLibraryEditor"/>
+    <addaction name="mActionShowThreadDetails"/>
    </widget>
    <widget class="QMenu" name="mMenuHelp">
     <property name="title">
@@ -1038,6 +1039,14 @@
   <action name="mActionEULA">
    <property name="text">
     <string>EULA...</string>
+   </property>
+  </action>
+  <action name="mActionShowThreadDetails">
+   <property name="text">
+    <string>Thread details</string>
+   </property>
+   <property name="toolTip">
+    <string>Show thread details</string>
    </property>
   </action>
  </widget>
