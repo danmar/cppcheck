@@ -17,7 +17,7 @@
  */
 
 #include "fixture.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 class TestStandards : public TestFixture {
 public:

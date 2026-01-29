@@ -27,7 +27,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 #include <cstddef>
 #include <cstdint>

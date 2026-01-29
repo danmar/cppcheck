@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "summaries.h"
 #include "symboldatabase.h"
 #include "templatesimplifier.h"

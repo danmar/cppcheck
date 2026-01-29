@@ -33,7 +33,7 @@
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "symboldatabase.h"
 #include "timer.h"

@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "settings.h"
 
 #include <cstddef>

@@ -22,7 +22,7 @@
 #include "astutils.h"
 #include "library.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "symboldatabase.h"
 #include "errorlogger.h"
 #include "errortypes.h"

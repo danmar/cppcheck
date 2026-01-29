@@ -20,7 +20,7 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"

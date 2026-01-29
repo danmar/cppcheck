@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 #include <cassert>
 #include <climits>

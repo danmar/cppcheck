@@ -23,7 +23,7 @@
 #include "redirect.h"
 #include "settings.h"
 #include "singleexecutor.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "timer.h"
 

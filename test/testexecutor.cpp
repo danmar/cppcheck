@@ -24,7 +24,7 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 
 #include <list>

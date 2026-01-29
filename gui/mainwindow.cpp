@@ -47,7 +47,7 @@
 #include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "threadhandler.h"
 #include "threadresult.h"

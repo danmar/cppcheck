@@ -24,7 +24,7 @@
 #include "mathlib.h"
 #include "pathanalysis.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"

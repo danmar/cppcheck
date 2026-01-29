@@ -163,7 +163,7 @@
     <ClInclude Include="settings.h" />
     <ClInclude Include="smallvector.h" />
     <ClInclude Include="sourcelocation.h" />
-    <ClInclude Include="standards.h" />
+    <ClInclude Include="cppcheckstd.h" />
     <ClInclude Include="summaries.h" />
     <ClInclude Include="suppressions.h" />
     <ClInclude Include="symboldatabase.h" />

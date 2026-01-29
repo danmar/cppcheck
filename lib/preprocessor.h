@@ -22,7 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 #include <cstddef>
 #include <cstdint>

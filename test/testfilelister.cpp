@@ -21,7 +21,7 @@
 #include "fixture.h"
 #include "path.h"
 #include "pathmatch.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 #include <algorithm>
 #include <list>

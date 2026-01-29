@@ -21,7 +21,7 @@
 #include "importproject.h"
 #include "redirect.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "xml.h"
 

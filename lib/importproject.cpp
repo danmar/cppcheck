@@ -21,7 +21,7 @@
 #include "path.h"
 #include "pathmatch.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "token.h"
 #include "tokenlist.h"

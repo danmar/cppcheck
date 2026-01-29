@@ -21,7 +21,7 @@
 #include "errorlogger.h"
 #include "filesettings.h"
 #include "fixture.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 #include <list>
 #include <sstream>

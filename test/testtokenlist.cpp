@@ -22,7 +22,7 @@
 #include "path.h"
 #include "platform.h"
 #include "preprocessor.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "token.h"
 #include "tokenlist.h"
 
