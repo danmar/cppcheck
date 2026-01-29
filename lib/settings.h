@@ -26,7 +26,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "platform.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "checkers.h"
 
 #include <algorithm>

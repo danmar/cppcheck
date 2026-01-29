@@ -25,7 +25,7 @@
 #include "processexecutor.h"
 #include "redirect.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "timer.h"
 

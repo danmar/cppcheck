@@ -96,7 +96,7 @@
 #include "settings.h"
 #include "smallvector.h"
 #include "sourcelocation.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "symboldatabase.h"
 #include "timer.h"
 #include "token.h"

@@ -18,7 +18,7 @@
 
 #include "filesettings.h"
 #include "fixture.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 class TestFileSettings : public TestFixture {
 public:

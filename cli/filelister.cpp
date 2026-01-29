@@ -25,7 +25,7 @@
 #include "filesettings.h"
 #include "path.h"
 #include "pathmatch.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "utils.h"
 
 #include <cstring>

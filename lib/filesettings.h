@@ -22,7 +22,7 @@
 #include "config.h"
 #include "path.h"
 #include "platform.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 #include <list>
 #include <set>
