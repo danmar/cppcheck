@@ -9107,7 +9107,7 @@ void Tokenizer::findGarbageCode() const
                 syntaxError(tok);
             if (Token::simpleMatch(tok, ": template") && !Token::Match(tok->tokAt(-1), "public|private|protected"))
                 syntaxError(tok);
-            if (Token::Match(tok, "> class|struct|union {") && Token::simpleMatch(tok->linkAt(2), "} ;")) {
+            if (Token::Match(tok, "> class|struct|union {") && Token::simpleMatch(tok->linkAt(2), "} ;"))
                 syntaxError(tok);
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
