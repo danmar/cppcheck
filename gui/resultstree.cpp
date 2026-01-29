@@ -32,6 +32,7 @@
 #include "showtypes.h"
 #include "suppressions.h"
 #include "threadhandler.h"
+#include "utils.h"
 #include "xmlreportv2.h"
 
 #include <algorithm>
@@ -377,9 +378,10 @@ QString ResultsTree::severityToTranslatedString(Severity severity)
         return tr("internal");
 
     case Severity::none:
-    default:
         return QString();
     }
+
+    cppcheck::unreachable();
 }
 
 ResultItem *ResultsTree::findFileItem(const QString &name) const

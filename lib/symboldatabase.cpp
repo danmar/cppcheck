@@ -4065,9 +4065,8 @@ static const char* functionTypeToString(FunctionType type)
         return "Function";
     case FunctionType::eLambda:
         return "Lambda";
-    default:
-        return "Unknown";
     }
+    cppcheck::unreachable();
 }
 
 static std::string tokenToString(const Token* tok, const Tokenizer& tokenizer)

@@ -24,6 +24,7 @@
 #include "config.h"
 #include "mathlib.h"
 #include "standards.h"
+#include "utils.h"
 
 #include <cassert>
 #include <climits>
@@ -194,9 +195,8 @@ public:
             return "unix64";
         case Type::File:
             return "platformFile";
-        default:
-            throw std::runtime_error("unknown platform");
         }
+        cppcheck::unreachable();
     }
 
     long long unsignedCharMax() const {
