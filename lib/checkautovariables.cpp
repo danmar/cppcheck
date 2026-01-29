@@ -263,6 +263,23 @@ static bool hasOverloadedAssignment(const Token* tok, bool& inconclusive)
     return true;
 }
 
+static bool isMemberAssignment(const Token* tok, const Token*& rhs, const Settings& settings)
+{
+    if (!Token::Match(tok, "[;{}] %var% . %var%"))
+        return false;
+    if (!isPtrArg(tok->next()))
+        return false;
+    const Token* assign = tok->tokAt(2)->astParent();
+    while (Token::simpleMatch(assign, "["))
+        assign = assign->astParent();
+    if (!Token::simpleMatch(assign, "="))
+        return false;
+    if (!isAutoVariableRHS(assign->astOperand2(), settings))
+        return false;
+    rhs = assign->astOperand2();
+    return true;
+}
+
 void CheckAutoVariables::autoVariables()
 {
     logChecker("CheckAutoVariables::autoVariables");
@@ -277,6 +294,7 @@ void CheckAutoVariables::autoVariables()
                 continue;
             }
             // Critical assignment
+            const Token* rhs{};
             if (Token::Match(tok, "[;{}] %var% =") && isRefPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(2)->astOperand2(), *mSettings)) {
                 checkAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAutoVariableRHS(tok->tokAt(3)->astOperand2(), *mSettings)) {
@@ -285,12 +303,12 @@ void CheckAutoVariables::autoVariables()
                 if (!hasOverloadedAssignment(lhs, inconclusive) || (printInconclusive && inconclusive))
                     checkAutoVariableAssignment(tok->next(), inconclusive);
                 tok = tok->tokAt(4);
-            } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(4)->astOperand2(), *mSettings)) {
+            } else if (isMemberAssignment(tok, rhs, *mSettings)) {
                 const Token* lhs = tok->tokAt(3);
                 bool inconclusive = false;
                 if (!hasOverloadedAssignment(lhs, inconclusive) || (printInconclusive && inconclusive))
                     checkAutoVariableAssignment(tok->next(), inconclusive);
-                tok = tok->tokAt(5);
+                tok = rhs;
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
                        (isPtrArg(tok->next()) || isArrayArg(tok->next(), *mSettings)) &&
                        isAutoVariableRHS(tok->linkAt(2)->next()->astOperand2(), *mSettings)) {
@@ -330,8 +348,10 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
     if (!startToken)
         startToken = Token::findsimplematch(expr, "=")->next();
     for (const Token *tok = startToken; tok; tok = tok->next()) {
-        if (tok->str() == "}" && tok->scope()->type == ScopeType::eFunction)
+        if (tok->str() == "}" && tok->scope()->type == ScopeType::eFunction) {
             errorAutoVariableAssignment(expr, inconclusive);
+            return true;
+        }
 
         if (Token::Match(tok, "return|throw|break|continue")) {
             errorAutoVariableAssignment(expr, inconclusive);
