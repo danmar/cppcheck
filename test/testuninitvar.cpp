@@ -569,13 +569,13 @@ private:
                                "  std::cout << *p << 1;\n"
                                "}");
                 ASSERT_EQUALS("[test.cpp:3:17]: (error) Uninitialized variable: p [legacyUninitvar]\n", errout_str());
-            }           
+            }
 
             checkUninitVar("void f() {\n" // #13908
                            "    int* i = new int;\n"
                            "    std::cout << i << \", \" << *i;\n"
                            "    delete i;\n"
-                           "}\n";
+                           "}\n");
             ASSERT_EQUALS("[test.cpp:3:32]: (error) Memory is allocated but not initialized: i [uninitdata]\n", errout_str());
         }
 
