@@ -322,6 +322,16 @@ private:
         TEST_CASE(getConfigs15); // #1059
         TEST_CASE(getConfigs16); // #1059
         TEST_CASE(getConfigs17); // #1059
+        TEST_CASE(getConfigs18); // #1059
+        TEST_CASE(getConfigs19); // #1059
+        TEST_CASE(getConfigs20); // #1059
+        TEST_CASE(getConfigs21); // #1059
+        TEST_CASE(getConfigs22); // #1059
+        TEST_CASE(getConfigs23); // #1059
+        TEST_CASE(getConfigs24); // #1059
+        TEST_CASE(getConfigs25); // #1059
+        TEST_CASE(getConfigs26); // #1059
+        TEST_CASE(getConfigs27); // #1059
         TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
@@ -2318,6 +2328,76 @@ private:
 
     void getConfigs17() { // #1059
         const char filedata[] = "#if A < 1\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs18() { // #1059
+        const char filedata[] = "#if A == 1 && defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs19() { // #1059
+        const char filedata[] = "#if A >= 1 && defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs20() { // #1059
+        const char filedata[] = "#if A <= 1 && defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs21() { // #1059
+        const char filedata[] = "#if A > 1 && defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=2;B\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs22() { // #1059
+        const char filedata[] = "#if A < 1 && defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=0;B\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs23() { // #1059
+        const char filedata[] = "#if defined(A) && !defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs24() { // #1059
+        const char filedata[] = "#if !defined(A) && defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nB\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs25() { // #1059
+        const char filedata[] = "#if A == 1 && !defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs26() { // #1059
+        const char filedata[] = "#if A <= 1 && !defined(B)\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs27() { // #1059
+        const char filedata[] = "#if A < 1 && !defined(B)\n"
                                 "1\n"
                                 "#endif\n";
         ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
