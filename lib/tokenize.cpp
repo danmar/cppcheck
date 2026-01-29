@@ -2697,6 +2697,9 @@ namespace {
             return false;
         }
 
+        if (tok1->tokAt(-1)->tokType() == Token::eType || tok1->tokAt(-1)->tokType() == Token::eName)
+            return false;
+
         if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum|namespace")) {
             // fixme
             return false;
