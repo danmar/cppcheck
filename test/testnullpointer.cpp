@@ -3938,7 +3938,7 @@ private:
               "  return s;\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("",
-                           "[test.cpp:6:17]: (warning, inconclusive) Possible null pointer dereference: p [nullPointer]\n",                           
+                           "[test.cpp:6:17]: (warning, inconclusive) Possible null pointer dereference: p [nullPointer]\n",
                            errout_str());
 
         check("void f() {\n" // #11078
