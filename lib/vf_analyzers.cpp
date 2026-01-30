@@ -1202,7 +1202,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
             return false;
         if (value.isImpossible())
             return false;
-        if (isConditional() && !value.isKnown() && !value.isImpossible())
+        if (isConditional() && !value.isKnown())
             return true;
         if (value.isSymbolicValue())
             return false;

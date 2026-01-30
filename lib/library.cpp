@@ -210,7 +210,7 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
     tinyxml2::XMLError error = xml_LoadFile(doc, fullfilename.c_str());
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // only perform further lookups when the given path was not absolute
-        if (!is_abs_path && error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+        if (!is_abs_path)
         {
             std::list<std::string> cfgfolders;
     #ifdef FILESDIR
