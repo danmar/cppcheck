@@ -308,7 +308,7 @@ namespace polyspace {
         Parser() = delete;
         explicit Parser(const Settings &settings);
 
-        std::list<SuppressionList::Suppression> parse(const std::string &comment, int line, const std::string &filename);
+        std::list<SuppressionList::Suppression> parse(const std::string &comment, int line, const std::string &filename) const;
 
         static int parseRange(const std::string& comment, std::string::size_type& pos);
         static std::vector<std::pair<std::string, std::string>> parseFamilyRules(const std::string& comment, std::string::size_type& pos);

@@ -731,7 +731,7 @@ polyspace::CommentKind polyspace::Parser::parseKind(const std::string& comment, 
 }
 
 
-std::list<SuppressionList::Suppression> polyspace::Parser::parse(const std::string &comment, int line, const std::string &filename)
+std::list<SuppressionList::Suppression> polyspace::Parser::parse(const std::string &comment, int line, const std::string &filename) const
 {
     // Syntax for a polyspace suppression:
     // https://se.mathworks.com/help/bugfinder/ug/annotate-hide-known-acceptable-polyspace-results-web-browser.html
