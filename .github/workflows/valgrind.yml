@@ -12,6 +12,10 @@ on:
       - '2.*'
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -57,7 +61,7 @@ jobs:
         # TODO: debuginfod.ubuntu.com is currently not responding to any requests causing it to run into a 40(!) minute timeout
         #env:
         #  DEBUGINFOD_URLS: https://debuginfod.ubuntu.com
-          
+
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
