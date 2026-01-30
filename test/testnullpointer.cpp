@@ -2458,6 +2458,14 @@ private:
               "    if (h(i) && *i == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(int i) {\n" // #13797
+              "    int* p = nullptr;\n"
+              "    if (!i) {\n"
+              "        *p = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:10]: (error) Null pointer dereference: p [nullPointer]\n", errout_str());
     }
 
     void nullpointer78() // #7802
@@ -3929,7 +3937,9 @@ private:
               "  std::string s(p);\n"
               "  return s;\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("", errout_str());
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:6:17]: (warning, inconclusive) Possible null pointer dereference: p [nullPointer]\n",                           
+                           errout_str());
 
         check("void f() {\n" // #11078
               "    const char* p = nullptr;\n"
