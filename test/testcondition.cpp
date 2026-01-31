@@ -4601,11 +4601,7 @@ private:
               "        if (o[1] == '\\0') {}\n"
               "    }\n"
               "}\n");
-        if (std::numeric_limits<char>::is_signed) {
-            ASSERT_EQUALS("[test.cpp:6:18]: (style) Condition 'o[1]=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
-        } else {
-            ASSERT_EQUALS("[test.cpp:4:25] -> [test.cpp:6:18]: (style) Condition 'o[1]=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
-        }
+        ASSERT_EQUALS("[test.cpp:6:18]: (style) Condition 'o[1]=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
 
         check("void f(int x) {\n" // #11449
               "    int i = x;\n"
@@ -5341,11 +5337,7 @@ private:
               "       buffer.back() == '\\n' ||\n"
               "       buffer.back() == '\\0') {}\n"
               "}\n");
-        if (std::numeric_limits<char>::is_signed) {
-            ASSERT_EQUALS("[test.cpp:5:22]: (style) Condition 'buffer.back()=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
-        } else {
-            ASSERT_EQUALS("[test.cpp:3:22] -> [test.cpp:5:22]: (style) Condition 'buffer.back()=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
-        }
+        ASSERT_EQUALS("[test.cpp:5:22]: (style) Condition 'buffer.back()=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
 
         // #9353
         check("struct X { std::string s; };\n"
