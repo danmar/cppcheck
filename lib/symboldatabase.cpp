@@ -7636,9 +7636,7 @@ static const Token* parsedecl(const Token* type,
 
     // Set signedness for integral types..
     if (valuetype->isIntegral() && valuetype->sign == ValueType::Sign::UNKNOWN_SIGN) {
-        if (valuetype->type == ValueType::Type::CHAR)
-            valuetype->sign = defaultSignedness;
-        else if (valuetype->type >= ValueType::Type::SHORT)
+        if (valuetype->type >= ValueType::Type::SHORT)
             valuetype->sign = ValueType::Sign::SIGNED;
     }
 
@@ -8756,7 +8754,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
             return ValueType::MatchResult::UNKNOWN;
     }
 
-    if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
+    if (call->isIntegral() && func->isIntegral() && call->sign != func->sign)
         return ValueType::MatchResult::FALLBACK1;
 
     if (func->reference != Reference::None && (func->constness > call->constness || func->volatileness > call->volatileness))
