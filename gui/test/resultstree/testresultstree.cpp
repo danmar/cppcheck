@@ -93,6 +93,14 @@ void ThreadHandler::stop() {
 void ThreadHandler::threadDone() {
     throw 1;
 }
+// NOLINTBEGIN(performance-unnecessary-value-param)
+void ThreadHandler::startCheck(CheckThread::Details /*unused*/) {
+    throw 1;
+}
+void ThreadHandler::finishCheck(CheckThread::Details /*unused*/) {
+    throw 1;
+}
+// NOLINTEND(performance-unnecessary-value-param)
 Application& ApplicationList::getApplication(const int /*unused*/) {
     throw 1;
 }
@@ -110,7 +118,8 @@ QString XmlReport::unquoteMessage(const QString &message) {
     return message;
 }
 XmlReport::XmlReport(const QString& filename) : Report(filename) {}
-void ThreadResult::fileChecked(const QString & /*unused*/) {
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+void ThreadResult::finishCheck(CheckThread::Details /*unused*/) {
     throw 1;
 }
 void ThreadResult::reportOut(const std::string & /*unused*/, Color /*unused*/) {
