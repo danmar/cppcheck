@@ -57,7 +57,7 @@ class CPPCHECKLIB AnalyzerInformation {
 public:
     ~AnalyzerInformation();
 
-    static void writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings);
+    static void writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings);
 
     /** Close current TU.analyzerinfo file */
     void close();
@@ -80,7 +80,7 @@ public:
     static void processFilesTxt(const std::string& buildDir, const std::function<void(const char* checkattr, const tinyxml2::XMLElement* e, const Info& filesTxtInfo)>& handler);
 
 protected:
-    static std::string getFilesTxt(const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings);
+    static std::string getFilesTxt(const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings);
 
     static std::string getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, int fileIndex);
 

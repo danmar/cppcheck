@@ -395,7 +395,7 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
         std::list<std::string> fileNames;
         for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->path());
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, mFileSettings);
 
         stdLogger.readActiveCheckers();
     }
