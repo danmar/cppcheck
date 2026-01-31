@@ -31,11 +31,13 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
 class Tokenizer;
 class ErrorMessage;
 enum class Certainty : std::uint8_t;
 class FileWithDetails;
+class Settings;
 
 /// @addtogroup Core
 /// @{
@@ -160,6 +162,7 @@ public:
         bool matched{}; /** This suppression was fully matched in an isSuppressed() call */
         bool checked{}; /** This suppression applied to code which was being analyzed but did not match the error in an isSuppressed() call */
         bool isInline{};
+        bool isPolyspace{};
 
         enum : std::int8_t { NO_LINE = -1 };
     };
@@ -293,6 +296,61 @@ struct Suppressions
     /** @brief suppress exitcode */
     SuppressionList nofail;
 };
+
+namespace polyspace {
+
+    struct CPPCHECKLIB Suppression {
+        std::string family;
+        std::string resultName;
+        std::string filename;
+        std::string extraComment;
+        int lineBegin;
+        int lineEnd;
+
+        bool matches(const Suppression &other) const;
+    };
+
+    enum class CommentKind : std::uint8_t {
+        Invalid, Regular, Begin, End,
+    };
+
+    struct CPPCHECKLIB Annotation {
+        std::string family;
+        std::vector<std::string> resultNames;
+        std::string extraComment;
+        std::string filename;
+        CommentKind kind;
+        int line;
+        int range;
+    };
+
+    class CPPCHECKLIB Parser {
+    public:
+        Parser() = delete;
+        explicit Parser(const Settings &settings);
+        void collect(SuppressionList &suppressions) const;
+        void parse(const std::string &comment, int line, const std::string &filename);
+
+    private:
+        std::string peekToken();
+        std::string nextToken();
+
+        void handleAnnotation(const Annotation &annotation);
+        bool parseAnnotation(Annotation &annotation);
+        CommentKind parseKind();
+        int parseRange();
+
+        std::list<Suppression> mStarted;
+        std::list<Suppression> mDone;
+        std::string mComment;
+        std::string mPeeked;
+        bool mHasPeeked{};
+        std::map<std::string, std::string> mFamilyMap;
+    };
+
+    bool CPPCHECKLIB isPolyspaceComment(const std::string &comment);
+
+}
 
 /// @}
 //---------------------------------------------------------------------------

@@ -26,6 +26,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "settings.h"
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
@@ -646,4 +647,334 @@ std::string SuppressionList::Suppression::toString() const
         s += symbolName;
     }
     return s;
+}
+
+polyspace::Parser::Parser(const Settings &settings)
+{
+    const auto haveMisraAddon = std::any_of(settings.addonInfos.cbegin(),
+                                            settings.addonInfos.cend(),
+                                            [] (const AddonInfo &info) {
+        return info.name == "misra";
+    });
+
+    if (haveMisraAddon) {
+        mFamilyMap["MISRA-C3"] = "misra-c2012-";
+        mFamilyMap["MISRA2012"] = "misra-c2012-";
+    }
+
+    const auto matchArg = [&](const std::string &arg) {
+        const std::string args = settings.premiumArgs;
+        const std::string::size_type pos = args.find(arg);
+
+        if (pos == std::string::npos)
+            return false;
+
+        if (pos > 0 && args[pos - 1] != ' ')
+            return false;
+
+        return pos == args.size() - arg.size() || args[pos + arg.size()] == ' ';
+    };
+
+    if (matchArg("--misra-c-2012")) {
+        mFamilyMap["MISRA-C3"] = "premium-misra-c-2012-";
+        mFamilyMap["MISRA2012"] = "premium-misra-c-2012-";
+    }
+
+    if (matchArg("--misra-c-2023"))
+        mFamilyMap["MISRA-C-2023"] = "premium-misra-c-2023-";
+
+    if (matchArg("--misra-cpp-2008") || matchArg("--misra-c++-2008"))
+        mFamilyMap["MISRA-CPP"] = "premium-misra-cpp-2008-";
+
+    if (matchArg("--misra-cpp-2023") || matchArg("--misra-c++-2023"))
+        mFamilyMap["MISRA-CPP-2023"] = "premium-misra-cpp-2023-";
+
+    if (matchArg("--cert-c") || matchArg("--cert-c-2016"))
+        mFamilyMap["CERT-C"] = "premium-cert-c-";
+
+    if (matchArg("--cert-cpp") || matchArg("--cert-c++") ||
+        matchArg("--cert-cpp-2016") || matchArg("--cert-c++-2016"))
+        mFamilyMap["CERT-CPP"] = "premium-cert-cpp-";
+
+    if (matchArg("--autosar"))
+        mFamilyMap["AUTOSAR-CPP14"] = "premium-autosar-";
+}
+
+std::string polyspace::Parser::peekToken()
+{
+    if (!mHasPeeked) {
+        mPeeked = nextToken();
+        mHasPeeked = true;
+    }
+    return mPeeked;
+}
+
+std::string polyspace::Parser::nextToken()
+{
+    if (mHasPeeked) {
+        mHasPeeked = false;
+        return mPeeked;
+    }
+
+    std::string::size_type pos = 0;
+    while (mComment[pos] == ' ') {
+        pos++;
+        if (pos == mComment.size()) {
+            mComment = "";
+            return "";
+        }
+    }
+
+    if (mComment.compare(0, 2, "*/") == 0) {
+        mComment = "";
+        return "";
+    }
+
+    if (mComment[pos] == ':') {
+        mComment = mComment.substr(pos + 1);
+        return ":";
+    }
+
+    if (mComment[pos] == ',') {
+        mComment = mComment.substr(pos + 1);
+        return ",";
+    }
+
+    const char *stopChars;
+    std::string::size_type skip;
+    switch (mComment[pos]) {
+    case '\"':
+        stopChars = "\"";
+        skip = 1;
+        break;
+    case '[':
+        stopChars = "]";
+        skip = 1;
+        break;
+    default:
+        stopChars = " :,";
+        skip = 0;
+        break;
+    }
+
+    const std::string::size_type start = pos;
+    pos += skip;
+
+    if (pos == mComment.size()) {
+        mComment = "";
+        return "";
+    }
+
+    while (std::strchr(stopChars, mComment[pos]) == nullptr) {
+        pos++;
+        if (pos == mComment.size())
+            break;
+    }
+
+    if (pos == mComment.size())
+        skip = 0;
+
+    const std::string token = mComment.substr(start, pos - start + skip);
+    mComment = mComment.substr(pos + skip);
+
+    return token;
+}
+
+bool polyspace::Parser::parseAnnotation(polyspace::Annotation &annotation)
+{
+    annotation.family = nextToken();
+    annotation.resultNames.clear();
+    annotation.extraComment = "";
+
+    if (annotation.family.empty())
+        return false;
+
+    if (nextToken() != ":")
+        return false;
+
+    for (;;) {
+        const std::string resultName = nextToken();
+
+        if (resultName.empty())
+            return false;
+
+        annotation.resultNames.push_back(resultName);
+
+        if (peekToken().substr(0, 1) == ",") {
+            (void) nextToken();
+            continue;
+        }
+
+        break;
+    }
+
+    if (peekToken().substr(0, 1) == "[")
+        (void) nextToken();
+
+    if (peekToken().substr(0, 1) == "\"") {
+        std::string extraComment = nextToken().substr(1);
+
+        if (extraComment.size() > 1)
+            extraComment.pop_back();
+
+        annotation.extraComment = extraComment;
+    }
+
+    return true;
+}
+
+polyspace::CommentKind polyspace::Parser::parseKind()
+{
+    const std::string token = nextToken();
+
+    if (token == "polyspace")
+        return CommentKind::Regular;
+
+    if (token == "polyspace-begin")
+        return CommentKind::Begin;
+
+    if (token == "polyspace-end")
+        return CommentKind::End;
+
+    return CommentKind::Invalid;
+}
+
+int polyspace::Parser::parseRange()
+{
+    if (peekToken()[0] == '+') {
+        try {
+            const int range = std::stoi(peekToken().substr(1));
+            (void) nextToken();
+            return range;
+        } catch (...) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+void polyspace::Parser::handleAnnotation(const polyspace::Annotation &annotation)
+{
+    for (const auto &resultName : annotation.resultNames) {
+        Suppression suppr = {
+            annotation.family,
+            resultName,
+            annotation.filename,
+            annotation.extraComment,
+            0,
+            0,
+        };
+
+        switch (annotation.kind) {
+        case CommentKind::Regular:
+        {
+            suppr.lineBegin = annotation.line;
+            suppr.lineEnd = annotation.line + annotation.range;
+            mDone.push_back(suppr);
+            break;
+        }
+        case CommentKind::Begin:
+        {
+            suppr.lineBegin = annotation.line;
+            mStarted.push_back(suppr);
+            break;
+        }
+        case CommentKind::End:
+        {
+            auto it = std::find_if(
+                mStarted.begin(),
+                mStarted.end(),
+                [&] (const Suppression &other) {
+                    return suppr.matches(other);
+                }
+                );
+
+            if (it == mStarted.end())
+                break;
+
+            suppr.lineBegin = it->lineBegin;
+            suppr.lineEnd = annotation.line;
+            mStarted.erase(it);
+            mDone.push_back(suppr);
+            break;
+        }
+        case CommentKind::Invalid:
+        {
+            assert(false); // Invalid comments are not handled
+        }
+        }
+    }
+}
+
+void polyspace::Parser::collect(SuppressionList &suppressions) const
+{
+    for (const auto &polyspaceSuppr : mDone) {
+        const auto it = mFamilyMap.find(polyspaceSuppr.family);
+        if (it == mFamilyMap.cend())
+            continue;
+
+        SuppressionList::Suppression suppr;
+        suppr.errorId = it->second + polyspaceSuppr.resultName;
+        suppr.isInline = true;
+        suppr.isPolyspace = true;
+        suppr.fileName = polyspaceSuppr.filename;
+        suppr.extraComment = polyspaceSuppr.extraComment;
+
+        suppr.lineNumber = polyspaceSuppr.lineBegin;
+        if (polyspaceSuppr.lineBegin == polyspaceSuppr.lineEnd) {
+            suppr.type = SuppressionList::Type::unique;
+        } else {
+            suppr.type = SuppressionList::Type::block;
+            suppr.lineBegin = polyspaceSuppr.lineBegin;
+            suppr.lineEnd = polyspaceSuppr.lineEnd;
+        }
+
+        suppressions.addSuppression(std::move(suppr));
+    }
+}
+
+void polyspace::Parser::parse(const std::string &comment, int line, const std::string &filename)
+{
+    if (mFamilyMap.empty())
+        return;
+
+    mComment = comment.substr(2);
+    mHasPeeked = false;
+
+    while (true) {
+        const CommentKind kind = parseKind();
+        if (kind == CommentKind::Invalid)
+            return;
+
+        const int range = parseRange();
+        if (range < 0)
+            return;
+
+        Annotation annotation;
+        annotation.filename = filename;
+        annotation.kind = kind;
+        annotation.line = line;
+        annotation.range = range;
+
+        while (parseAnnotation(annotation)) {
+            handleAnnotation(annotation);
+            if (!annotation.extraComment.empty())
+                break;
+        }
+    }
+}
+
+bool polyspace::isPolyspaceComment(const std::string &comment)
+{
+    const std::string polyspace = "polyspace";
+    const std::string::size_type pos = comment.find_first_not_of("/* ");
+    if (pos == std::string::npos)
+        return false;
+    return comment.compare(pos, polyspace.size(), polyspace, 0, polyspace.size()) == 0;
+}
+
+bool polyspace::Suppression::matches(const polyspace::Suppression &other) const
+{
+    return family == other.family && resultName == other.resultName;
 }
