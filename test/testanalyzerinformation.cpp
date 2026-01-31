@@ -39,6 +39,7 @@ private:
     };
 
     void run() override {
+        TEST_CASE(getAnalyzerInfoFileFromFilesTxt);
         TEST_CASE(getAnalyzerInfoFile);
         TEST_CASE(duplicateFile);
         TEST_CASE(filesTextDuplicateFile);
@@ -46,12 +47,15 @@ private:
         TEST_CASE(skipAnalysis);
     }
 
-    void getAnalyzerInfoFile() const {
+    void getAnalyzerInfoFileFromFilesTxt() const {
         constexpr char filesTxt[] = "file1.a4:::file1.c\n";
-        std::istringstream f1(filesTxt);
-        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 0));
-        std::istringstream f2(filesTxt);
-        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", "", 0));
+        std::istringstream f(filesTxt);
+        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f, "file1.c", "", 0));
+        f.str(filesTxt);
+        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f, "./file1.c", "", 0));
+    }
+
+    void getAnalyzerInfoFile() const {
         ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "file1.c", "", 0));
         ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "some/path/file1.c", "", 0));
     }
