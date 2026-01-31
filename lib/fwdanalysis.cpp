@@ -26,6 +26,7 @@
 #include "token.h"
 #include "vfvalue.h"
 
+#include <deque>
 #include <list>
 #include <string>
 #include <utility>
@@ -478,9 +479,18 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 {
     if (!tok)
         return false;
-    if (isSameExpression(false, tok, lhs, mSettings, false, false, nullptr))
-        return true;
-    return hasOperand(tok->astOperand1(), lhs) || hasOperand(tok->astOperand2(), lhs);
+    std::deque<const Token*> nodes{ tok };
+    while (!nodes.empty()) {
+        const Token* node = nodes.front();
+        if (isSameExpression(false, node, lhs, mSettings, false, false, nullptr))
+            return true;
+        if (node->astOperand1())
+            nodes.emplace_back(node->astOperand1());
+        if (node->astOperand2())
+            nodes.emplace_back(node->astOperand2());
+        nodes.pop_front();
+    }
+    return false;
 }
 
 const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
