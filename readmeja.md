@@ -35,20 +35,32 @@ GUIも利用する場合、Qtライブラリが必要です。
 cmakeでCppcheckをコンパイルする例
 
 ```shell
-mkdir build
-cd build
-cmake ..
-cmake --build .
+cmake -S . -B build
+cmake --build build
 ```
 
+デフォルトのビルドタイプは `Debug` です。`Release` ビルドが必要な場合は、ビルドフラグ (上記の最初の `cmake` コマンドで) を使用できます。
+`-DCMAKE_BUILD_TYPE=Release`
+
+リリース ビルドの場合は以下を使用することをお勧めします。
+`-DUSE_MATCHCOMPILER=ON`
+
 C++標準を指定する必要がある場合次のオプションを指定します。
--DCMAKE_CXX_STANDARD=11
+`-DCMAKE_CXX_STANDARD=11`
 
 CppcheckのGUIが必要な場合次のフラグを指定します。
--DBUILD_GUI=ON
+`-DBUILD_GUI=ON`
 
 pcreが必要になりますが、正規表現のルールサポートが必要な場合次のフラグを指定します。
--DHAVE_RULES=ON
+`-DHAVE_RULES=ON`
+
+#### インストール
+
+バイナリをコンパイルしたら、以下の cmake コマンドを実行して Cppcheck をインストールできます。
+
+```shell
+sudo cmake --install build
+```
 
 ### Visual Studio
 
