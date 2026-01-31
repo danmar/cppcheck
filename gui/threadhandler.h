@@ -178,6 +178,11 @@ public:
      */
     void setCheckStartTime(QDateTime checkStartTime);
 
+    /**
+     * @brief Emit the threadDetailsUpdated signal
+     */
+    void emitThreadDetailsUpdated();
+
 signals:
     /**
      * @brief Signal that all threads are done
@@ -191,6 +196,13 @@ signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void debugError(const ErrorItem &item);
 
+    /**
+     * @brief Emitted when thread details are updated.
+     *
+     * @param text Text for the ThreadDetails widget to display
+     */
+    void threadDetailsUpdated(const QString &text);
+
 public slots:
 
     /**
@@ -198,6 +210,19 @@ public slots:
      *
      */
     void stop();
+
+    /**
+     * @brief Slot threads use to signal this class that it started checking a file
+     * @param details Details about what file is being checked and by what thread
+     */
+    void startCheck(CheckThread::Details details);
+
+    /**
+     * @brief Slot threads use to signal this class that it finish checking a file
+     * @param details Details about what file finished being checked and by what thread
+     */
+    void finishCheck(CheckThread::Details details);
+
 protected slots:
     /**
      * @brief Slot that a single thread is done
@@ -285,6 +310,12 @@ protected:
     Settings mCheckSettings;
     std::shared_ptr<Suppressions> mCheckSuppressions;
     /// @}
+
+    /**
+     * @bried Details about currently running threads
+     */
+    std::map<int, CheckThread::Details> mThreadDetails;
+
 private:
 
     /**
@@ -292,6 +323,8 @@ private:
      * included headers. Used by GetReCheckFiles()
      */
     bool needsReCheck(const QString &filename, std::set<QString> &modified, std::set<QString> &unmodified) const;
+
+    QString buildThreadDetailsText() const;
 };
 /// @}
 #endif // THREADHANDLER_H
