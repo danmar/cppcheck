@@ -66,7 +66,7 @@ private:
         const char expected[] = "a.a1:::a.c\n"
                                 "a.a2::1:a.c\n";
 
-        ASSERT_EQUALS(expected, AnalyzerInformationTest::getFilesTxt({}, "", fileSettings));
+        ASSERT_EQUALS(expected, AnalyzerInformationTest::getFilesTxt({}, fileSettings));
     }
 
     void duplicateFile() const {
