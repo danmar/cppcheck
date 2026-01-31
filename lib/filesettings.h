@@ -35,13 +35,18 @@ class FileWithDetails
 {
 public:
     FileWithDetails(std::string path, Standards::Language lang, std::size_t size)
-        : mPath(std::move(path))
-        , mPathSimplified(Path::simplifyPath(mPath))
-        , mLang(lang)
+        : mLang(lang)
         , mSize(size)
     {
+        setPath(std::move(path));
         if (mPath.empty())
             throw std::runtime_error("empty path specified");
+    }
+
+    void setPath(std::string path)
+    {
+        mPath = std::move(path);
+        mPathSimplified = Path::simplifyPath(mPath);
     }
 
     const std::string& path() const
@@ -68,11 +73,22 @@ public:
     {
         return mLang;
     }
+
+    std::size_t fsFileId() const
+    {
+        return mFsFileId;
+    }
+
+    void setFsFileId(std::size_t fsFileId)
+    {
+        mFsFileId = fsFileId;
+    }
 private:
     std::string mPath;
     std::string mPathSimplified;
     Standards::Language mLang = Standards::Language::None;
     std::size_t mSize;
+    std::size_t mFsFileId{0};
 };
 
 /** File settings. Multiple configurations for a file is allowed. */
@@ -81,14 +97,12 @@ struct CPPCHECKLIB FileSettings {
         : file(std::move(path), lang, size)
     {}
 
-    int fileIndex = 0;
     std::string cfg;
     FileWithDetails file;
     const std::string& filename() const
     {
         return file.path();
     }
-    // cppcheck-suppress unusedFunction
     const std::string& sfilename() const
     {
         return file.spath();
