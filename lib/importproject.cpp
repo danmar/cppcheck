@@ -1442,7 +1442,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
                 else if (strcmp(childname, Settings::SafeChecks::XmlExternalVariables) == 0)
                     temp.safeChecks.externalVariables = true;
                 else {
-                    errors.emplace_back("Unknown '" + std::string(Settings::SafeChecks::XmlRootName) + "' element '" + childname + "' in Cppcheck project file");
+                    errors.emplace_back("Unknown '" + std::string(Settings::SafeChecks::XmlRootName) + "' element '" + childname + "' in Cppcheck GUI project file");
                     return false;
                 }
             }
@@ -1465,7 +1465,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
         else if (strcmp(name, CppcheckXml::ProjectNameElementName) == 0)
             ; // no-op
         else {
-            errors.emplace_back("Unknown element '" + std::string(name) + "' in Cppcheck project file");
+            errors.emplace_back("Unknown element '" + std::string(name) + "' in Cppcheck GUI project file");
             return false;
         }
     }
