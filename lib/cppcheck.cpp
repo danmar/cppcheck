@@ -1162,7 +1162,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
                         if (!hasValidConfig && currCfg == *configurations.rbegin()) {
                             // If there is no valid configuration then report error..
-                            preprocessor.error(tokensP.file(o->location), o->location.line, o->location.col, o->msg, o->type);
+                            preprocessor.error(o->location, o->msg, o->type);
                         }
                         skipCfg = true;
                     }
