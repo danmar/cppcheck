@@ -114,15 +114,13 @@ bool AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfo
 
 std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, int fileIndex)
 {
-    const std::string id = (fileIndex > 0) ? std::to_string(fileIndex) : "";
     std::string line;
-    const std::string end(sep + cfg + sep + id + sep + Path::simplifyPath(sourcefile));
     while (std::getline(filesTxt,line)) {
-        if (line.size() <= end.size() + 2U)
-            continue;
-        if (!endsWith(line, end.c_str(), end.size()))
-            continue;
-        return line.substr(0,line.find(sep));
+        AnalyzerInformation::Info filesTxtInfo;
+        if (!filesTxtInfo.parse(line))
+            continue; // TODO: report error?
+        if (endsWith(sourcefile, filesTxtInfo.sourceFile) && filesTxtInfo.cfg == cfg && filesTxtInfo.fileIndex == fileIndex)
+            return filesTxtInfo.afile;
     }
     return "";
 }
