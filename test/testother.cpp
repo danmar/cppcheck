@@ -2341,7 +2341,7 @@ private:
         checkInvalidPointerCast("void test(float* data) {\n"
                                 "    f.write((char*)data,sizeof(float));\n"
                                 "}", dinit(CheckInvalidPointerCastOptions, $.inconclusive = true)); // #3639
-        ASSERT_EQUALS("[test.cpp:2:13]: (portability, inconclusive) Casting from float * to signed char * is not portable due to different binary data representations on different platforms. [invalidPointerCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:13]: (portability, inconclusive) Casting from float * to char * is not portable due to different binary data representations on different platforms. [invalidPointerCast]\n", errout_str());
 
 
         checkInvalidPointerCast("long long* test(float* f) {\n"

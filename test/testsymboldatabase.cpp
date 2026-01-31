@@ -586,6 +586,7 @@ private:
         TEST_CASE(valueType2);
         TEST_CASE(valueType3);
         TEST_CASE(valueTypeThis);
+        TEST_CASE(valueTypeChar);
 
         TEST_CASE(variadic1); // #7453
         TEST_CASE(variadic2); // #7649
@@ -7796,20 +7797,12 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v7 ) ) ;");
         ASSERT(f);
         ASSERT(f->function());
-        if (std::numeric_limits<char>::is_signed) {
-            ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
-        } else {
-            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
-        }
+        ASSERT_EQUALS(10, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v8 ) ) ;");
         ASSERT(f);
         ASSERT(f->function());
-        if (std::numeric_limits<char>::is_signed) {
-            ASSERT_EQUALS(5, f->function()->tokenDef->linenr());
-        } else {
-            ASSERT_EQUALS(11, f->function()->tokenDef->linenr());
-        }
+        ASSERT_EQUALS(11, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v9 ) ) ;");
         ASSERT(f);
@@ -10143,6 +10136,13 @@ private:
     void valueTypeThis() {
         ASSERT_EQUALS("C *", typeOf("class C { C() { *this = 0; } };", "this"));
         ASSERT_EQUALS("const C *", typeOf("class C { void foo() const; }; void C::foo() const { *this = 0; }", "this"));
+    }
+
+    void valueTypeChar() {
+        Settings s = settings2;
+        s.platform.defaultSign = 's';
+        ASSERT_EQUALS("char", typeOf("char c; c = 'x';", "c =", true, &s));
+        ASSERT_EQUALS("char", typeOf("char buf[10]; buf[0] = 'x';", "[ 0 ]", true, &s));
     }
 
     void variadic1() { // #7453
