@@ -711,8 +711,7 @@ private:
               "    g(&s);\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:4:5]: (error) Address of local auto-variable assigned to a function parameter. [autoVariables]\n"
-            "[test.cpp:4:5]: (error) Address of local auto-variable assigned to a function parameter. [autoVariables]\n",   // duplicate
+            "[test.cpp:4:5]: (error) Address of local auto-variable assigned to a function parameter. [autoVariables]\n",
             errout_str());
     }
 
@@ -4693,6 +4692,21 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
+        check("struct S {\n"
+              "    int* a[1];\n"
+              "    int* b[1][1];\n"
+              "};\n"
+              "void f(S* s) {\n"
+              "    int i = 0;\n"
+              "    s->a[0] = &i;\n"
+              "}\n"
+              "void g(S* s) {\n"
+              "    int i = 0;\n"
+              "    s->b[0][0] = &i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7:5]: (error) Address of local auto-variable assigned to a function parameter. [autoVariables]\n"
+                      "[test.cpp:11:5]: (error) Address of local auto-variable assigned to a function parameter. [autoVariables]\n",
+                      errout_str());
     }
 
     void deadPointer() {
