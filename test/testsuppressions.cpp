@@ -55,6 +55,7 @@ private:
 
     void run() override {
         mNewTemplate = true;
+        TEST_CASE(parseLine);
         TEST_CASE(suppressionsBadId1);
         TEST_CASE(suppressionsDosFormat);     // Ticket #1836
         TEST_CASE(suppressionsFileNameWithColon);    // Ticket #1919 - filename includes colon
@@ -120,6 +121,36 @@ private:
         TEST_CASE(suppressionFromErrorMessage);
 
         TEST_CASE(suppressionWildcard);
+
+        TEST_CASE(polyspaceParseRange);
+        TEST_CASE(polyspaceParseIds);
+
+        TEST_CASE(polyspaceMisraC2012);
+        TEST_CASE(polyspacePremiumMisraC2012);
+        TEST_CASE(polyspaceMisraC2023);
+        TEST_CASE(polyspaceMisraCpp2008);
+        TEST_CASE(polyspaceMisraCpp2023);
+        TEST_CASE(polyspaceCertC);
+        TEST_CASE(polyspaceCertCpp);
+        TEST_CASE(polyspaceAutosar);
+        TEST_CASE(polyspaceIgnored);
+        TEST_CASE(polyspaceMultiple1);
+        TEST_CASE(polyspaceMultiple2);
+        TEST_CASE(polyspaceMultiple3);
+        TEST_CASE(polyspaceRange);
+        TEST_CASE(polyspaceBlock);
+        TEST_CASE(polyspaceExtraComments);
+    }
+
+
+    void parseLine() const {
+        ASSERT_EQUALS("bad:test.c:1", SuppressionList::parseLine("bad:test.c:1").toString());
+
+        // symbol
+        ASSERT_EQUALS("bad:test.c:1\nsymbol=x", SuppressionList::parseLine("bad:test.c:1\nsymbol=x").toString());
+
+        // polyspace
+        ASSERT_EQUALS("bad:test.c:1\npolyspace=1", SuppressionList::parseLine("bad:test.c:1\npolyspace=1").toString());
     }
 
     void suppressionsBadId1() const {
@@ -1791,7 +1822,7 @@ private:
             SuppressionList::Suppression s;
             s.errorId = "unitvar";
             s.symbolName = "sym";
-            ASSERT_EQUALS("unitvar:sym", s.toString());
+            ASSERT_EQUALS("unitvar\nsymbol=sym", s.toString());
         }
     }
 
@@ -1899,6 +1930,261 @@ private:
             }
             ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
         }
+    }
+
+    static std::string polyspaceParseIdsResults(const std::string& comment, std::string::size_type pos) {
+        std::string ret;
+        for (const auto& fr: polyspace::Parser::parseFamilyRules(comment,pos)) {
+            if (!fr.second.empty())
+                ret += ',' + fr.first + ':' + fr.second;
+        }
+        return ret.empty() ? ret : ret.substr(1);
+    }
+
+    void polyspaceParseRange() const {
+        std::string::size_type pos;
+
+        // Happy case
+        pos = 0;
+        ASSERT_EQUALS(12, polyspace::Parser::parseRange(" +12 ",pos));
+        ASSERT_EQUALS(4U, pos);
+
+        // Invalid range => pos will point at the token
+        pos = 0;
+        ASSERT_EQUALS(0, polyspace::Parser::parseRange(" ",pos));
+        ASSERT_EQUALS(std::string::npos, pos);
+
+        pos = 0;
+        ASSERT_EQUALS(0, polyspace::Parser::parseRange(" test ",pos));
+        ASSERT_EQUALS(1U, pos);
+
+        pos = 0;
+        ASSERT_EQUALS(0, polyspace::Parser::parseRange(" +",pos));
+        ASSERT_EQUALS(1U, pos);
+
+        pos = 0;
+        ASSERT_EQUALS(0, polyspace::Parser::parseRange(" +12",pos));
+        ASSERT_EQUALS(1U, pos);
+
+        pos = 0;
+        ASSERT_EQUALS(0, polyspace::Parser::parseRange(" +A ",pos));
+        ASSERT_EQUALS(1U, pos);
+    }
+
+    void polyspaceParseIds() const {
+        ASSERT_EQUALS("test:12", polyspaceParseIdsResults("abc test:12",3));
+        ASSERT_EQUALS("test:12", polyspaceParseIdsResults("abc test:12 [12]",3));
+        ASSERT_EQUALS("test:12", polyspaceParseIdsResults("abc test:12 */",3));
+        ASSERT_EQUALS("test:1*", polyspaceParseIdsResults("abc test:1* */",3));
+        ASSERT_EQUALS("test:*", polyspaceParseIdsResults("// abc test:*",6));
+        // -_.
+        ASSERT_EQUALS("test:1-2.3", polyspaceParseIdsResults("abc test:1-2.3",3));
+        ASSERT_EQUALS("t-e_s.t:12", polyspaceParseIdsResults("abc t-e_s.t : 12",3));
+        // multiple ids
+        ASSERT_EQUALS("d:1,d:2", polyspaceParseIdsResults("abc d:1,2",3));
+        ASSERT_EQUALS("d:1,d:2,e:3,e:4,f:6", polyspaceParseIdsResults("abc d:1,2 e: 3 , 4 f : 6 ",3));
+    }
+
+    struct PolyspaceComment {
+        std::string text;
+        int line;
+
+        PolyspaceComment(const std::string &&text, int line)
+            : text(text)
+            , line(line)
+        {}
+    };
+
+    struct PolyspaceParseResult {
+        std::string errorId;
+        int lineNumber;
+        std::string extraComment;
+        SuppressionList::Type type = SuppressionList::Type::unique;
+        int lineBegin = SuppressionList::Suppression::NO_LINE;
+        int lineEnd = SuppressionList::Suppression::NO_LINE;
+
+        PolyspaceParseResult(const std::string &&errorId,
+                             int lineNumber,
+                             const std::string &&extraComment = "",
+                             SuppressionList::Type type = SuppressionList::Type::unique,
+                             int lineBegin = SuppressionList::Suppression::NO_LINE,
+                             int lineEnd = SuppressionList::Suppression::NO_LINE)
+            : errorId(errorId)
+            , lineNumber(lineNumber)
+            , extraComment(extraComment)
+            , type(type)
+            , lineBegin(lineBegin)
+            , lineEnd(lineEnd)
+        {}
+    };
+
+    void testPolyspaceSuppression(const std::string& addon,
+                                  const std::string& premiumArgs,
+                                  const PolyspaceComment& comment,
+                                  std::initializer_list<PolyspaceParseResult> results) const
+    {
+        SuppressionList list;
+        Settings settings;
+        if (!addon.empty()) {
+            AddonInfo info;
+            info.name = addon;
+            settings.addonInfos.push_back(info);
+        }
+        settings.premiumArgs = premiumArgs;
+        polyspace::Parser parser(settings);
+
+        const std::string fileName = "file.c";
+        const auto supprs = parser.parse(comment.text, comment.line, fileName);
+
+        ASSERT_EQUALS(results.size(), supprs.size());
+
+        auto supprIt = supprs.cbegin();
+        const auto *resultIt = results.begin();
+
+        for (; supprIt != supprs.cend(); supprIt++, resultIt++) {
+            ASSERT(supprIt->isPolyspace);
+            ASSERT(supprIt->isInline);
+            ASSERT_EQUALS(fileName, supprIt->fileName);
+            ASSERT_EQUALS(resultIt->errorId, supprIt->errorId);
+            ASSERT_EQUALS(resultIt->extraComment, supprIt->extraComment);
+            ASSERT_EQUALS_ENUM(resultIt->type, supprIt->type);
+            ASSERT_EQUALS(resultIt->lineNumber, supprIt->lineNumber);
+            ASSERT_EQUALS(resultIt->lineBegin, supprIt->lineBegin);
+            ASSERT_EQUALS(resultIt->lineEnd, supprIt->lineEnd);
+        }
+    }
+
+    void polyspaceMisraC2012() const {
+        testPolyspaceSuppression(
+            "misra", "",
+            { "/* polyspace MISRA2012 : 2.7 */", 1 },
+            { { "misra-c2012-2.7", 1 } }
+            );
+    }
+
+    void polyspacePremiumMisraC2012() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2012",
+            { "/* polyspace MISRA2012 : 2.7 */", 1 },
+            { { "premium-misra-c-2012-2.7", 1 } }
+            );
+    }
+
+    void polyspaceMisraC2023() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2023",
+            { "// polyspace MISRA-C-2023 : *", 2 },
+            { { "premium-misra-c-2023-*", 2 } }
+            );
+    }
+
+    void polyspaceMisraCpp2008() const {
+        testPolyspaceSuppression(
+            "", "--misra-cpp-2008",
+            { "// polyspace MISRA-CPP : 7-1-1", 1 },
+            { { "premium-misra-cpp-2008-7-1-1", 1 } }
+            );
+    }
+
+    void polyspaceMisraCpp2023() const {
+        testPolyspaceSuppression(
+            "", "--misra-cpp-2023",
+            { "// polyspace MISRA-CPP-2023 : 4.6.1", 1 },
+            { { "premium-misra-cpp-2023-4.6.1", 1 } }
+            );
+    }
+
+    void polyspaceCertC() const {
+        testPolyspaceSuppression(
+            "", "--cert-c",
+            { "// polyspace CERT-C : PRE30", 1 },
+            { { "premium-cert-c-PRE30", 1 } }
+            );
+    }
+
+    void polyspaceCertCpp() const {
+        testPolyspaceSuppression(
+            "", "--cert-cpp",
+            { "// polyspace CERT-CPP : CTR51", 1 },
+            { { "premium-cert-cpp-CTR51", 1 } }
+            );
+    }
+
+    void polyspaceAutosar() const {
+        testPolyspaceSuppression(
+            "", "--autosar",
+            { "// polyspace AUTOSAR-CPP14 : a2-10-1", 1 },
+            { { "premium-autosar-a2-10-1", 1 } }
+            );
+    }
+
+    void polyspaceIgnored() const {
+        testPolyspaceSuppression(
+            "", "",
+            { "// polyspace DEFECT : INT_OVFL AUTOSAR-CPP14 : a2-10-1", 1 },
+            {}
+            );
+    }
+
+    void polyspaceMultiple1() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2012",
+            { "/* polyspace MISRA2012 : 2.7, 9.1 */", 1 },
+            { { "premium-misra-c-2012-2.7", 1 },
+                { "premium-misra-c-2012-9.1", 1 } }
+            );
+    }
+
+    void polyspaceMultiple2() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2012 --misra-cpp-2008",
+            { "/* polyspace MISRA2012 : 2.7 MISRA-CPP : 7-1-1 */", 1 },
+            { { "premium-misra-c-2012-2.7", 1 },
+                { "premium-misra-cpp-2008-7-1-1", 1 } }
+            );
+    }
+
+    void polyspaceMultiple3() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2012 --misra-cpp-2008",
+            { "/* polyspace MISRA2012 : 2.7 [Justified:Low] \"comment 1\" polyspace MISRA-CPP : 7-1-1 \"comment 2\"*/", 1 },
+            { { "premium-misra-c-2012-2.7", 1, "comment 1" },
+                { "premium-misra-cpp-2008-7-1-1", 1, "comment 2" }, }
+            );
+    }
+
+    void polyspaceRange() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2012",
+            { "/* polyspace +3 MISRA2012 : 2.7 */", 1 },
+            { { "premium-misra-c-2012-2.7", 1, "", SuppressionList::Type::block, 1, 4 } }
+            );
+    }
+
+    void polyspaceBlock() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2012",
+            { "/* polyspace-begin MISRA2012 : 2.7 */", 1 },
+            { { "premium-misra-c-2012-2.7", 1, "", SuppressionList::Type::blockBegin } }
+            );
+
+        testPolyspaceSuppression(
+            "", "--misra-c-2012",
+            { "/* polyspace-end MISRA2012 : 2.7 */", 1 },
+            { { "premium-misra-c-2012-2.7", 1, "", SuppressionList::Type::blockEnd } }
+            );
+
+    }
+
+    void polyspaceExtraComments() const {
+        testPolyspaceSuppression(
+            "", "--misra-c-2012 --misra-cpp-2008",
+            { "/* polyspace MISRA2012 : 2.7 MISRA-CPP : 7-1-1 \"comment 1\" polyspace MISRA2012 : 8.1, 8.3 \"comment 2\" */", 1 },
+            { { "premium-misra-c-2012-2.7", 1, "comment 1" },
+                { "premium-misra-cpp-2008-7-1-1", 1, "comment 1" },
+                { "premium-misra-c-2012-8.1", 1, "comment 2" },
+                { "premium-misra-c-2012-8.3", 1, "comment 2" }, }
+            );
     }
 };
 
