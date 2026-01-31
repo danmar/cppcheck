@@ -1915,7 +1915,10 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                 }
 
                 if (bits > 0 && bits <= 62) {
-                    if (dimension.tok->valueType()->sign == ValueType::Sign::UNSIGNED)
+                    auto sign = dimension.tok->valueType()->sign;
+                    if (sign == ValueType::Sign::UNKNOWN_SIGN && dimension.tok->valueType()->type == ValueType::Type::CHAR)
+                        sign = mDefaultSignedness;
+                    if (sign == ValueType::Sign::UNSIGNED)
                         dimension.num = 1LL << bits;
                     else
                         dimension.num = 1LL << (bits - 1);
