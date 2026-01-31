@@ -1328,7 +1328,7 @@ private:
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "\"hello\"");
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
-        ASSERT_EQUALS("const signed char *", tok->valueType()->str());
+        ASSERT_EQUALS("const char *", tok->valueType()->str());
     }
 
     void stdinLoc() {
