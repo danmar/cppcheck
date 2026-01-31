@@ -5724,18 +5724,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         findGarbageCode();
     });
 
-    // if (x) MACRO() ..
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "if (")) {
-            tok = tok->linkAt(1);
-            if (Token::Match(tok, ") %name% (") &&
-                tok->next()->isUpperCaseName() &&
-                Token::Match(tok->linkAt(2), ") {|else")) {
-                syntaxError(tok->next());
-            }
-        }
-    }
-
     if (Settings::terminated())
         return false;
 
@@ -5765,14 +5753,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // simplify compound statements: "[;{}] ( { code; } ) ;"->"[;{}] code;"
     simplifyCompoundStatements();
-
-    // check for simple syntax errors..
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "> struct {") &&
-            Token::simpleMatch(tok->linkAt(2), "} ;")) {
-            syntaxError(tok);
-        }
-    }
 
     if (!simplifyAddBraces())
         return false;
@@ -8763,6 +8743,13 @@ void Tokenizer::findGarbageCode() const
                 if (!Token::simpleMatch(tok->linkAt(1)->linkAt(2), ") ;"))
                     syntaxError(tok->linkAt(1)->linkAt(2));
             }
+            // if (x) MACRO() ..
+            if (Token::simpleMatch(tok, "if (")) {
+                const Token* tok2 = tok->linkAt(1);
+                if (Token::Match(tok2, ") %name% (") && tok2->next()->isUpperCaseName() &&
+                    Token::Match(tok2->linkAt(2), ") {|else"))
+                    syntaxError(tok2->next());
+            }
         }
 
         // keyword keyword
@@ -9122,6 +9109,8 @@ void Tokenizer::findGarbageCode() const
             if (Token::simpleMatch(tok, "< >") && !(Token::Match(tok->tokAt(-1), "%name%") || (tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "operator %op%"))))
                 syntaxError(tok);
             if (Token::simpleMatch(tok, ": template") && !Token::Match(tok->tokAt(-1), "public|private|protected"))
+                syntaxError(tok);
+            if (Token::Match(tok, "> class|struct|union {") && Token::simpleMatch(tok->linkAt(2), "} ;"))
                 syntaxError(tok);
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
