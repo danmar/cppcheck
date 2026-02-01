@@ -30,7 +30,6 @@
 #include <climits>
 #include <cstddef>
 #include <cstdint>
-#include <stdexcept>
 #include <string>
 #include <vector>
 

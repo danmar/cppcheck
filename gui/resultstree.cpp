@@ -50,9 +50,7 @@
 #include <QIcon>
 #include <QItemSelectionModel>
 #include <QKeyEvent>
-#include <QList>
 #include <QLocale>
-#include <QMap>
 #include <QMenu>
 #include <QMessageBox>
 #include <QModelIndex>
