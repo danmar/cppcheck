@@ -281,6 +281,7 @@ private:
 
         // inline suppression, missingInclude/missingIncludeSystem
         TEST_CASE(inline_suppressions);
+        TEST_CASE(inline_suppressions_not_next_line);
 
         // remark comment
         TEST_CASE(remarkComment1);
@@ -2028,6 +2029,38 @@ private:
         ASSERT_EQUALS(false, suppr.matched);
 
         ignore_errout(); // we are not interested in the output
+    }
+
+    void inline_suppressions_not_next_line() {
+        const auto settings = dinit(Settings,
+                                    $.inlineSuppressions = true,
+                                        $.checks.enable (Checks::missingInclude));
+
+        const char code[] = "// cppcheck-suppress missingInclude\n"
+                            "// some other comment\n"
+                            "#include \"missing.h\"\n"
+                            "// cppcheck-suppress missingIncludeSystem\n"
+                            "\n" // Empty line
+                            "#include <missing2.h>\n";
+        SuppressionList inlineSuppr;
+        (void)getcodeforcfg(settings, *this, code, "", "test.c", &inlineSuppr);
+
+        auto suppressions = inlineSuppr.getSuppressions();
+        ASSERT_EQUALS(2, suppressions.size());
+
+        auto suppr = suppressions.front();
+        suppressions.pop_front();
+        ASSERT_EQUALS("missingInclude", suppr.errorId);
+        ASSERT_EQUALS("test.c", suppr.fileName);
+        ASSERT_EQUALS(3, suppr.lineNumber);
+
+        suppr = suppressions.front();
+        suppressions.pop_front();
+        ASSERT_EQUALS("missingIncludeSystem", suppr.errorId);
+        ASSERT_EQUALS("test.c", suppr.fileName);
+        ASSERT_EQUALS(6, suppr.lineNumber);
+
+        ignore_errout();
     }
 
     void remarkComment1() {
