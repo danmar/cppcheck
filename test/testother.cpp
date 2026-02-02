@@ -11935,9 +11935,9 @@ private:
     // TODO: only used in a single place
 #define checkCustomSettings(...) checkCustomSettings_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void checkCustomSettings_(const char* file, int line, const char (&code)[size], const Settings& settings) {
+    void checkCustomSettings_(const char* file, int line, const char (&code)[size], const Settings& settings, bool cpp = true) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -12010,6 +12010,12 @@ private:
                             "  i = i++ + 2;\n"
                             "}", settings11);
         ASSERT_EQUALS("[test.cpp:2:11]: (error) Expression 'i+++2' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
+
+        // #14431
+        checkCustomSettings("int f(void) {\n"
+                            "  struct baz baz = {.bar = {.foo = {.foo = 1}}};\n"
+                            "}\n", settings0, false);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void testEvaluationOrderSelfAssignment() {
