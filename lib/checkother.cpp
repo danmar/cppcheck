@@ -3794,6 +3794,8 @@ void CheckOther::checkEvaluationOrder()
                 continue;
             if (!tok->astOperand1())
                 continue;
+            if (isDesignatedInitializer(tok->astOperand1()))
+                continue;
             for (const Token *tok2 = tok;; tok2 = tok2->astParent()) {
                 // If ast parent is a sequence point then break
                 const Token * const parent = tok2->astParent();
