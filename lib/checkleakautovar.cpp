@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <deque>
 #include <list>
 #include <vector>
 
@@ -191,11 +192,20 @@ static bool isVarUsedInTree(const Token *tok, nonneg int varid)
 {
     if (!tok)
         return false;
-    if (tok->varId() == varid)
-        return true;
-    if (tok->str() == "(" && Token::simpleMatch(tok->astOperand1(), "sizeof"))
-        return false;
-    return isVarUsedInTree(tok->astOperand1(), varid) || isVarUsedInTree(tok->astOperand2(), varid);
+    std::deque<const Token*> nodes{ tok };
+    while (!nodes.empty()) {
+        const Token* node = nodes.front();
+        if (node->varId() == varid)
+            return true;
+        if (node->str() != "(" || !Token::simpleMatch(node->astOperand1(), "sizeof")) {
+            if (node->astOperand1())
+                nodes.emplace_back(node->astOperand1());
+            if (node->astOperand2())
+                nodes.emplace_back(node->astOperand2());
+        }
+        nodes.pop_front();
+    }
+    return false;
 }
 
 static bool isPointerReleased(const Token *startToken, const Token *endToken, nonneg int varid)
