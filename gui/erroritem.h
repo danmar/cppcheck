@@ -23,7 +23,6 @@
 #include "errortypes.h"
 
 #include <QList>
-#include <QMetaType>
 #include <QString>
 
 /// @addtogroup GUI

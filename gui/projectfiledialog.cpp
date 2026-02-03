@@ -45,7 +45,6 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QFlags>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>

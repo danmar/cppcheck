@@ -30,7 +30,6 @@
 #include <QComboBox>
 #include <QFile>
 #include <QFileDialog>
-#include <QFlags>
 #include <QIODevice>
 #include <QLineEdit>
 #include <QList>

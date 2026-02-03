@@ -22,7 +22,6 @@
 #include <QDialog>
 #include <QObject>
 #include <QTextBrowser>
-#include <QVariant>
 
 class QHelpEngine;
 class QWidget;

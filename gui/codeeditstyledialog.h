@@ -25,6 +25,7 @@
 #include <QDialog>
 #include <QFont>
 #include <QObject>
+#include <QStringList>
 
 class CodeEditor;
 class SelectColorButton;

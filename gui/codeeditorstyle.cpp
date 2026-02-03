@@ -18,6 +18,7 @@
 
 #include "codeeditorstyle.h"
 
+#include <QList>
 #include <QSettings>
 #include <QVariant>
 

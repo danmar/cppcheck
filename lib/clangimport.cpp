@@ -20,7 +20,6 @@
 
 #include "errortypes.h"
 #include "mathlib.h"
-#include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -44,6 +43,8 @@
 #include <utility>
 #include <vector>
 #include <numeric>
+
+class Settings;
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";

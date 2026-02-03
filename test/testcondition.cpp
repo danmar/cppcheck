@@ -24,7 +24,6 @@
 #include "settings.h"
 
 #include <cstddef>
-#include <limits>
 #include <string>
 
 class TestCondition : public TestFixture {
