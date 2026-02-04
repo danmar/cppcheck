@@ -617,7 +617,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
                             isDeadTemporary(tokvalue, nullptr, mSettings->library)) {
-                            errorReturnDanglingLifetime(tok, &val);
+                            if (!diag(tokvalue))
+                                errorReturnDanglingLifetime(tok, &val);
                             break;
                         }
                     } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
