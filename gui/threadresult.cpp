@@ -34,7 +34,6 @@ void ThreadResult::reportOut(const std::string &outmsg, Color /*c*/)
     emit log(QString::fromStdString(outmsg));
 }
 
-// cppcheck-suppress passedByValue
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void ThreadResult::finishCheck(CheckThread::Details details)
 {
