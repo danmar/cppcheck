@@ -3692,7 +3692,7 @@ void CheckOther::checkUnusedLabel()
 
 void CheckOther::unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef)
 {
-    if (tok && !mSettings->severity.isEnabled(inSwitch ? Severity::warning : Severity::style))
+    if (tok && !mSettings->severity.isEnabled(inSwitch ? Severity::warning : Severity::style) && !mSettings->isPremiumEnabled("unusedLabel"))
         return;
 
     std::string id = "unusedLabel";
