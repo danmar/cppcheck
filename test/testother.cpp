@@ -261,6 +261,7 @@ private:
         TEST_CASE(testUnusedLabel);
         TEST_CASE(testUnusedLabelConfiguration);
         TEST_CASE(testUnusedLabelSwitchConfiguration);
+        TEST_CASE(testUnusedLabelPremiumMisra);
 
         TEST_CASE(testEvaluationOrder);
         TEST_CASE(testEvaluationOrderSelfAssignment);
@@ -352,10 +353,6 @@ private:
         }
         else {
             settings = opt.settings;
-            settings->severity.enable(Severity::style);
-            settings->severity.enable(Severity::warning);
-            settings->severity.enable(Severity::portability);
-            settings->severity.enable(Severity::performance);
         }
         settings->certainty.setEnabled(Certainty::inconclusive, opt.inconclusive);
         settings->verbose = opt.verbose;
@@ -2784,11 +2781,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            /*const*/ Settings s32 = settingsBuilder(settings0).platform(Platform::Type::Unix32).build();
+            /*const*/ Settings s32 = settingsBuilder(settings1).platform(Platform::Type::Unix32).build();
             check(code, dinit(CheckOptions, $.settings = &s32));
             ASSERT_EQUALS("[test.cpp:5:10]: (performance) Function parameter 'x' should be passed by const reference. [passedByValue]\n", errout_str());
 
-            /*const*/ Settings s64 = settingsBuilder(settings0).platform(Platform::Type::Unix64).build();
+            /*const*/ Settings s64 = settingsBuilder(settings1).platform(Platform::Type::Unix64).build();
             check(code, dinit(CheckOptions, $.settings = &s64));
             ASSERT_EQUALS("", errout_str());
         }
@@ -5562,7 +5559,7 @@ private:
                                    "    <arg nr=\"1\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).severity(Severity::style).build();
 
         check("void foo() {\n"
               "    exit(0);\n"
@@ -7456,7 +7453,7 @@ private:
                                    "    <arg nr=\"2\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).severity(Severity::style).build();
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"
@@ -8164,7 +8161,7 @@ private:
             const char code[] = "void foo(bool flag) {\n"
                                 "  bar( (flag) ? ~0u : ~0ul);\n"
                                 "}";
-            /*const*/ Settings settings = settings0;
+            /*const*/ Settings settings = settings1;
             settings.platform.sizeof_int = 4;
             settings.platform.int_bit = 32;
 
@@ -11930,6 +11927,19 @@ private:
                "}");
         ASSERT_EQUALS("[test.cpp:10:5]: (warning) Label 'END' is not used. There is #if in function body so the label might be used in code that is removed by the preprocessor. Should this be a 'case' of the enclosing switch()? [unusedLabelSwitchConfiguration]\n",
                       errout_str());
+    }
+
+    void testUnusedLabelPremiumMisra() { // #14467 - enable unusedLabel with --premium=misra-c-20xx flag
+        Settings s;
+        check("void f() {\n"
+              "    label:\n"
+              "}", dinit(CheckOptions, $.settings = &s));
+        ASSERT_EQUALS("", errout_str());
+        s.premiumArgs = "--premium=misra-c-2012"; // <- activates unusedLabel checking
+        check("void f() {\n"
+              "    label:\n"
+              "}", dinit(CheckOptions, $.settings = &s));
+        ASSERT_EQUALS("[test.cpp:2:5]: (style) Label 'label' is not used. [unusedLabel]\n", errout_str());
     }
 
     // TODO: only used in a single place
