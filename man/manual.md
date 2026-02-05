@@ -654,7 +654,21 @@ Or at the same line as the code:
         arr[10] = 0;  // cppcheck-suppress arrayIndexOutOfBounds
     }
 
-In this example there are 2 lines with code and 1 suppression comment. The suppression comment only applies to 1 line: `a = b + c;`.
+The suppression comment and the line of code may be separated by additional comments or empty lines:
+
+    void f() {
+        char arr[5];
+
+        // cppcheck-suppress arrayIndexOutOfBounds
+
+        arr[10] = 0;
+
+        // cppcheck-suppress arrayIndexOutOfBounds
+        // Set the tenth element of arr to zero
+        arr[10] = 0;
+    }
+
+In the example below there are 2 lines with code and 1 suppression comment. The suppression comment only applies to 1 line: `a = b + c;`.
 
     void f() {
         a = b + c; // cppcheck-suppress abc
