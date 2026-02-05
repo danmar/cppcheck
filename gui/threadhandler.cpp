@@ -146,8 +146,7 @@ void ThreadHandler::createThreads(const int count)
     removeThreads();
     //Create new threads
     for (int i = mThreads.size(); i < count; i++) {
-        mThreads << new CheckThread(mResults);
-        mThreads.last()->setThreadIndex(i + 1);
+        mThreads << new CheckThread(mResults, i + 1);
         connect(mThreads.last(), &CheckThread::done,
                 this, &ThreadHandler::threadDone, Qt::QueuedConnection);
         connect(mThreads.last(), &CheckThread::finishCheck,

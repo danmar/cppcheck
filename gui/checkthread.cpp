@@ -105,8 +105,9 @@ int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, 
 }
 
 
-CheckThread::CheckThread(ThreadResult &result) :
-    mResult(result)
+CheckThread::CheckThread(ThreadResult &result, int index)
+    : mResult(result)
+    , mThreadIndex(index)
 {}
 
 void CheckThread::setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs)
@@ -498,7 +499,3 @@ QString CheckThread::clangTidyCmd()
     return QString();
 }
 
-void CheckThread::setThreadIndex(int index)
-{
-    mThreadIndex = index;
-}

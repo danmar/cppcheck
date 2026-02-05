@@ -58,7 +58,7 @@ public:
     };
 
 public:
-    explicit CheckThread(ThreadResult &result);
+    CheckThread(ThreadResult &result, int index);
 
     /**
      * @brief Set settings for cppcheck
@@ -88,8 +88,6 @@ public:
     }
 
     void stop();
-
-    void setThreadIndex(int index);
 
     /**
      * Determine command to run clang
