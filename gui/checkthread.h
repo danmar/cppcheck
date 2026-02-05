@@ -52,7 +52,7 @@ class CheckThread : public QThread {
 
 public:
     struct Details {
-        int index;
+        int threadIndex;
         std::string file;
         QTime startTime;
     };

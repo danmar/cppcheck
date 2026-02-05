@@ -331,14 +331,14 @@ void ThreadHandler::setCheckStartTime(QDateTime checkStartTime)
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void ThreadHandler::startCheck(CheckThread::Details details)
 {
-    mThreadDetails[details.index] = details;
+    mThreadDetails[details.threadIndex] = details;
     emitThreadDetailsUpdated();
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void ThreadHandler::finishCheck(CheckThread::Details details)
 {
-    mThreadDetails.erase(details.index);
+    mThreadDetails.erase(details.threadIndex);
     emitThreadDetailsUpdated();
 }
 
@@ -348,7 +348,7 @@ QString ThreadHandler::buildThreadDetailsText() const
 
     for (const auto &details : mThreadDetails) {
         result += QString("Thread %1 (%2): %3\n")
-                  .arg(details.second.index)
+                  .arg(details.second.threadIndex)
                   .arg(details.second.startTime.toString(Qt::TextDate))
                   .arg(QString::fromStdString(details.second.file));
     }
