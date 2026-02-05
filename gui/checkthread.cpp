@@ -148,7 +148,7 @@ void CheckThread::run()
         const std::string& fname = file->spath();
         qDebug() << "Checking file" << QString::fromStdString(fname);
 
-        const Details details{ mThreadIndex, fname, QTime::currentTime(), };
+        const Details details{ mThreadIndex, QString::fromStdString(fname), QTime::currentTime(), };
         emit startCheck(details);
 
         cppcheck.check(*file);
@@ -166,7 +166,7 @@ void CheckThread::run()
         const std::string& fname = fileSettings->filename();
         qDebug() << "Checking file" << QString::fromStdString(fname);
 
-        const Details details{ mThreadIndex, fname, QTime::currentTime(), };
+        const Details details{ mThreadIndex, QString::fromStdString(fname), QTime::currentTime(), };
         emit startCheck(details);
 
         cppcheck.check(*file);

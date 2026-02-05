@@ -40,7 +40,7 @@ void ThreadResult::finishCheck(CheckThread::Details details)
 {
     std::lock_guard<std::mutex> locker(mutex);
 
-    mProgress += QFile(QString::fromStdString(details.file)).size();
+    mProgress += QFile(details.file).size();
     mFilesChecked++;
 
     if (mMaxProgress > 0) {

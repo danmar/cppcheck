@@ -350,7 +350,7 @@ QString ThreadHandler::buildThreadDetailsText() const
         result += QString("Thread %1 (%2): %3\n")
                   .arg(details.second.threadIndex)
                   .arg(details.second.startTime.toString(Qt::TextDate))
-                  .arg(QString::fromStdString(details.second.file));
+                  .arg(details.second.file);
     }
 
     return result;
