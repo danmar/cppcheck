@@ -5,6 +5,7 @@ ThreadDetails::ThreadDetails(QWidget *parent)
     : QWidget(parent)
     , mUi(new Ui::ThreadDetails)
 {
+    setWindowFlags(Qt::Window);
     mUi->setupUi(this);
     mUi->detailsBox->setReadOnly(true);
 }

@@ -2113,9 +2113,10 @@ void MainWindow::showLibraryEditor()
 
 void MainWindow::showThreadDetails()
 {
-    auto *td = new ThreadDetails;
+    auto *td = new ThreadDetails(this);
     connect(mThread, &ThreadHandler::threadDetailsUpdated,
             td, &ThreadDetails::threadDetailsUpdated, Qt::QueuedConnection);
+    td->setAttribute(Qt::WA_DeleteOnClose);
     td->show();
     mThread->emitThreadDetailsUpdated();
 }
