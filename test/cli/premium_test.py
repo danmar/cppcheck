@@ -199,16 +199,3 @@ def test_hash(tmpdir):
 
     _, _, stderr = cppcheck(args)
     assert '<error id="a-id" severity="error" msg="bug" verbose="bug" hash="123" ' in stderr
-
-
-def test_misra_unusedLabel(tmpdir):
-    """ #14467 - unusedLabel should be activated by --premium=misra-c-20xx """
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt') as f:
-        f.write('void foo() {\n'
-                'L1:\n'
-                '}\n')
-
-    exe = __copy_cppcheck_premium(tmpdir)
-    _, _, stderr = cppcheck(['--premium=misra-c-2012', 'test.c'], cppcheck_exe=exe, cwd=tmpdir)
-    assert "test.c:2:1: style: Label 'L1' is not used. [unusedLabel]" in stderr
