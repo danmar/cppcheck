@@ -1876,8 +1876,8 @@ CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
         }
     }
     if (res)
-        return Bool::TRUE;
-    return Bool::FALSE;
+        return Bool::True;
+    return Bool::False;
 }
 
 const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
@@ -1887,9 +1887,9 @@ const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
         switch (isInverted(tok->astParent(), rhs)) {
         case Bool::BAILOUT:
             return nullptr;
-        case Bool::TRUE:
+        case Bool::True:
             return top->link()->next();
-        case Bool::FALSE:
+        case Bool::False:
             return top->link()->linkAt(1);
         }
     }
