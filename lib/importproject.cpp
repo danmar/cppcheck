@@ -362,7 +362,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         return false;
     }
 
-    std::map<std::string, int> fileIndex;
+    std::map<std::string, std::size_t> fsFileIds;
 
     for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();
@@ -445,7 +445,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
         // Assign a unique index to each file path. If the file path already exists in the map,
         // increment the index to handle duplicate file entries.
-        fs.fileIndex = fileIndex[path]++;
+        fs.file.setFsFileId(fsFileIds[path]++);
         fileSettings.push_back(std::move(fs));
     }
 
@@ -1563,7 +1563,7 @@ void ImportProject::setRelativePaths(const std::string &filename)
         return;
     const std::vector<std::string> basePaths{Path::fromNativeSeparators(Path::getCurrentPath())};
     for (auto &fs: fileSettings) {
-        fs.file = FileWithDetails{Path::getRelativePath(fs.filename(), basePaths), Standards::Language::None, 0}; // file will be identified later on
+        fs.file.setPath(Path::getRelativePath(fs.filename(), basePaths));
         for (auto &includePath: fs.includePaths)
             includePath = Path::getRelativePath(includePath, basePaths);
     }
