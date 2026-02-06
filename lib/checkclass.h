@@ -228,7 +228,7 @@ private:
     bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
     bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
     static bool hasAssignSelf(const Function *func, const Token *rhs, const Token *&out_ifStatementScopeStart);
-    enum class Bool : std::uint8_t { TRUE, FALSE, BAILOUT };
+    enum class Bool : std::uint8_t { True, False, Bailout };
     static Bool isInverted(const Token *tok, const Token *rhs);
     static const Token * getIfStmtBodyStart(const Token *tok, const Token *rhs);
 
