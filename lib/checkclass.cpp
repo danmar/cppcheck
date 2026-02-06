@@ -1872,7 +1872,7 @@ CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
                                                      || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
             //Do nothing
         } else {
-            return Bool::BAILOUT;
+            return Bool::Bailout;
         }
     }
     if (res)
@@ -1885,7 +1885,7 @@ const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
     const Token *top = tok->astTop();
     if (Token::simpleMatch(top->link(), ") {")) {
         switch (isInverted(tok->astParent(), rhs)) {
-        case Bool::BAILOUT:
+        case Bool::Bailout:
             return nullptr;
         case Bool::True:
             return top->link()->next();
