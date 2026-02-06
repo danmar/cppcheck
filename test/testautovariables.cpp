@@ -2643,8 +2643,7 @@ private:
               "    auto it = g().begin();\n"
               "    return it;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3:24] -> [test.cpp:3:16] -> [test.cpp:4:5]: (error) Using iterator that is a temporary. [danglingTemporaryLifetime]\n"
-                      "[test.cpp:3:24] -> [test.cpp:4:12]: (error) Returning iterator that will be invalid when returning. [returnDanglingLifetime]\n",
+        ASSERT_EQUALS("[test.cpp:3:24] -> [test.cpp:3:16] -> [test.cpp:4:5]: (error) Using iterator that is a temporary. [danglingTemporaryLifetime]\n",
                       errout_str());
 
         check("std::vector<int> g();\n"
@@ -3141,6 +3140,14 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:3:12] -> [test.cpp:2:10] -> [test.cpp:3:12]: (error) Returning pointer to local variable 'a' that will be invalid when returning. [returnDanglingLifetime]\n",
+            errout_str());
+
+        check("std::string_view f() {\n" // #14465
+              "    std::vector<std::string> v;\n"
+              "    return *v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3:12] -> [test.cpp:3:12]: (error) Returning object that will be invalid when returning. [returnDanglingLifetime]\n",
             errout_str());
     }
 
