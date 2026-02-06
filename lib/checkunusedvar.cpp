@@ -1198,6 +1198,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         const Token *nextStructuredBindingTok = nullptr;
         std::vector<std::pair<const Token*, const Token*>> unusedStructuredBindingTokens;
         size_t structuredBindingTokCount = 0;
+        std::set<const Variable*> diagUnreadVariable; // prevent duplicate warnings
 
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (nextStructuredBindingTok) {
@@ -1366,8 +1367,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 if (!expr->variable() || !expr->variable()->isMaybeUnused()) {
                     if (structuredBindingTokCount > 0)
                         unusedStructuredBindingTokens.emplace_back(tok, expr);
-                    else
+                    else {
                         unreadVariableError(tok, expr->expressionString(), false);
+                        diagUnreadVariable.emplace(expr->variable());
+                    }
                 }
             }
         }
@@ -1420,7 +1423,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                      !(var->valueType() && var->valueType()->container) &&
                      !(var->isStatic() && isReturnedByRef(var, scope->function)))
                 unassignedVariableError(usage._var->nameToken(), varname);
-            else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
+            else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var && diagUnreadVariable.count(usage._var) == 0) {
                 const Token* vnt = var->nameToken();
                 bool error = false;
                 if (vnt->next()->isSplittedVarDeclEq() || (!var->isReference() && vnt->strAt(1) == "=")) {
