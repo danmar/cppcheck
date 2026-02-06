@@ -64,7 +64,7 @@
     <item>
      <layout class="QHBoxLayout" name="mLayoutInformation">
       <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
+       <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
       </property>
       <item>
        <widget class="QLabel" name="mLabelInformation">
@@ -84,13 +84,13 @@
          <string>Checking for updates</string>
         </property>
         <property name="textFormat">
-         <enum>Qt::RichText</enum>
+         <enum>Qt::TextFormat::RichText</enum>
         </property>
         <property name="openExternalLinks">
          <bool>true</bool>
         </property>
         <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -104,7 +104,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -124,7 +124,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -218,8 +218,6 @@
      <addaction name="mActionCpp14"/>
      <addaction name="mActionCpp17"/>
      <addaction name="mActionCpp20"/>
-     <!--addaction name="mActionCpp23"/-->
-     <!--addaction name="mActionCpp26"/-->
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
@@ -228,9 +226,6 @@
      <addaction name="mActionC89"/>
      <addaction name="mActionC99"/>
      <addaction name="mActionC11"/>
-     <!--addaction name="mActionC17"/-->
-     <!--addaction name="mActionC23"/-->
-     <!--addaction name="mActionC2Y"/-->
     </widget>
     <addaction name="mActionAnalyzeFiles"/>
     <addaction name="mActionAnalyzeDirectory"/>
@@ -814,30 +809,6 @@
     <string>C&amp;11</string>
    </property>
   </action>
-  <!--action name="mActionC17">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>C&amp;17</string>
-   </property>
-  </action-->
-  <!--action name="mActionC23">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>C&amp;23</string>
-   </property>
-  </action-->
-  <!--action name="mActionC2Y">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>C&amp;2y</string>
-   </property>
-  </action-->
   <action name="mActionC89">
    <property name="checkable">
     <bool>true</bool>
@@ -948,28 +919,6 @@
     <string>C++20</string>
    </property>
   </action>
-  <!--action name="mActionCpp23">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>C++23</string>
-   </property>
-  </action-->
-  <!--action name="mActionCpp26">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>C++26</string>
-   </property>
-  </action-->
   <action name="mActionComplianceReport">
    <property name="text">
     <string>Compliance report...</string>
@@ -1043,7 +992,7 @@
   </action>
   <action name="mActionShowThreadDetails">
    <property name="text">
-    <string>Thread details</string>
+    <string>Thread Details</string>
    </property>
    <property name="toolTip">
     <string>Show thread details</string>
