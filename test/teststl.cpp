@@ -972,6 +972,14 @@ private:
                     "bool g() { return f(\" \"); }\n");
         ASSERT_EQUALS("[test.cpp:1:44]: error: Out of bounds access in 's[500]', if 's' size is 1 and '500' is 500 [containerOutOfBounds]\n",
                       errout_str());
+
+        checkNormal("int main() {\n" // #14342
+                    "    const int a[] = { 1, 2, 3 };\n"
+                    "    std::span<const int> x{ a };\n"
+                    "    return x[3];\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:4:13]: error: Out of bounds access in 'x[3]', if 'x' size is 1 and '3' is 3 [containerOutOfBounds]\n",
+                      errout_str());
     }
 
     void outOfBoundsSymbolic()
