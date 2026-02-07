@@ -32,13 +32,15 @@
 #include <utility>
 #include <vector>
 
-class TestImporter : public ImportProject {
+class TestImporter final : public ImportProject {
 public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
     using ImportProject::importVcxproj;
     using ImportProject::SharedItemsProject;
     using ImportProject::collectArgs;
+    using ImportProject::fsSetDefines;
+    using ImportProject::fsSetIncludePaths;
 };
 
 
@@ -88,16 +90,16 @@ private:
     void setDefines() const {
         FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
 
-        ImportProject::fsSetDefines(fs, "A");
+        TestImporter::fsSetDefines(fs, "A");
         ASSERT_EQUALS("A=1", fs.defines);
 
-        ImportProject::fsSetDefines(fs, "A;B;");
+        TestImporter::fsSetDefines(fs, "A;B;");
         ASSERT_EQUALS("A=1;B=1", fs.defines);
 
-        ImportProject::fsSetDefines(fs, "A;;B;");
+        TestImporter::fsSetDefines(fs, "A;;B;");
         ASSERT_EQUALS("A=1;B=1", fs.defines);
 
-        ImportProject::fsSetDefines(fs, "A;;B");
+        TestImporter::fsSetDefines(fs, "A;;B");
         ASSERT_EQUALS("A=1;B=1", fs.defines);
     }
 
@@ -105,7 +107,7 @@ private:
         FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        ImportProject::fsSetIncludePaths(fs, "abc/def/", in, variables);
+        TestImporter::fsSetIncludePaths(fs, "abc/def/", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("abc/include/", fs.includePaths.front());
     }
@@ -115,7 +117,7 @@ private:
         std::list<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
-        ImportProject::fsSetIncludePaths(fs, "/home/fred", in, variables);
+        TestImporter::fsSetIncludePaths(fs, "/home/fred", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
@@ -125,7 +127,7 @@ private:
         std::list<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
-        ImportProject::fsSetIncludePaths(fs, "/home/fred", in, variables);
+        TestImporter::fsSetIncludePaths(fs, "/home/fred", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }

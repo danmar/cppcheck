@@ -55,7 +55,6 @@ namespace cppcheck {
  * @brief Importing project settings.
  */
 class CPPCHECKLIB WARN_UNUSED ImportProject {
-    friend class TestImporter;
 public:
     enum class Type : std::uint8_t {
         NONE,
@@ -69,9 +68,11 @@ public:
         CPPCHECK_GUI
     };
 
+protected:
     static void fsSetDefines(FileSettings& fs, std::string defs);
     static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
+public:
     std::list<FileSettings> fileSettings;
     std::vector<std::string> errors;
 
@@ -103,9 +104,7 @@ protected:
     bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
     static std::string collectArgs(const std::string &cmd, std::vector<std::string> &args);
-    static void parseArgs(FileSettings &fs, const std::vector<std::string> &args);
 
-private:
     struct SharedItemsProject {
         bool successful = false;
         std::string pathToProjectFile;
@@ -113,13 +112,16 @@ private:
         std::vector<std::string> sourceFiles;
     };
 
-    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
-    SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
-    bool importBcb6Prj(const std::string &projectFilename);
 
+private:
+    static void parseArgs(FileSettings &fs, const std::vector<std::string> &args);
     void setRelativePaths(const std::string &filename);
+
+    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
+    SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importBcb6Prj(const std::string &projectFilename);
 
     std::string mPath;
     std::set<std::string> mAllVSConfigs;
