@@ -146,11 +146,15 @@ void ThreadHandler::createThreads(const int count)
     removeThreads();
     //Create new threads
     for (int i = mThreads.size(); i < count; i++) {
-        mThreads << new CheckThread(mResults);
+        mThreads << new CheckThread(mResults, i + 1);
         connect(mThreads.last(), &CheckThread::done,
                 this, &ThreadHandler::threadDone, Qt::QueuedConnection);
-        connect(mThreads.last(), &CheckThread::fileChecked,
-                &mResults, &ThreadResult::fileChecked, Qt::QueuedConnection);
+        connect(mThreads.last(), &CheckThread::finishCheck,
+                &mResults, &ThreadResult::finishCheck, Qt::QueuedConnection);
+        connect(mThreads.last(), &CheckThread::startCheck,
+                this, &ThreadHandler::startCheck, Qt::QueuedConnection);
+        connect(mThreads.last(), &CheckThread::finishCheck,
+                this, &ThreadHandler::finishCheck, Qt::QueuedConnection);
     }
 }
 
@@ -164,8 +168,12 @@ void ThreadHandler::removeThreads()
         }
         disconnect(thread, &CheckThread::done,
                    this, &ThreadHandler::threadDone);
-        disconnect(thread, &CheckThread::fileChecked,
-                   &mResults, &ThreadResult::fileChecked);
+        disconnect(thread, &CheckThread::finishCheck,
+                   &mResults, &ThreadResult::finishCheck);
+        disconnect(mThreads.last(), &CheckThread::startCheck,
+                   this, &ThreadHandler::startCheck);
+        disconnect(mThreads.last(), &CheckThread::finishCheck,
+                   this, &ThreadHandler::finishCheck);
         delete thread;
     }
 
@@ -316,4 +324,38 @@ QDateTime ThreadHandler::getCheckStartTime() const
 void ThreadHandler::setCheckStartTime(QDateTime checkStartTime)
 {
     mCheckStartTime = std::move(checkStartTime);
+}
+
+// cppcheck-suppress passedByValueCallback
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+void ThreadHandler::startCheck(CheckThread::Details details)
+{
+    mThreadDetails[details.threadIndex] = details;
+    emitThreadDetailsUpdated();
+}
+
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+void ThreadHandler::finishCheck(CheckThread::Details details)
+{
+    mThreadDetails.erase(details.threadIndex);
+    emitThreadDetailsUpdated();
+}
+
+QString ThreadHandler::buildThreadDetailsText() const
+{
+    QString result;
+
+    for (const auto &details : mThreadDetails) {
+        result += QString("Thread %1 (%2): %3\n")
+                  .arg(details.second.threadIndex)
+                  .arg(details.second.startTime.toString(Qt::TextDate))
+                  .arg(details.second.file);
+    }
+
+    return result;
+}
+
+void ThreadHandler::emitThreadDetailsUpdated()
+{
+    emit threadDetailsUpdated(buildThreadDetailsText());
 }
