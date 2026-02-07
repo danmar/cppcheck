@@ -162,6 +162,7 @@ ErrorMessage::ErrorMessage(ErrorPath errorPath, const TokenList *tokenList, Seve
     // hash = calculateWarningHash(tokenList, hashWarning.str());
 }
 
+// TODO: improve errorhandling?
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     : severity(Severity::none),
     cwe(0U),
