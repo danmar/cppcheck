@@ -97,6 +97,7 @@ private:
         TEST_CASE(uninitvar_memberfunction);
         TEST_CASE(uninitvar_nonmember); // crash in ycmd test
         TEST_CASE(uninitvarDesignatedInitializers);
+        TEST_CASE(uninitvarFunctionPointer);
 
         TEST_CASE(isVariableUsageDeref); // *p
         TEST_CASE(isVariableUsageDerefValueflow); // *p
@@ -7770,6 +7771,17 @@ private:
                        "  extern int f(struct a *);\n"
                        "  return f(&(struct a){.b = 0, .c = 0});\n"
                        "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void uninitvarFunctionPointer() {
+        checkUninitVar("void g(int* p);\n"
+                       "void f() {\n"
+                       "    int *p;\n"
+                       "    void (*a[1])(int* p) = { g } ;\n"
+                       "    p = 0;\n"
+                       "    a[0](p);\n"
+                       "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 

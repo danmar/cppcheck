@@ -4300,13 +4300,14 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
 /**
  * @throws Token* thrown when closing brackets are missing
  */
-static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap, bool executableScope, Standards::cstd_t cStandard)
+static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap, bool executableScope, Standards::cstd_t cStandard, Token*& funcPtrArgs)
 {
     const Token* const tok1 = tok;
     Token* tok2 = tok;
     if (!tok2->isName() || (tok2->tokType() != Token::eType && tok2->tokType() != Token::eName && tok2->tokType() != Token::eKeyword))
         return false;
 
+    funcPtrArgs = nullptr;
     nonneg int typeCount = 0;
     nonneg int singleNameCount = 0;
     bool hasstruct = false;   // Is there a "struct" or "class"?
@@ -4373,6 +4374,7 @@ static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap
                 if (tok3->str() == ",")
                     return false;
             }
+            funcPtrArgs = tok2->link()->next();
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]") && !variableMap.map(false).count(tok2->strAt(2))) {
             bracket = true;
@@ -4680,9 +4682,15 @@ void Tokenizer::setVarIdPass1()
     const Token *functionDeclEndToken = nullptr;
     bool initlist = false;
     bool inlineFunction = false;
+    Token *funcPtrArgs = nullptr;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isOp())
             continue;
+        if (tok == funcPtrArgs) {
+            tok = funcPtrArgs->link();
+            funcPtrArgs = nullptr;
+            continue;
+        }
         if (cpp && Token::simpleMatch(tok, "template <")) {
             Token* closingBracket = tok->next()->findClosingBracket();
             if (closingBracket)
@@ -4855,7 +4863,7 @@ void Tokenizer::setVarIdPass1()
             }
 
             try { /* Ticket #8151 */
-                decl = setVarIdParseDeclaration(tok2, variableMap, scopeStack.top().isExecutable, mSettings.standards.c);
+                decl = setVarIdParseDeclaration(tok2, variableMap, scopeStack.top().isExecutable, mSettings.standards.c, funcPtrArgs);
             } catch (const Token * errTok) {
                 syntaxError(errTok);
             }
