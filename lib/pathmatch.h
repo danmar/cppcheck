@@ -169,10 +169,10 @@ public:
         return pattern;
     }
 
-private:
-    friend class TestPathMatch;
+protected:
     class PathIterator;
 
+private:
     /* List of patterns */
     std::vector<std::string> mPatterns;
     /* Base path to with patterns and paths are relative */

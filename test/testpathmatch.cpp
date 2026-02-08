@@ -28,6 +28,11 @@ public:
     TestPathMatch() : TestFixture("TestPathMatch") {}
 
 private:
+    class PathMatchTest final : public PathMatch
+    {
+        friend class TestPathMatch;
+    };
+
     static constexpr auto unix = PathMatch::Syntax::unix;
     static constexpr auto windows = PathMatch::Syntax::windows;
     static constexpr auto ifreg = PathMatch::Filemode::regular;
@@ -277,7 +282,7 @@ private:
     void pathiterator() const {
         /* See https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats
          * for information on Windows path syntax. */
-        using PathIterator = PathMatch::PathIterator;
+        using PathIterator = PathMatchTest::PathIterator;
         ASSERT_EQUALS("/", PathIterator("/", nullptr, unix).read());
         ASSERT_EQUALS("/", PathIterator("//", nullptr, unix).read());
         ASSERT_EQUALS("/", PathIterator("/", "/", unix).read());
