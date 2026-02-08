@@ -133,6 +133,7 @@ Does not improve the readability.
 `misc-unconventional-assign-operator`<br/>
 `bugprone-throwing-static-initialization`<br/>
 `bugprone-command-processor`<br/>
+`modernize-use-nodiscard`<br/>
 
 To be evaluated (need to remove exclusion).
 
@@ -150,10 +151,16 @@ To be evaluated (need to remove exclusion).
 To be evaluated (need to enable explicitly).
 
 `modernize-type-traits`<br/>
-`modernize-use-nodiscard`<br/>
 `modernize-use-scoped-lock`<br/>
+`modernize-use-constraints`<br/>
+`modernize-use-starts-ends-with`<br/>
+`modernize-avoid-bind`<br/>
+`modernize-make-unique`<br/>
+`modernize-use-ranges`<br/>
+`readability-container-contains`<br/>
+`modernize-use-integer-sign-comparison`<br/>
 
-These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
+These require us to default to a later standard than C++11 so we cannot apply them.
 
 `portability-avoid-pragma-once`<br/>
 
