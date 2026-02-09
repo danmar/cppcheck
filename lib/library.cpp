@@ -1395,12 +1395,19 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
         break;
     }
 
+    const bool hasScope = typeStart->strAt(1) == "::";
+    const bool bailIfHasStd = !withoutStd && !hasScope;
+
     for (const std::pair<const std::string, Library::Container> & c : mData->mContainers) {
         const Container& container = c.second;
         if (container.startPattern.empty())
             continue;
 
-        const int offset = (withoutStd && startsWith(container.startPattern2, "std :: ")) ? 7 : 0;
+        const bool startsWithStd = startsWith(container.startPattern2, "std :: ");
+        if (bailIfHasStd && startsWithStd)
+            continue;
+
+        const int offset = (withoutStd && startsWithStd) ? 7 : 0;
 
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
