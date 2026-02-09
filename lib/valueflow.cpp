@@ -6504,10 +6504,12 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
     return {};
 }
 
-static bool valueFlowIsSameContainerType(const ValueType& contType, const Token* tok, const Settings& settings)
+static bool valueFlowIsSameContainerType(const ValueType& contType, const Token* tok, bool isView, const Settings& settings)
 {
-    if (!tok || !tok->valueType() || !tok->valueType()->containerTypeToken)
+    if (!tok || !tok->valueType())
         return true;
+    if (!tok->valueType()->containerTypeToken)
+        return !isView;
 
     const ValueType tokType = ValueType::parseDecl(tok->valueType()->containerTypeToken, settings);
     return contType.isTypeEqual(&tokType) || tokType.type == ValueType::Type::UNKNOWN_TYPE;
@@ -6536,7 +6538,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                 initList = true;
             else if (vt.isIntegral() && astIsIntegral(args[0], false))
                 initList = true;
-            else if (args.size() == 1 && valueFlowIsSameContainerType(vt, tok->astOperand2(), settings))
+            else if (args.size() == 1 && valueFlowIsSameContainerType(vt, tok->astOperand2(), valueType->container->view, settings))
                 initList = false; // copy ctor
             else if (args.size() == 2 && (!args[0]->valueType() || !args[1]->valueType())) // might be unknown iterators
                 initList = false;
