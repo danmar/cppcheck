@@ -6491,6 +6491,9 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
         if (astIsPointer(args[0])) {
             if (args.size() == 1 && args[0]->tokType() == Token::Type::eString)
                 return {makeContainerSizeValue(Token::getStrLength(args[0]), known)};
+            if (args.size() == 1 && args[0]->variable() && args[0]->variable()->isArray() &&
+                args[0]->variable()->isConst() && args[0]->variable()->dimensions().size() == 1)
+                return {makeContainerSizeValue(args[0]->variable()->dimensions()[0].num, known)};
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
         } else if (astIsContainer(args[0])) {
