@@ -17,7 +17,9 @@ Your code is probably OK but you need to configure Cppcheck to understand the co
 
 Review the configuration.
 
-If Cppcheck warns about a macro that is defined in a header, make sure that this header is included properly. Cppcheck must have the include path.
+If Cppcheck warns about a macro that is defined in a 3rd party library, and there is a cfg file for that, then a `--library=` option may be a proper solution.
+
+If Cppcheck warns about a macro that is defined in a header that should included, make sure that this header is included properly. Cppcheck must have the include path.
 
 If Cppcheck warns about a compiler keyword add a `-D` that defines this keyword somehow. I.e. if cppcheck should just ignore the keyword then
 an `-DKEYWORD=` option is suggested.
@@ -38,7 +40,7 @@ Fix:
 Somehow `F_U64` must be specified for Cppcheck to be able to analyse this properly. Either:
  * Add `-DF_U64="x"` to explicitly tell Cppcheck what it should replace F_U64 with. Or;
  * Add `-I..` so that headers are included properly.
-
+ * If the symbol is defined in a 3rd party library adding a corresponding `--library=` might solve such issue.
 
 ### Example code 2
 ```
@@ -55,6 +57,7 @@ Fix:
 Somehow `BOTAN_FUNC_ISA` must be specified for Cppcheck to be able to analyse this properly. Either:
  * Add `-DBOTAN_FUNC_ISA(X)=` to explicitly tell Cppcheck that BOTAN_FUNC_ISA("crypto") should be ignored. Or;
  * Add `-I..` so that headers are included properly.
+ * If the symbol is defined in a 3rd party library adding a corresponding `--library=` might solve such issue.
 
 
 
