@@ -13,6 +13,8 @@ Cppcheck has found code that is confusing and does not know how to analyze it. A
 
 Your code is probably OK but you need to configure Cppcheck to understand the code better.
 
+This is a critical error, the analysis of the whole translation unit is aborted. Such error in a header file can mean that analysis of many source files are aborted.
+
 ## How to fix
 
 Review the configuration.
