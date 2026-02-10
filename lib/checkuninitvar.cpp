@@ -844,7 +844,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 }
 
                 // assume that variable is assigned
-                return true;
+                if (!Token::simpleMatch(tok->astParent(), "<<"))
+                    return true;
             }
         }
     }
