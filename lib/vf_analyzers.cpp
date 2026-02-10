@@ -139,7 +139,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 return result;
             }
             ConditionState lhs = analyzeCondition(tok->astOperand1(), depth - 1);
-            if (lhs.isUnknownDependent())
+            if (lhs.isUnknownDependent() || !tok->astOperand2())
                 return lhs;
             ConditionState rhs = analyzeCondition(tok->astOperand2(), depth - 1);
             if (rhs.isUnknownDependent())
@@ -1202,7 +1202,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
             return false;
         if (value.isImpossible())
             return false;
-        if (isConditional() && !value.isKnown() && !value.isImpossible())
+        if (isConditional() && !value.isKnown())
             return true;
         if (value.isSymbolicValue())
             return false;

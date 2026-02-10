@@ -385,7 +385,7 @@ bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLog
             if (func.filename != "+")
                 filename = func.filename;
             errors.emplace_back(filename, func.fileIndex, func.lineNumber, func.column, it->first);
-        } else if (func.isC && !func.isStatic && !func.usedOtherFile) {
+        } else if (func.isC && !func.isStatic) {
             std::string filename;
             if (func.filename != "+")
                 filename = func.filename;
