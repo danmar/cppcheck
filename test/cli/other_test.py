@@ -1216,7 +1216,7 @@ def test_file_duplicate_2(tmpdir):
     assert stderr == ''
 
 
-def test_file_duplicate_3(tmpdir):
+def test_file_duplicate_3(tmpdir):  # #12834
     test_file_a = os.path.join(tmpdir, 'a.c')
     with open(test_file_a, 'wt'):
         pass
@@ -1230,43 +1230,18 @@ def test_file_duplicate_3(tmpdir):
     in_file_f = os.path.join(tmpdir, 'dummy', '..', 'a.c')
 
     args = [in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, str(tmpdir)]
-    args.append('-j1') # TODO: remove when fixed
 
     exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
-    # TODO: only a single file should be checked
-    if sys.platform == 'win32':
-        assert lines == [
-            'Checking {} ...'.format('a.c'),
-            '1/6 files checked 16% done',
-            'Checking {} ...'.format('a.c'),
-            '2/6 files checked 33% done',
-            'Checking {} ...'.format('a.c'),
-            '3/6 files checked 50% done',
-            'Checking {} ...'.format(test_file_a),
-            '4/6 files checked 66% done',
-            'Checking {} ...'.format(test_file_a),
-            '5/6 files checked 83% done',
-            'Checking {} ...'.format(test_file_a),
-            '6/6 files checked 100% done'
-        ]
-    else:
-        assert lines == [
-            'Checking {} ...'.format('a.c'),
-            '1/4 files checked 25% done',
-            'Checking {} ...'.format('a.c'),
-            '2/4 files checked 50% done',
-            'Checking {} ...'.format(test_file_a),
-            '3/4 files checked 75% done',
-            'Checking {} ...'.format(test_file_a),
-            '4/4 files checked 100% done'
-        ]
+    assert lines == [
+        'Checking {} ...'.format('a.c')
+    ]
     assert stderr == ''
 
 
 @pytest.mark.skipif(sys.platform != 'win32', reason="requires Windows")
-def test_file_duplicate_4(tmpdir):
+def test_file_duplicate_4(tmpdir):  # #12834
     test_file_a = os.path.join(tmpdir, 'a.c')
     with open(test_file_a, 'wt'):
         pass
@@ -1284,25 +1259,12 @@ def test_file_duplicate_4(tmpdir):
     for a in args1:
         args2.append(a.replace('\\', '/'))
     args = args1 + args2
-    args.append('-j1') # TODO: remove when fixed
 
     exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
-    # TODO: only a single file should be checked
     assert lines == [
-        'Checking {} ...'.format('a.c'),
-        '1/6 files checked 16% done',
-        'Checking {} ...'.format('a.c'),
-        '2/6 files checked 33% done',
-        'Checking {} ...'.format('a.c'),
-        '3/6 files checked 50% done',
-        'Checking {} ...'.format(test_file_a),
-        '4/6 files checked 66% done',
-        'Checking {} ...'.format(test_file_a),
-        '5/6 files checked 83% done',
-        'Checking {} ...'.format(test_file_a),
-        '6/6 files checked 100% done'
+        'Checking {} ...'.format('a.c')
     ]
     assert stderr == ''
 
