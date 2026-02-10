@@ -5903,7 +5903,7 @@ private:
               "        i = 1;\n"
               "    return i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6:9]: (style) The if condition is the same as the previous if condition [duplicateCondition]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:12] -> [test.cpp:6:12]: (style) The if condition is the same as the previous if condition [duplicateCondition]\n", errout_str());
     }
 
     void checkInvalidTestForOverflow() {
