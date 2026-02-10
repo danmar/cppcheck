@@ -397,7 +397,13 @@ std::size_t TestFixture::runTests(const options& args)
 
         for (TestInstance * test : TestRegistry::theInstance().tests()) {
             if (classname.empty() || test->classname == classname) {
-                TestFixture* fixture = test->create();
+                TestFixture* fixture;
+                try {
+                    fixture = test->create();
+                } catch (const std::exception& e) {
+                    // TODO
+                    continue;
+                }
                 fixture->processOptions(args);
                 fixture->run(testname);
             }

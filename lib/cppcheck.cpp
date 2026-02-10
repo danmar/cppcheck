@@ -824,7 +824,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     else if (!fs.standard.empty())
         tempSettings.standards.setC(fs.standard);
     if (fs.platformType != Platform::Type::Unspecified)
-        tempSettings.platform.set(fs.platformType);
+        tempSettings.platform.set(fs.platformType); // TODO: properly handle files
     if (mSettings.clang) {
         tempSettings.includePaths.insert(tempSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         // need to pass the externally provided ErrorLogger instead of our internal wrapper
