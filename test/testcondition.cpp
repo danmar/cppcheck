@@ -5899,6 +5899,28 @@ private:
               "    if (strlen(s2) > 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void g(int*);\n" // #14428
+              "int f(int* const p) {\n"
+              "    int i = 0;\n"
+              "    if (*p == 0)\n"
+              "        g(p);\n"
+              "    if (*p == 0)\n"
+              "        i = 1;\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void g(const int*);\n"
+              "int f(const int* const p) {\n"
+              "    int i = 0;\n"
+              "    if (*p == 0)\n"
+              "        g(p);\n"
+              "    if (*p == 0)\n"
+              "        i = 1;\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:12] -> [test.cpp:6:12]: (style) The if condition is the same as the previous if condition [duplicateCondition]\n", errout_str());
     }
 
     void checkInvalidTestForOverflow() {
