@@ -619,6 +619,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 container.startPattern2 = startPattern;
                 if (!endsWith(container.startPattern, '<'))
                     container.startPattern2 += " !!::";
+                container.startPatternHasStd = startsWith(container.startPattern2, "std :: ");
             }
             const char* const endPattern = node->Attribute("endPattern");
             if (endPattern)
@@ -1395,12 +1396,18 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
         break;
     }
 
+    const bool hasScope = typeStart->strAt(1) == "::";
+    const bool bailIfHasStd = !withoutStd && !hasScope;
+
     for (const std::pair<const std::string, Library::Container> & c : mData->mContainers) {
         const Container& container = c.second;
         if (container.startPattern.empty())
             continue;
 
-        const int offset = (withoutStd && startsWith(container.startPattern2, "std :: ")) ? 7 : 0;
+        if (bailIfHasStd && container.startPatternHasStd)
+            continue;
+
+        const int offset = (withoutStd && container.startPatternHasStd) ? 7 : 0;
 
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
