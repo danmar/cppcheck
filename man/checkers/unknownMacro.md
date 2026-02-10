@@ -17,7 +17,7 @@ Your code is probably OK but you need to configure Cppcheck to understand the co
 
 Review the configuration.
 
-If Cppcheck warns about a macro that is defined in a header, make sure that this header is included properly Cppcheck must have the include path.
+If Cppcheck warns about a macro that is defined in a header, make sure that this header is included properly. Cppcheck must have the include path.
 
 If Cppcheck warns about a compiler keyword add a `-D` that defines this keyword somehow. I.e. if cppcheck should just ignore the keyword then
 an `-DKEYWORD=` option is suggested.
