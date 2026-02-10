@@ -48,14 +48,14 @@ static std::string getFilename(const std::string &fullpath)
     return fullpath.substr(pos1,pos2);
 }
 
-void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings)
+void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings)
 {
     const std::string filesTxt(buildDir + "/files.txt");
     std::ofstream fout(filesTxt);
-    fout << getFilesTxt(sourcefiles, userDefines, fileSettings);
+    fout << getFilesTxt(sourcefiles, fileSettings);
 }
 
-std::string AnalyzerInformation::getFilesTxt(const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings) {
+std::string AnalyzerInformation::getFilesTxt(const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings) {
     std::ostringstream ret;
 
     std::map<std::string, unsigned int> fileCount;
@@ -63,8 +63,6 @@ std::string AnalyzerInformation::getFilesTxt(const std::list<std::string> &sourc
     for (const std::string &f : sourcefiles) {
         const std::string afile = getFilename(f);
         ret << afile << ".a" << (++fileCount[afile]) << sep << sep << sep << Path::simplifyPath(f) << '\n';
-        if (!userDefines.empty())
-            ret << afile << ".a" << (++fileCount[afile]) << sep << userDefines << sep << sep << Path::simplifyPath(f) << '\n';
     }
 
     for (const FileSettings &fs : fileSettings) {
