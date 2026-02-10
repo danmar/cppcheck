@@ -1502,10 +1502,11 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
 
 void CheckCondition::alwaysTrueFalse()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) &&
-        !mSettings->isPremiumEnabled("alwaysTrue") &&
-        !mSettings->isPremiumEnabled("alwaysFalse") &&
-        !mSettings->isPremiumEnabled("knownConditionTrueFalse"))
+    const bool pedantic = mSettings->isPremiumEnabled("alwaysTrue") ||
+                          mSettings->isPremiumEnabled("alwaysFalse") ||
+                          mSettings->isPremiumEnabled("knownConditionTrueFalse");
+
+    if (!pedantic && !mSettings->severity.isEnabled(Severity::style))
         return;
 
     logChecker("CheckCondition::alwaysTrueFalse"); // style
@@ -1588,7 +1589,8 @@ void CheckCondition::alwaysTrueFalse()
                                  true,
                                  true))
                 continue;
-            if (isConstVarExpression(tok, [](const Token* tok) {
+
+            if (!pedantic && isConstVarExpression(tok, [](const Token* tok) {
                 return Token::Match(tok, "[|(|&|+|-|*|/|%|^|>>|<<") && !Token::simpleMatch(tok, "( )");
             }))
                 continue;
