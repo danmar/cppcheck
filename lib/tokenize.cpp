@@ -5032,8 +5032,8 @@ void Tokenizer::setVarIdPass1()
                 // there are tokens which can't appear at the begin of a function declaration such as "return"
                 const bool isNotstartKeyword = start->next() && notstart.find(start->strAt(1)) != notstart.end();
 
-                // now check if it is a function declaration
-                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;") && !isNotstartKeyword) {
+                // now check if it is a function (pointer) declaration
+                if ((Token::simpleMatch(start, ") (") || Token::Match(start, "[;{}] %type% %name%|*")) && par && Token::Match(end, ") [;=]") && !isNotstartKeyword) {
                     // function declaration => don't set varid
                     tok = end;
                     continue;

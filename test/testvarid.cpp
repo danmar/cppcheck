@@ -3497,6 +3497,16 @@ private:
 
         const char code3[] = "void f (void (*g) (int i, IN int n)) {}\n";
         ASSERT_EQUALS("1: void f ( void ( * g@1 ) ( int , IN int ) ) { }\n", tokenize(code3));
+
+        const char code4[] = "void f() {\n" // #14439
+                             "    int* p;\n"
+                             "    void (*a[1])(int* p) = { 0 };\n"
+                             "}\n";
+        ASSERT_EQUALS("1: void f ( ) {\n"
+                      "2: int * p@1 ;\n"
+                      "3: void ( * a@2 [ 1 ] ) ( int * p ) = { 0 } ;\n"
+                      "4: }\n",
+                      tokenize(code4));
     }
 
     void varid_alignas() {
