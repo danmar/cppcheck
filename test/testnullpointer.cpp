@@ -3787,6 +3787,21 @@ private:
               "        g(x);\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct T {\n" // #14477
+              "    bool b{};\n"
+              "    T* next{};\n"
+              "};\n"
+              "bool g(const T*& r) {\n"
+              "    const T* t = r;\n"
+              "    r = t->next;\n"
+              "    return t->b;\n"
+              "}\n"
+              "void f(const T* tok) {\n"
+              "    if (g(tok)) {}\n"
+              "    if (tok) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void nullpointerExit() {
