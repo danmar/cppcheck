@@ -4173,6 +4173,15 @@ private:
               "    a[i] = NULL;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4:6]: (error) Array 'a[2]' accessed at index 2, which is out of bounds. [arrayIndexOutOfBounds]\n", errout_str());
+
+        check("void f(const uint8_t* a) {\n" // 10421
+              "    uint8_t* p = (uint8_t*)malloc(20U * sizeof(uint8_t));\n"
+              "    if (!p) return false;\n"
+              "    for (uint8_t i = 1; i < 30; ++i)\n"
+              "        p[i] = a[i];\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5:10]: (error) Array 'p[20]' accessed at index 29, which is out of bounds. [arrayIndexOutOfBounds]\n", errout_str());
     }
 
     // statically allocated buffer
@@ -5351,6 +5360,15 @@ private:
             "    f(a);\n"
             "}\n");
         ASSERT_EQUALS("[test.cpp:7:12] -> [test.cpp:9:6] -> [test.cpp:3:12]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 20. [ctuArrayIndex]\n", errout_str());
+        
+        ctu("void bar(int *p) { p[4] = 42; }\n" // #13403
+            "void f() {\n"
+            "    int *p = (int*)malloc(4 * sizeof(int));\n"
+            "    if (!p) return;\n"
+            "    bar(p);\n"
+            "    free(p);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3:12] -> [test.cpp:4:9] -> [test.cpp:5:8] -> [test.cpp:1:20]: (error) Array index out of bounds; 'p' buffer size is 16 and it is accessed at offset 16. [ctuArrayIndex]\n", errout_str());
     }
 
     void ctu_array() {

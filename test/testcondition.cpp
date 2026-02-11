@@ -4814,6 +4814,29 @@ private:
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6:12] -> [test.cpp:7:21]: (style) Assigned value 's.g()' is always true [knownConditionTrueFalse]\n", errout_str());
+
+        check("void f(const void* p) {\n" // #11519
+              "    bool b = false;\n"
+              "    if (!p && !b) {}\n"
+              "    if (!b) {}\n"
+              "    (void)b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:15]: (style) Condition '!b' is always true [knownConditionTrueFalse]\n"
+                      "[test.cpp:4:9]: (style) Condition '!b' is always true [knownConditionTrueFalse]\n",
+                      errout_str());
+
+        check("struct C {\n" // #12532
+              "    void f() const;\n"
+              "    int a, b;\n"
+              "};\n"
+              "void C::f() const {\n"
+              "    if (a)\n"
+              "        return;\n"
+              "    if (!b) {}\n"
+              "    if (a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6:9] -> [test.cpp:9:9]: (style) Condition 'a' is always false [knownConditionTrueFalse]\n",
+                      errout_str());
     }
 
     void alwaysTrueSymbolic()
