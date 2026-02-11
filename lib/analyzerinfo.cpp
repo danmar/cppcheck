@@ -317,7 +317,7 @@ void AnalyzerInformation::reopen(const std::string &buildDir, const std::string 
     ifs.close();
 
     std::string content = iss.str();
-    content = content.substr(0, content.find("</analyzerinfo>"));
+    content.resize(content.find("</analyzerinfo>"));
 
     mOutputStream.open(analyzerInfoFile, std::ios::trunc);
     mOutputStream << content;
