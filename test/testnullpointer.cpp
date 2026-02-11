@@ -3788,7 +3788,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-        check("struct T {\n" // #14477
+        check("struct T {\n" // #14308
               "    bool b{};\n"
               "    T* next{};\n"
               "};\n"
