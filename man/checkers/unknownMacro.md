@@ -9,22 +9,25 @@
 
 ## Description
 
-Cppcheck has found code that is confusing and does not know how to analyze it. Analysis is aborted.
+Cppcheck has found code that is confusing and does not know how to analyze it. This is a critical
+error, the analysis of the whole translation unit is aborted. Such error in a header file can mean
+that analysis of many source files are aborted.
 
-Your code is probably OK but you need to configure Cppcheck to understand the code better.
-
-This is a critical error, the analysis of the whole translation unit is aborted. Such error in a header file can mean that analysis of many source files are aborted.
+Your code is probably OK but you need to configure Cppcheck to make Cppcheck understand the code
+better.
 
 ## How to fix
 
 Review the configuration.
 
-If Cppcheck warns about a macro that is defined in a 3rd party library, and there is a cfg file for that, then a `--library=` option may be a proper solution.
+If Cppcheck warns about a macro that is defined in a 3rd party library, and there is a cfg file for
+that, then a `--library=` option may be a proper solution.
 
-If Cppcheck warns about a macro that is defined in a header that should be included, make sure that this header is included properly. Cppcheck must have the include path.
+If Cppcheck warns about a macro that is defined in a header that should be included, make sure that
+this header is included properly. Cppcheck must have the include path.
 
-If Cppcheck warns about a compiler keyword add a `-D` that defines this keyword somehow. I.e. if cppcheck should just ignore the keyword then
-an `-DKEYWORD=` option is suggested.
+If Cppcheck warns about a compiler keyword add a `-D` that defines this keyword somehow. I.e. if
+cppcheck should just ignore the keyword then an `-DKEYWORD=` option is suggested.
 
 ## Example
 
