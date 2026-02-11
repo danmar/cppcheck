@@ -2042,7 +2042,7 @@ private:
                        "        return;\n"
                        "    char c = *s;\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory is allocated but not initialized: s\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:15]: (error) Memory is allocated but not initialized: s [uninitdata]\n", errout_str());
 
         // #3708 - false positive when using ptr typedef
         checkUninitVar("void f() {\n"
@@ -2146,6 +2146,24 @@ private:
                        "        *(p + i) = 0;\n"
                        "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkUninitVar("int* f() {\n" // #14448
+                       "    int* p = (int*)malloc(4);\n"
+                       "    if (!p)\n"
+                       "        return nullptr;\n"
+                       "    if (*p) {}\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5:9]: (error) Memory is allocated but not initialized: *p [uninitdata]\n", errout_str());
+
+        checkUninitVar("int* f() {\n"
+                       "    int* p = (int*)malloc(4);\n"
+                       "    if (p == nullptr)\n"
+                       "        return nullptr;\n"
+                       "    if (*p) {}\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5:9]: (error) Memory is allocated but not initialized: *p [uninitdata]\n", errout_str());
     }
 
     // class / struct..

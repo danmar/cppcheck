@@ -907,7 +907,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
                     continue;
                 uninitvarError(errorToken, errorToken->expressionString(), alloc);
             }
-            return true;
+            return !Token::Match(tok->astParent(), "!|%comp%");
         }
         // skip sizeof / offsetof
         if (isUnevaluated(tok))
