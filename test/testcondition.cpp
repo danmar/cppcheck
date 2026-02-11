@@ -110,6 +110,7 @@ private:
         TEST_CASE(alwaysTrueLoop);
         TEST_CASE(alwaysTrueTryCatch);
         TEST_CASE(alwaysTrueSideEffect);
+        TEST_CASE(alwaysTruePremiumMisra);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
 
@@ -5623,6 +5624,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void alwaysTruePremiumMisra() {
+        const char code[] = "void f() {\n"
+                            "  if (3 > 2) {}\n"
+                            "}";
+
+        check(code);
+        ASSERT_EQUALS("", errout_str());
+
+        Settings misraSettings;
+        misraSettings.premiumArgs = "--misra-c-2012";
+        check(code, misraSettings);
+        ASSERT_EQUALS("[test.cpp:2:9]: (style) Condition '3>2' is always true [knownConditionTrueFalse]\n", errout_str());
     }
 
     void multiConditionAlwaysTrue() {
