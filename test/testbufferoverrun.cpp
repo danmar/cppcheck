@@ -5360,7 +5360,7 @@ private:
             "    f(a);\n"
             "}\n");
         ASSERT_EQUALS("[test.cpp:7:12] -> [test.cpp:9:6] -> [test.cpp:3:12]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 20. [ctuArrayIndex]\n", errout_str());
-        
+
         ctu("void bar(int *p) { p[4] = 42; }\n" // #13403
             "void f() {\n"
             "    int *p = (int*)malloc(4 * sizeof(int));\n"
