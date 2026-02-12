@@ -6390,6 +6390,18 @@ private:
                                  "A<int,S> a ; "
                                  "struct A<int,S> { } ;";
         ASSERT_EQUALS(expected2, tok(code2));
+
+        const char code3[] = "template <int... N>\n" // #14477
+                             "    int f() {\n"
+                             "    return (0 | ... | (1, 2, 4));\n"
+                             "}\n"
+                             "int main() {\n"
+                             "    return f<1, 2, 4>();\n"
+                             "}\n";
+        const char expected3[] = "int f<1,2,4> ( ) ; "
+                                 "int main ( ) { return f<1,2,4> ( ) ; } "
+                                 "int f<1,2,4> ( ) { return ( 0 | ... | ( 1 , 2 , 4 ) ) ; }";
+        ASSERT_EQUALS(expected3, tok(code3));
     }
 
     void template_variable_1() {
