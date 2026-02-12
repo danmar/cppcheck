@@ -6372,7 +6372,7 @@ private:
                                 "class E<1,3> { "
                                 "template < int ... I > "
                                 "int f ( int n , std :: integer_sequence < int , I ... > ) { "
-                                "return ( ( ( I == n ) ? : 0 ) + ... ) ; "
+                                "return ( ( ( I == n ) ? ( 1 , 3 ) : 0 ) + ... ) ; "
                                 "} "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
