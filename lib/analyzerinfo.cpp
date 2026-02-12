@@ -83,32 +83,20 @@ void AnalyzerInformation::close()
     }
 }
 
-bool AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors, bool debug)
+std::string AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors)
 {
     const tinyxml2::XMLElement * const rootNode = analyzerInfoDoc.FirstChildElement();
-    if (rootNode == nullptr) {
-        if (debug)
-            std::cout << "discarding cached result - no root node found" << std::endl;
-        return false;
-    }
+    if (rootNode == nullptr)
+        return "no root node found";
 
-    if (strcmp(rootNode->Name(), "analyzerinfo") != 0) {
-        if (debug)
-            std::cout << "discarding cached result - unexpected root node" << std::endl;
-        return false;
-    }
+    if (strcmp(rootNode->Name(), "analyzerinfo") != 0)
+        return "unexpected root node";
 
     const char * const attr = rootNode->Attribute("hash");
-    if (!attr) {
-        if (debug)
-            std::cout << "discarding cached result - no 'hash' attribute found" << std::endl;
-        return false;
-    }
-    if (attr != std::to_string(hash)) {
-        if (debug)
-            std::cout << "discarding cached result - hash mismatch" << std::endl;
-        return false;
-    }
+    if (!attr)
+        return "no 'hash' attribute found";
+    if (attr != std::to_string(hash))
+        return "hash mismatch";
 
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "error") != 0)
@@ -125,17 +113,15 @@ bool AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfo
         {
             // cppcheck-suppress useStlAlgorithm
             if (e->Attribute("id", id)) {
-                if (debug)
-                    std::cout << "discarding cached result - '" << id << "' encountered" << std::endl;
                 errors.clear();
-                return false;
+                return std::string("'") + id + "' encountered";
             }
         }
 
         errors.emplace_back(e);
     }
 
-    return true;
+    return "";
 }
 
 std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, int fsFileId)
@@ -184,18 +170,22 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
         tinyxml2::XMLDocument analyzerInfoDoc;
         const tinyxml2::XMLError xmlError = analyzerInfoDoc.LoadFile(analyzerInfoFile.c_str());
         if (xmlError == tinyxml2::XML_SUCCESS) {
-            if (skipAnalysis(analyzerInfoDoc, hash, errors, debug)) {
+            const std::string err = skipAnalysis(analyzerInfoDoc, hash, errors);
+            if (err.empty()) {
                 if (debug)
-                    std::cout << "skipping analysis - loaded " << errors.size() << " cached finding(s) from '" << analyzerInfoFile << "'" << std::endl;
+                    std::cout << "skipping analysis - loaded " << errors.size() << " cached finding(s) from '" << analyzerInfoFile << "' for '" << sourcefile <<  "'" << std::endl;
                 return false;
+            }
+            if (debug) {
+                std::cout << "discarding cached result from '" << analyzerInfoFile << "' for '" << sourcefile << "' - " << err << std::endl;
             }
         }
         else if (xmlError != tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
             if (debug)
-                std::cout << "discarding cached result - failed to load '" << analyzerInfoFile << "' (" << tinyxml2::XMLDocument::ErrorIDToName(xmlError) << ")" << std::endl;
+                std::cout << "discarding cached result - failed to load '" << analyzerInfoFile << "' for '" << sourcefile << "' (" << tinyxml2::XMLDocument::ErrorIDToName(xmlError) << ")" << std::endl;
         }
         else if (debug)
-            std::cout << "no cached result '" << analyzerInfoFile << "' found" << std::endl;
+            std::cout << "no cached result '" << analyzerInfoFile << "' for '" << sourcefile << "' found" << std::endl;
     }
 
     mOutputStream.open(analyzerInfoFile);
