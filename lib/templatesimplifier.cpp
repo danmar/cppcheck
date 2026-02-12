@@ -2153,8 +2153,8 @@ void TemplateSimplifier::expandTemplate(
                         Token *back;
                         if (copy) {
                             if (isVariadicTemplateArg && typetok == mTypesUsedInTemplateInstantiation[itype].token() && typetok->isLiteral()) {
-                                 mTokenList.addtoken("(", mTokenList.back());
-                                 begPar = mTokenList.back();
+                                mTokenList.addtoken("(", mTokenList.back());
+                                begPar = mTokenList.back();
                             }
                             mTokenList.addtoken(typetok, tok3);
                             back = mTokenList.back();
