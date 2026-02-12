@@ -721,8 +721,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     }
 
                     bool newFunc = true; // Is this function already in the database?
-                    auto range = scope->functionMap.equal_range(tok->str());
-                    for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+                    auto range = utils::as_const(scope->functionMap).equal_range(tok->str());
+                    for (auto it = range.first; it != range.second; ++it) {
                         if (it->second->argsMatch(scope, it->second->argDef, argStart, "", 0)) {
                             newFunc = false;
                             break;
@@ -805,8 +805,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     if (isFunction(ftok, scope, funcStart, argStart, declEnd)) {
                         if (declEnd && declEnd->str() == ";") {
                             bool newFunc = true; // Is this function already in the database?
-                            auto range = scope->functionMap.equal_range(ftok->str());
-                            for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+                            auto range = utils::as_const(scope->functionMap).equal_range(ftok->str());
+                            for (auto it = range.first; it != range.second; ++it) {
                                 if (it->second->argsMatch(scope, it->second->argDef, argStart, "", 0)) {
                                     newFunc = false;
                                     break;
@@ -3449,8 +3449,8 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     Function* function = nullptr;
     // Lambda functions are always unique
     if (tok->str() != "[") {
-        auto range = scope->functionMap.equal_range(tok->str());
-        for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+        auto range = utils::as_const(scope->functionMap).equal_range(tok->str());
+        for (auto it = range.first; it != range.second; ++it) {
             const Function *f = it->second;
             if (f->hasBody())
                 continue;
@@ -3609,8 +3609,8 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
         }
 
         if (match) {
-            auto range = scope1->functionMap.equal_range(tok->str());
-            for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+            auto range = utils::as_const(scope1->functionMap).equal_range(tok->str());
+            for (auto it = range.first; it != range.second; ++it) {
                 auto * func = const_cast<Function *>(it->second);
                 if (destructor && func->type != FunctionType::eDestructor)
                     continue;

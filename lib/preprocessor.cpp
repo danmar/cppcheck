@@ -620,7 +620,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             {
                 const std::string::size_type eq = config.find('=');
                 const std::string config2 = (eq != std::string::npos) ? config.substr(0, eq) : config + "=" + config;
-                const std::set<std::string>::iterator it2 = ret.find(config2);
+                const auto it2 = utils::as_const(ret).find(config2);
                 if (it2 != ret.end()) {
                     if (eq == std::string::npos) {
                         // The instance in ret is more specific than the one in config (no =value), replace it with the one in config
@@ -670,8 +670,8 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 const std::string &confCandidate = configs_ifndef.back();
                 if (ret.find(confCandidate) == ret.end()) {
                     // No instance of config_ifndef in ret. Check if a more specific version exists, in that case replace it
-                    const std::set<std::string>::iterator it = ret.find(confCandidate + "=" + confCandidate);
-                    if (it != ret.end()) {
+                    const auto it = utils::as_const(ret).find(confCandidate + "=" + confCandidate);
+                    if (it != ret.cend()) {
                         // The instance in ret is more specific than the one in confCandidate (no =value), replace it with the one in confCandidate
                         ret.erase(it);
                     }
