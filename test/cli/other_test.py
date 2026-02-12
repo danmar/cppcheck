@@ -4176,16 +4176,17 @@ def test_analyzerinfo(tmp_path):
         assert stdout.splitlines() == stdout_exp
         assert stderr.splitlines() == stderr_exp
 
+    test_file_s = str(test_file).replace('\\', '/')
     test_a1_file_s = str(test_a1_file).replace('\\', '/')
 
     # no cached results
     run_and_assert_cppcheck([
-        "no cached result '{}' found".format(test_a1_file_s)
+        "no cached result '{}' for '{}' found".format(test_a1_file_s, test_file_s)
     ])
 
     # cached results
     run_and_assert_cppcheck([
-        "skipping analysis - loaded 1 cached finding(s) from '{}'".format(test_a1_file_s)
+        "skipping analysis - loaded 1 cached finding(s) from '{}' for '{}'".format(test_a1_file_s, test_file_s)
     ])
 
     # modified file
@@ -4193,7 +4194,7 @@ def test_analyzerinfo(tmp_path):
         f.write('\n#define DEF')
 
     run_and_assert_cppcheck([
-        "discarding cached result - hash mismatch" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - hash mismatch".format(test_a1_file_s, test_file_s)
     ])
 
     # invalid XML
@@ -4201,7 +4202,7 @@ def test_analyzerinfo(tmp_path):
         f.write('.')
 
     run_and_assert_cppcheck([
-        "discarding cached result - failed to load '{}' (XML_ERROR_PARSING_TEXT)".format(test_a1_file_s)
+        "discarding cached result - failed to load '{}' for '{}' (XML_ERROR_PARSING_TEXT)".format(test_a1_file_s, test_file_s)
     ])
 
     # missing root node
@@ -4209,7 +4210,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - no root node found" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - no root node found".format(test_a1_file_s, test_file_s)
     ])
 
     # mismatched root node
@@ -4217,7 +4218,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?><root/>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - unexpected root node" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - unexpected root node".format(test_a1_file_s, test_file_s)
     ])
 
     # missing 'hash' attribute
@@ -4225,7 +4226,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?><analyzerinfo/>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - no 'hash' attribute found" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - no 'hash' attribute found".format(test_a1_file_s, test_file_s)
     ])
 
     # invalid 'hash' attribute
@@ -4233,7 +4234,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?><analyzerinfo hash="hash"/>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - hash mismatch" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - hash mismatch".format(test_a1_file_s, test_file_s)
     ])
 
     # TODO:
