@@ -1838,6 +1838,17 @@ static bool isCastToInteger(const Token* tok)
     return tok && tok->isCast() && tok->valueType() && tok->valueType()->isIntegral() && tok->valueType()->pointer == 0;
 }
 
+static const Function* getEnclosingFunction(const Variable* var)
+{
+    if (var->isArgument())
+        return var->scope()->function;
+    const Scope* scope = var->scope();
+    while (scope && scope->type != ScopeType::eFunction) {
+        scope = scope->nestedIn;
+    }
+    return scope ? scope->function : nullptr;
+}
+
 void CheckOther::checkConstPointer()
 {
     if (!mSettings->severity.isEnabled(Severity::style) &&
@@ -1917,7 +1928,7 @@ void CheckOther::checkConstPointer()
                 continue;
             int argn = -1;
             if (Token::simpleMatch(gparent, "return")) {
-                const Function* function = gparent->scope()->function;
+                const Function* function = getEnclosingFunction(var);
                 if (function && (!Function::returnsReference(function) || Function::returnsConst(function)))
                     continue;
             }
