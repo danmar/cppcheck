@@ -1203,36 +1203,36 @@ void deprecatedFunctions([[maybe_unused]] wxApp &a,
     // cppcheck-suppress ShowPopupCalled
     comboCtrl.ShowPopup();
 #else
-    // cppcheck-suppress InsertCalled
+    // TODO: cppcheck-suppress InsertCalled
     wxArtProvider::Insert(artProvider);
 
-    // cppcheck-suppress GetTextIndentCalled
-    // cppcheck-suppress ignoredReturnValue
+    // TODO: cppcheck-suppress GetTextIndentCalled
+    // TODO: cppcheck-suppress ignoredReturnValue
     comboCtrl.GetTextIndent();
 
-    // cppcheck-suppress HidePopupCalled
+    // TODO: cppcheck-suppress HidePopupCalled
     comboCtrl.HidePopup(true);
-    // cppcheck-suppress HidePopupCalled
+    // TODO: cppcheck-suppress HidePopupCalled
     comboCtrl.HidePopup(false);
-    // cppcheck-suppress HidePopupCalled
+    // TODO: cppcheck-suppress HidePopupCalled
     comboCtrl.HidePopup(/*default=false*/);
 
-    // cppcheck-suppress SetTextIndentCalled
+    // TODO: cppcheck-suppress SetTextIndentCalled
     comboCtrl.SetTextIndent(0);
 
 #if wxUSE_DEBUG_CONTEXT==1
-    // cppcheck-suppress GetLevelCalled
-    // cppcheck-suppress ignoredReturnValue
+    // TODO: cppcheck-suppress GetLevelCalled
+    // TODO: cppcheck-suppress ignoredReturnValue
     wxDebugContext::GetLevel();
-    // cppcheck-suppress SetLevelCalled
+    // TODO: cppcheck-suppress SetLevelCalled
     wxDebugContext::SetLevel(42);
 #endif
 
-    // cppcheck-suppress wxDos2UnixFilenameCalled
+    // TODO: cppcheck-suppress wxDos2UnixFilenameCalled
     wxDos2UnixFilename(path);
 
-    // cppcheck-suppress wxFileNameFromPathCalled
-    // cppcheck-suppress ignoredReturnValue
+    // TODO: cppcheck-suppress wxFileNameFromPathCalled
+    // TODO: cppcheck-suppress ignoredReturnValue
     wxFileNameFromPath(wxT_2("../test.c"));
 #endif
 

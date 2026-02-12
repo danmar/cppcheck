@@ -3302,10 +3302,12 @@ def test_suppress_unmatched_wildcard(tmp_path):  # #13660
         '--template=simple',
         '--enable=information',
         '--suppress=nullPointer:test*.c',  # checked and matched
+        '--suppress=nullPointer:test?.c',  # checked and matched
         '--suppress=id:test*.c',  # checked and unmatched
         '--suppress=id2:test*.c',  # checked and unmatched
         '--suppress=id2:tes?.c',  # checked and unmatched
-        '--suppress=*:test*.c',  # checked and unmatched
+        '--suppress=*:test*.c',  # checked and unmatched - TODO: not reported as unmatched
+        '--suppress=*:test?.c',  # checked and unmatched - TODO: not reported as unmatched
         '--suppress=id:test*.cpp',  # unchecked
         '--suppress=id2:test?.cpp',  # unchecked
         'test.c'
@@ -4081,3 +4083,43 @@ def test_active_unusedfunction_only_misra_builddir(tmp_path):
         'CheckUnusedFunctions::check'
     ]
     __test_active_checkers(tmp_path, 1, 1175, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
+
+
+def test_suppress_unmatched_line(tmp_path):  # #14331
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    # need to run in the temporary folder because the path of the suppression has to match
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        '--suppress=nullPointer:test.c:3',  # checked and matched
+        '--suppress=nullPointer:test*.c:3',  # checked and matched
+        '--suppress=nullPointer:test.c:12',  # checked and unmatched
+        '--suppress=id:test.c:3',  # checked and unmatched
+        '--suppress=id:test*.c:3',  # checked and unmatched
+        '--suppress=id:tes?.c:3',  # checked and unmatched
+        '--suppress=*:test.c:3',  # checked and unmatched - TODO: not reported as unmatched
+        '--suppress=*:test*.c:3',  # checked and unmatched - TODO: not reported as unmatched
+        '--suppress=*:test?.c:3',  # checked and unmatched - TODO: not reported as unmatched
+        '--suppress=id:test.cpp:3',  # unchecked
+        '--suppress=id:test*.cpp:3',  # unchecked
+        '--suppress=id:test?.cpp:3',  # unchecked
+        'test.c'
+    ]
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        'test.c:12:0: information: Unmatched suppression: nullPointer [unmatchedSuppression]',
+        'test.c:3:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'test*.c:3:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'tes?.c:3:0: information: Unmatched suppression: id [unmatchedSuppression]'
+    ]
