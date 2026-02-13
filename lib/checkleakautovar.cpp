@@ -444,7 +444,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                         if (tok2->str() == ";") {
                             break;
                         }
-                        if (tok2->varId()) {
+                        if (tok2->varId() && !Token::Match(tok2->astParent(), "%comp%|!")) {
                             varInfo.erase(tok2->varId());
                         }
                     }
