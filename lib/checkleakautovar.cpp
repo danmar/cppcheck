@@ -582,7 +582,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     astOperand2AfterCommas,
                     astOperand2AfterCommas->hasKnownValue(ValueFlow::Value::ValueType::SYMBOLIC) ? astOperand2AfterCommas->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC)->tokvalue : nullptr
                 };
-                for (auto compTok : compToks) {
+                for (const Token* compTok : compToks) {
                     if (!compTok)
                         continue;
                     visitAstNodes(compTok, [&](const Token* tok3) {
