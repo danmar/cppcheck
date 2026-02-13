@@ -1511,7 +1511,7 @@ ValueFlow::Value ValueFlow::getLifetimeObjValue(const Token *tok, bool inconclus
     // There should only be one lifetime
     if (values.size() != 1)
         return ValueFlow::Value{};
-    return values.front();
+    return std::move(values.front());
 }
 
 template<class Predicate>
@@ -3652,7 +3652,7 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     continue;
 
                 ValueFlow::Value v = makeSymbolic(arg);
-                v.errorPath = c.errorPath;
+                v.errorPath = std::move(c.errorPath);
                 v.errorPath.emplace_back(tok, "Passed to " + tok->str());
                 if (c.intvalue == 0)
                     v.setImpossible();
@@ -5070,8 +5070,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
             std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), "!=", tok->values(), 0);
             if (result.size() != 1)
                 continue;
-            ValueFlow::Value value = result.front();
-            setTokenValue(tok, std::move(value), settings);
+            setTokenValue(tok, std::move(result.front()), settings);
         }
     }
 }
@@ -5490,7 +5489,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
                                      const Settings& settings,
                                      const Variable* arg,
                                      const Scope* functionScope,
-                                     const std::list<ValueFlow::Value>& argvalues)
+                                     std::list<ValueFlow::Value> argvalues)
 {
     // Is argument passed by value or const reference, and is it a known non-class type?
     if (arg->isReference() && !arg->isConst() && !arg->isClass())
@@ -5504,7 +5503,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
     valueFlowForward(const_cast<Token*>(functionScope->bodyStart->next()),
                      functionScope->bodyEnd,
                      arg->nameToken(),
-                     argvalues,
+                     std::move(argvalues),
                      tokenlist,
                      errorLogger,
                      settings);
@@ -5731,7 +5730,7 @@ static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const 
                     argvalues.push_back(std::move(v));
                 }
                 if (!argvalues.empty())
-                    valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, argvalues);
+                    valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, std::move(argvalues));
             }
         }
     }
