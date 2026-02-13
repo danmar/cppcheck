@@ -115,6 +115,28 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
     }
 
     {
+        const auto it = obj.find("checkers");
+        if (it != obj.cend()) {
+            const auto& val = it->second;
+            if (!val.is<picojson::array>())
+                return "Loading " + fileName + " failed. 'checkers' must be an array.";
+            for (const picojson::value &v : val.get<picojson::array>()) {
+                if (!v.is<picojson::object>())
+                    return "Loading " + fileName + " failed. 'checkers' entry is not an object.";
+
+                const picojson::object& checkerObj = v.get<picojson::object>();
+                if (checkerObj.size() == 1) {
+                    const std::string c = checkerObj.begin()->first;
+                    if (!checkerObj.begin()->second.is<std::string>())
+                        return "Loading " + fileName + " failed. 'checkers' entry requirement is not a string.";
+                    const std::string req = checkerObj.begin()->second.get<std::string>();
+                    addoninfo.checkers.emplace(c, req);
+                }
+            }
+        }
+    }
+
+    {
         const auto it = obj.find("executable");
         if (it != obj.cend()) {
             const auto& val = it->second;

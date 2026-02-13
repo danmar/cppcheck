@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <string>
+#include <map>
 
 struct CPPCHECKLIB AddonInfo {
     std::string name;
@@ -31,6 +32,7 @@ struct CPPCHECKLIB AddonInfo {
     std::string python;     // script interpreter
     bool ctu = false;
     std::string runScript;
+    std::map<std::string, std::string> checkers; // checker name and its requirement
 
     std::string getAddonInfo(const std::string &fileName, const std::string &exename, bool debug = false);
 };
