@@ -40,9 +40,14 @@ jobs:
       - name: Install CMake
         run: |
           wget https://cmake.org/files/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64.tar.gz
-          tar xvf cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64.tar.gz
+          tar xf cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64.tar.gz
+
+      - name: Run CMake on ubuntu (without GUI)
+        run: |
+          export PATH=cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64/bin:$PATH
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
       - name: Run CMake on ubuntu (with GUI)
         run: |
           export PATH=cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64/bin:$PATH
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output.gui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
