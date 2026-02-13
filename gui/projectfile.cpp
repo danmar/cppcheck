@@ -1178,7 +1178,7 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
     return QString();
 }
 
-QStringList ProjectFile::getSearchPaths(QString projectPath, QString appPath, QString datadir, QString dir) {
+QStringList ProjectFile::getSearchPaths(const QString& projectPath, const QString& appPath, const QString& datadir, const QString& dir) {
     QStringList ret;
     ret << appPath << (appPath + "/" + dir) << projectPath;
 #ifdef FILESDIR
@@ -1190,7 +1190,7 @@ QStringList ProjectFile::getSearchPaths(QString projectPath, QString appPath, QS
     return ret;
 }
 
-QStringList ProjectFile::getSearchPaths(QString dir) const {
+QStringList ProjectFile::getSearchPaths(const QString& dir) const {
     const QFileInfo inf(mFilename);
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
