@@ -407,6 +407,37 @@ jobs:
         run: |
           cmake --build cmake.output.boost -- -j$(nproc)
 
+  build_cmake_minimum:
+
+    runs-on: ubuntu-22.04
+
+    env:
+      CMAKE_VERSION: 3.13
+      CMAKE_VERSION_FULL: 3.13.5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+
+      - name: Install CMake
+        run: |
+          wget https://cmake.org/files/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64.tar.gz
+          tar xvf cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64.tar.gz
+
+      - name: Run CMake on ubuntu (with GUI)
+        run: |
+          export PATH=cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64/bin:$PATH
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
   build:
 
     strategy:
