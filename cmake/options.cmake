@@ -113,14 +113,10 @@ option(ENABLE_CSA_ALPHA     "Enable Clang Static Analyzer alpha checkers for run
 # TODO: disable by default like make build?
 option(FILESDIR "Hard-coded directory for files to load from"                               OFF)
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.16")
-    set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
-    # need to disable the prologue or it will be treated like a system header and not emit any warnings
-    # see https://gitlab.kitware.com/cmake/cmake/-/issues/21219
-    set(CMAKE_PCH_PROLOGUE "")
-else()
-    set(CMAKE_DISABLE_PRECOMPILE_HEADERS On CACHE BOOL "Disable precompiled headers")
-endif()
+set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
+# need to disable the prologue or it will be treated like a system header and not emit any warnings
+# see https://gitlab.kitware.com/cmake/cmake/-/issues/21219
+set(CMAKE_PCH_PROLOGUE "")
 
 set(CMAKE_INCLUDE_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/include      CACHE PATH "Output directory for headers")
 set(CMAKE_LIB_DIRS_CONFIGCMAKE     ${CMAKE_INSTALL_PREFIX}/lib          CACHE PATH "Output directory for libraries")
