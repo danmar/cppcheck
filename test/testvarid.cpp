@@ -2382,11 +2382,11 @@ private:
     }
 
     void varid_in_class29() {
-        const char code[] = "struct S {\n"
+        const char code[] = "struct S {\n" // #14486
                             "    const int& r;\n"
                             "    explicit S(const int& r) : r(r) {}\n"
                             "    static void f() {\n"
-                            "        struct T : X {\n"
+                            "        struct T : std::vector<int> {\n"
                             "            bool g() const { return empty(); }\n"
                             "        };\n"
                             "    }\n"
@@ -2395,7 +2395,7 @@ private:
                                 "2: const int & r@1 ;\n"
                                 "3: explicit S ( const int & r@2 ) : r@1 ( r@2 ) { }\n"
                                 "4: static void f ( ) {\n"
-                                "5: struct T : X {\n"
+                                "5: struct T : std :: vector < int > {\n"
                                 "6: bool g ( ) const { return empty ( ) ; }\n"
                                 "7: } ;\n"
                                 "8: }\n"
