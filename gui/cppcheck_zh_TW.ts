@@ -322,40 +322,40 @@ Parameters: -l(line) (file)</source>
         <translation>編輯</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="98"/>
-        <location filename="librarydialog.cpp" line="170"/>
+        <location filename="librarydialog.cpp" line="97"/>
+        <location filename="librarydialog.cpp" line="169"/>
         <source>Library files (*.cfg)</source>
         <translation>程式庫檔案 (*.cfg)</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="100"/>
+        <location filename="librarydialog.cpp" line="99"/>
         <source>Open library file</source>
         <translation>開啟程式庫檔案</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="111"/>
-        <location filename="librarydialog.cpp" line="123"/>
-        <location filename="librarydialog.cpp" line="160"/>
+        <location filename="librarydialog.cpp" line="110"/>
+        <location filename="librarydialog.cpp" line="122"/>
+        <location filename="librarydialog.cpp" line="159"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="112"/>
+        <location filename="librarydialog.cpp" line="111"/>
         <source>Cannot open file %1.</source>
         <translation>無法開啟檔案 %1。</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="124"/>
+        <location filename="librarydialog.cpp" line="123"/>
         <source>Failed to load %1. %2.</source>
         <translation>無法載入 %1. %2。</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="161"/>
+        <location filename="librarydialog.cpp" line="160"/>
         <source>Cannot save file %1.</source>
         <translation>無法儲存檔案 %1。</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="173"/>
+        <location filename="librarydialog.cpp" line="172"/>
         <source>Save the library as</source>
         <translation type="unfinished">另存程式庫為</translation>
     </message>
@@ -475,19 +475,19 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="26"/>
         <location filename="mainwindow.ui" line="687"/>
-        <location filename="mainwindow.cpp" line="463"/>
-        <location filename="mainwindow.cpp" line="667"/>
-        <location filename="mainwindow.cpp" line="752"/>
-        <location filename="mainwindow.cpp" line="857"/>
-        <location filename="mainwindow.cpp" line="879"/>
-        <location filename="mainwindow.cpp" line="1466"/>
-        <location filename="mainwindow.cpp" line="1595"/>
-        <location filename="mainwindow.cpp" line="1936"/>
-        <location filename="mainwindow.cpp" line="1944"/>
-        <location filename="mainwindow.cpp" line="1998"/>
-        <location filename="mainwindow.cpp" line="2007"/>
-        <location filename="mainwindow.cpp" line="2079"/>
-        <location filename="mainwindow.cpp" line="2153"/>
+        <location filename="mainwindow.cpp" line="464"/>
+        <location filename="mainwindow.cpp" line="668"/>
+        <location filename="mainwindow.cpp" line="753"/>
+        <location filename="mainwindow.cpp" line="858"/>
+        <location filename="mainwindow.cpp" line="880"/>
+        <location filename="mainwindow.cpp" line="1464"/>
+        <location filename="mainwindow.cpp" line="1593"/>
+        <location filename="mainwindow.cpp" line="1934"/>
+        <location filename="mainwindow.cpp" line="1942"/>
+        <location filename="mainwindow.cpp" line="1996"/>
+        <location filename="mainwindow.cpp" line="2005"/>
+        <location filename="mainwindow.cpp" line="2077"/>
+        <location filename="mainwindow.cpp" line="2151"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -689,7 +689,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="470"/>
         <location filename="mainwindow.ui" line="473"/>
-        <location filename="mainwindow.cpp" line="2379"/>
+        <location filename="mainwindow.cpp" line="2377"/>
         <source>Show errors</source>
         <translation>顯示錯誤</translation>
     </message>
@@ -817,7 +817,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="616"/>
         <location filename="mainwindow.ui" line="619"/>
-        <location filename="mainwindow.cpp" line="2380"/>
+        <location filename="mainwindow.cpp" line="2378"/>
         <source>Show warnings</source>
         <translation>顯示警告</translation>
     </message>
@@ -1081,201 +1081,200 @@ Options:
         <translation>Cppcheck GUI - 命令行參數</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="155"/>
-        <location filename="mainwindow.cpp" line="1781"/>
+        <location filename="mainwindow.cpp" line="156"/>
+        <location filename="mainwindow.cpp" line="1779"/>
         <source>Quick Filter:</source>
         <translation>快速篩選:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="239"/>
-        <location filename="mainwindow.cpp" line="1783"/>
-        <location filename="mainwindow.cpp" line="1849"/>
-        <location filename="mainwindow.cpp" line="2047"/>
+        <location filename="mainwindow.cpp" line="240"/>
+        <location filename="mainwindow.cpp" line="1781"/>
+        <location filename="mainwindow.cpp" line="1847"/>
+        <location filename="mainwindow.cpp" line="2045"/>
         <source>Project:</source>
         <translation>專案:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="458"/>
+        <location filename="mainwindow.cpp" line="459"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="668"/>
+        <location filename="mainwindow.cpp" line="669"/>
         <source>No suitable files found to analyze!</source>
         <translation>找不到適合的檔案來分析！</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="753"/>
+        <location filename="mainwindow.cpp" line="754"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>您必須在選取新檔案或目錄之前關閉該專案檔！</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="767"/>
+        <location filename="mainwindow.cpp" line="768"/>
         <source>C/C++ Source</source>
         <translation>C/C++ 來源檔</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="768"/>
+        <location filename="mainwindow.cpp" line="769"/>
         <source>Compile database</source>
         <translation>編譯資料庫</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="769"/>
+        <location filename="mainwindow.cpp" line="770"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="770"/>
+        <location filename="mainwindow.cpp" line="771"/>
         <source>Borland C++ Builder 6</source>
         <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="773"/>
+        <location filename="mainwindow.cpp" line="774"/>
         <source>Select files to analyze</source>
         <translation>選取要分析的檔案</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="788"/>
+        <location filename="mainwindow.cpp" line="789"/>
         <source>Select directory to analyze</source>
         <translation>選取要分析的目錄</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="828"/>
+        <location filename="mainwindow.cpp" line="829"/>
         <source>Select configuration</source>
         <translation>選取組態</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="828"/>
+        <location filename="mainwindow.cpp" line="829"/>
         <source>Select the configuration that will be analyzed</source>
         <translation>選取要分析的組態</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="858"/>
+        <location filename="mainwindow.cpp" line="859"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="880"/>
+        <location filename="mainwindow.cpp" line="881"/>
         <source>Found project files from the directory.
 
 Do you want to proceed analysis without using any of these project files?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="983"/>
-        <location filename="mainwindow.cpp" line="1024"/>
+        <location filename="mainwindow.cpp" line="984"/>
+        <location filename="mainwindow.cpp" line="1022"/>
         <source>Information</source>
         <translation>資訊</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="983"/>
+        <location filename="mainwindow.cpp" line="984"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="992"/>
+        <location filename="mainwindow.cpp" line="993"/>
         <source>File not found</source>
         <translation>找不到檔案</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="995"/>
+        <location filename="mainwindow.cpp" line="996"/>
         <source>Bad XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="998"/>
+        <location filename="mainwindow.cpp" line="999"/>
         <source>Missing attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1001"/>
+        <location filename="mainwindow.cpp" line="1002"/>
         <source>Bad attribute value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1004"/>
+        <location filename="mainwindow.cpp" line="1005"/>
         <source>Unsupported format</source>
         <translation>未支援的格式</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1007"/>
+        <location filename="mainwindow.cpp" line="1008"/>
         <source>Duplicate platform type</source>
         <translation>重複的平臺型別</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1010"/>
+        <location filename="mainwindow.cpp" line="1011"/>
         <source>Platform type redefined</source>
         <translation>平臺型別重定義</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1013"/>
+        <location filename="mainwindow.cpp" line="1014"/>
         <source>Duplicate define</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1016"/>
+        <location filename="mainwindow.cpp" line="1017"/>
         <source>Unknown element</source>
         <translation>未知的元素</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1019"/>
         <source>Unknown issue</source>
-        <translation>未知的議題</translation>
+        <translation type="vanished">未知的議題</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1024"/>
+        <location filename="mainwindow.cpp" line="1022"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation>無法載入選取的程式庫 &apos;%1&apos;。
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1035"/>
+        <location filename="mainwindow.cpp" line="1033"/>
         <source>File not found: &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1058"/>
+        <location filename="mainwindow.cpp" line="1056"/>
         <source>Failed to load/setup addon %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1080"/>
-        <location filename="mainwindow.cpp" line="1090"/>
-        <location filename="mainwindow.cpp" line="1102"/>
-        <location filename="mainwindow.cpp" line="1197"/>
+        <location filename="mainwindow.cpp" line="1078"/>
+        <location filename="mainwindow.cpp" line="1088"/>
+        <location filename="mainwindow.cpp" line="1100"/>
+        <location filename="mainwindow.cpp" line="1195"/>
         <source>Error</source>
         <translation>錯誤</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1080"/>
+        <location filename="mainwindow.cpp" line="1078"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1090"/>
+        <location filename="mainwindow.cpp" line="1088"/>
         <source>Failed to load %1 - %2
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1102"/>
-        <location filename="mainwindow.cpp" line="1197"/>
+        <location filename="mainwindow.cpp" line="1100"/>
+        <location filename="mainwindow.cpp" line="1195"/>
         <source>%1
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1467"/>
+        <location filename="mainwindow.cpp" line="1465"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1283,18 +1282,18 @@ Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1482"/>
-        <location filename="mainwindow.cpp" line="1681"/>
+        <location filename="mainwindow.cpp" line="1480"/>
+        <location filename="mainwindow.cpp" line="1679"/>
         <source>XML files (*.xml)</source>
         <translation>XML 檔案 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1484"/>
+        <location filename="mainwindow.cpp" line="1482"/>
         <source>Open the report file</source>
         <translation>開啟報告檔</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1591"/>
+        <location filename="mainwindow.cpp" line="1589"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1303,82 +1302,82 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 您想停止分析並離開 Cppcheck 嗎？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1633"/>
+        <location filename="mainwindow.cpp" line="1631"/>
         <source>About</source>
         <translation>關於</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1647"/>
+        <location filename="mainwindow.cpp" line="1645"/>
         <source>License</source>
         <translation>授權</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1654"/>
+        <location filename="mainwindow.cpp" line="1652"/>
         <source>Authors</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1672"/>
+        <location filename="mainwindow.cpp" line="1670"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML 檔案 (*.xml);;文字檔 (*.txt);;CSV 檔案 (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1674"/>
+        <location filename="mainwindow.cpp" line="1672"/>
         <source>Save the report file</source>
         <translation>儲存報告檔</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1685"/>
+        <location filename="mainwindow.cpp" line="1683"/>
         <source>Text files (*.txt)</source>
         <translation>文字檔 (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1689"/>
+        <location filename="mainwindow.cpp" line="1687"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV 檔案 (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1712"/>
+        <location filename="mainwindow.cpp" line="1710"/>
         <source>Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1819"/>
+        <location filename="mainwindow.cpp" line="1817"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>專案檔 (*.cppcheck);;所有檔案 (*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1821"/>
+        <location filename="mainwindow.cpp" line="1819"/>
         <source>Select Project File</source>
         <translation>選取專案檔</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1937"/>
+        <location filename="mainwindow.cpp" line="1935"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>建置目錄 &apos;%1&apos; 不存在，是否建立它？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1945"/>
+        <location filename="mainwindow.cpp" line="1943"/>
         <source>To check the project using addons, you need a build directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1977"/>
+        <location filename="mainwindow.cpp" line="1975"/>
         <source>Failed to open file</source>
         <translation>無法開啟檔案</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1980"/>
+        <location filename="mainwindow.cpp" line="1978"/>
         <source>Unknown project file format</source>
         <translation>未知的專案檔格式</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1983"/>
+        <location filename="mainwindow.cpp" line="1981"/>
         <source>Failed to import project file</source>
         <translation>無法匯入專案檔</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1999"/>
+        <location filename="mainwindow.cpp" line="1997"/>
         <source>Failed to import &apos;%1&apos;: %2
 
 Analysis is stopped.</source>
@@ -1387,62 +1386,62 @@ Analysis is stopped.</source>
 停止分析。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2008"/>
+        <location filename="mainwindow.cpp" line="2006"/>
         <source>Failed to import &apos;%1&apos; (%2), analysis is stopped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2352"/>
+        <location filename="mainwindow.cpp" line="2350"/>
         <source>Show Mandatory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2353"/>
+        <location filename="mainwindow.cpp" line="2351"/>
         <source>Show Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2354"/>
+        <location filename="mainwindow.cpp" line="2352"/>
         <source>Show Advisory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2355"/>
+        <location filename="mainwindow.cpp" line="2353"/>
         <source>Show Document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2372"/>
+        <location filename="mainwindow.cpp" line="2370"/>
         <source>Show L1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2373"/>
+        <location filename="mainwindow.cpp" line="2371"/>
         <source>Show L2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2374"/>
+        <location filename="mainwindow.cpp" line="2372"/>
         <source>Show L3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2381"/>
+        <location filename="mainwindow.cpp" line="2379"/>
         <source>Show style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2382"/>
+        <location filename="mainwindow.cpp" line="2380"/>
         <source>Show portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2383"/>
+        <location filename="mainwindow.cpp" line="2381"/>
         <source>Show performance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2384"/>
+        <location filename="mainwindow.cpp" line="2382"/>
         <source>Show information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1451,22 +1450,22 @@ Analysis is stopped.</source>
         <translation type="vanished">無法匯入 &apos;%1&apos;，停止分析</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2032"/>
+        <location filename="mainwindow.cpp" line="2030"/>
         <source>Project files (*.cppcheck)</source>
         <translation>專案檔 (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2034"/>
+        <location filename="mainwindow.cpp" line="2032"/>
         <source>Select Project Filename</source>
         <translation>選取專案檔案名稱</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2080"/>
+        <location filename="mainwindow.cpp" line="2078"/>
         <source>No project file loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2148"/>
+        <location filename="mainwindow.cpp" line="2146"/>
         <source>The project file
 
 %1
@@ -1483,12 +1482,12 @@ Do you want to remove the file from the recently used projects -list?</source>
 您要從最近使用的專案列表中移除該檔案嗎？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2310"/>
+        <location filename="mainwindow.cpp" line="2308"/>
         <source>Install</source>
         <translation>安章</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2314"/>
+        <location filename="mainwindow.cpp" line="2312"/>
         <source>New version available: %1. %2</source>
         <translation>可用的新版本: %1. %2</translation>
     </message>
@@ -1926,27 +1925,32 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="975"/>
+        <location filename="projectfile.ui" line="972"/>
+        <source>Safety profiles (defined in C++ core guidelines)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfile.ui" line="982"/>
         <source>Bug hunting (Premium)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="981"/>
+        <location filename="projectfile.ui" line="988"/>
         <source>Bug hunting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="991"/>
+        <location filename="projectfile.ui" line="998"/>
         <source>External tools</source>
         <translation>外部工具</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="997"/>
+        <location filename="projectfile.ui" line="1004"/>
         <source>Clang-tidy</source>
         <translation>Clang-tidy</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="1004"/>
+        <location filename="projectfile.ui" line="1011"/>
         <source>Clang analyzer</source>
         <translation>Clang 分析器</translation>
     </message>
@@ -1954,82 +1958,82 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>ProjectFileDialog</name>
     <message>
-        <location filename="projectfiledialog.cpp" line="137"/>
+        <location filename="projectfiledialog.cpp" line="139"/>
         <source>Project file: %1</source>
         <translation>專案檔: %1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
+        <location filename="projectfiledialog.cpp" line="416"/>
         <source>Note: Open source Cppcheck does not fully implement Misra C 2012</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="477"/>
+        <location filename="projectfiledialog.cpp" line="481"/>
         <source>Clang-tidy (not found)</source>
         <translation>Clang-tidy (找不到)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="604"/>
+        <location filename="projectfiledialog.cpp" line="610"/>
         <source>Select Cppcheck build dir</source>
         <translation>選取 Cppcheck 建置目錄</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="643"/>
+        <location filename="projectfiledialog.cpp" line="649"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="644"/>
+        <location filename="projectfiledialog.cpp" line="650"/>
         <source>Compile database</source>
         <translation>編譯資料庫</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="645"/>
+        <location filename="projectfiledialog.cpp" line="651"/>
         <source>Borland C++ Builder 6</source>
         <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="646"/>
+        <location filename="projectfiledialog.cpp" line="652"/>
         <source>Import Project</source>
         <translation>匯入專案</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="845"/>
+        <location filename="projectfiledialog.cpp" line="851"/>
         <source>Select a directory to check</source>
         <translation>選取要檢查的目錄</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="865"/>
+        <location filename="projectfiledialog.cpp" line="871"/>
         <source>Select include directory</source>
         <translation>選取包含目錄</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="885"/>
+        <location filename="projectfiledialog.cpp" line="891"/>
         <source>Select directory to ignore</source>
         <translation>選取要忽略的目錄</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="893"/>
+        <location filename="projectfiledialog.cpp" line="899"/>
         <source>Source files</source>
         <translation>來源檔</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="894"/>
+        <location filename="projectfiledialog.cpp" line="900"/>
         <source>All files</source>
         <translation>所有檔案</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="895"/>
+        <location filename="projectfiledialog.cpp" line="901"/>
         <source>Exclude file</source>
         <translation>排除檔案</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="978"/>
+        <location filename="projectfiledialog.cpp" line="984"/>
         <source>Select MISRA rule texts file</source>
         <translation>選取 MISRA 規則文字檔</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="980"/>
+        <location filename="projectfiledialog.cpp" line="986"/>
         <source>MISRA rule texts file (%1)</source>
         <translation>MISRA 規則文字檔 (%1)</translation>
     </message>
@@ -2082,92 +2086,92 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="81"/>
+        <location filename="codeeditstyledialog.cpp" line="80"/>
         <source>Editor Foreground Color</source>
         <translation>編輯器前景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="84"/>
+        <location filename="codeeditstyledialog.cpp" line="83"/>
         <source>Editor Background Color</source>
         <translation>編輯器背景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="87"/>
+        <location filename="codeeditstyledialog.cpp" line="86"/>
         <source>Highlight Background Color</source>
         <translation>標明背景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="90"/>
+        <location filename="codeeditstyledialog.cpp" line="89"/>
         <source>Line Number Foreground Color</source>
         <translation>行號前景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="93"/>
+        <location filename="codeeditstyledialog.cpp" line="92"/>
         <source>Line Number Background Color</source>
         <translation>行號背景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="96"/>
+        <location filename="codeeditstyledialog.cpp" line="95"/>
         <source>Keyword Foreground Color</source>
         <translation>關鍵字前景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="99"/>
+        <location filename="codeeditstyledialog.cpp" line="98"/>
         <source>Keyword Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="102"/>
+        <location filename="codeeditstyledialog.cpp" line="101"/>
         <source>Class Foreground Color</source>
         <translation>類別前景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="105"/>
+        <location filename="codeeditstyledialog.cpp" line="104"/>
         <source>Class Font Weight</source>
         <translation type="unfinished">類別字型粗細</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="108"/>
+        <location filename="codeeditstyledialog.cpp" line="107"/>
         <source>Quote Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="111"/>
+        <location filename="codeeditstyledialog.cpp" line="110"/>
         <source>Quote Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="114"/>
+        <location filename="codeeditstyledialog.cpp" line="113"/>
         <source>Comment Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="117"/>
+        <location filename="codeeditstyledialog.cpp" line="116"/>
         <source>Comment Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="120"/>
+        <location filename="codeeditstyledialog.cpp" line="119"/>
         <source>Symbol Foreground Color</source>
         <translation>符號前景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="123"/>
+        <location filename="codeeditstyledialog.cpp" line="122"/>
         <source>Symbol Background Color</source>
         <translation>符號被景色</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="126"/>
+        <location filename="codeeditstyledialog.cpp" line="125"/>
         <source>Symbol Font Weight</source>
         <translation>符號字型粗細</translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="142"/>
+        <location filename="codeeditstyledialog.cpp" line="141"/>
         <source>Set to Default Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="144"/>
+        <location filename="codeeditstyledialog.cpp" line="143"/>
         <source>Set to Default Dark</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2182,7 +2186,7 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="302"/>
+        <location filename="projectfiledialog.cpp" line="304"/>
         <source> (Not found)</source>
         <translation> (找不到)</translation>
     </message>
@@ -2202,67 +2206,67 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="114"/>
+        <location filename="resultstree.cpp" line="113"/>
         <source>File</source>
         <translation type="unfinished">檔案</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="115"/>
+        <location filename="resultstree.cpp" line="114"/>
         <source>Line</source>
         <translation type="unfinished">行號</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="116"/>
+        <location filename="resultstree.cpp" line="115"/>
         <source>Severity</source>
         <translation type="unfinished">安全性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="117"/>
+        <location filename="resultstree.cpp" line="116"/>
         <source>Classification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="118"/>
+        <location filename="resultstree.cpp" line="117"/>
         <source>Level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="119"/>
+        <location filename="resultstree.cpp" line="118"/>
         <source>Inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="120"/>
+        <location filename="resultstree.cpp" line="119"/>
         <source>Summary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="121"/>
+        <location filename="resultstree.cpp" line="120"/>
         <source>Id</source>
         <translation type="unfinished">識別號</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="122"/>
+        <location filename="resultstree.cpp" line="121"/>
         <source>Guideline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="123"/>
+        <location filename="resultstree.cpp" line="122"/>
         <source>Rule</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="124"/>
+        <location filename="resultstree.cpp" line="123"/>
         <source>Since date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="125"/>
+        <location filename="resultstree.cpp" line="124"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="126"/>
+        <location filename="resultstree.cpp" line="125"/>
         <source>CWE</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2297,52 +2301,52 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="vanished">未定義的檔案</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="298"/>
+        <location filename="resultstree.cpp" line="307"/>
         <source>note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="349"/>
+        <location filename="resultstree.cpp" line="355"/>
         <source>style</source>
         <translation>樣式</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="352"/>
+        <location filename="resultstree.cpp" line="358"/>
         <source>error</source>
         <translation>錯誤</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="355"/>
+        <location filename="resultstree.cpp" line="361"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="358"/>
+        <location filename="resultstree.cpp" line="364"/>
         <source>performance</source>
         <translation>效能</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="361"/>
+        <location filename="resultstree.cpp" line="367"/>
         <source>portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="364"/>
+        <location filename="resultstree.cpp" line="370"/>
         <source>information</source>
         <translation>資訊</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="367"/>
+        <location filename="resultstree.cpp" line="373"/>
         <source>debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="370"/>
+        <location filename="resultstree.cpp" line="376"/>
         <source>internal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="657"/>
+        <location filename="resultstree.cpp" line="668"/>
         <source>Copy</source>
         <translation>複製</translation>
     </message>
@@ -2351,94 +2355,94 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="vanished">隱藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="656"/>
+        <location filename="resultstree.cpp" line="667"/>
         <source>Recheck %1 file(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="658"/>
+        <location filename="resultstree.cpp" line="669"/>
         <source>Hide %1 result(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="659"/>
+        <location filename="resultstree.cpp" line="670"/>
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="660"/>
+        <location filename="resultstree.cpp" line="671"/>
         <source>Open containing folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="681"/>
+        <location filename="resultstree.cpp" line="692"/>
         <source>Suppress selected id(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="701"/>
+        <location filename="resultstree.cpp" line="712"/>
         <source>Tag</source>
         <translation>標記</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="703"/>
+        <location filename="resultstree.cpp" line="714"/>
         <source>No tag</source>
         <translation>取消標記</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="733"/>
-        <location filename="resultstree.cpp" line="747"/>
+        <location filename="resultstree.cpp" line="744"/>
+        <location filename="resultstree.cpp" line="758"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="734"/>
+        <location filename="resultstree.cpp" line="745"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="748"/>
+        <location filename="resultstree.cpp" line="759"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="768"/>
+        <location filename="resultstree.cpp" line="779"/>
         <source>Could not find the file!</source>
         <translation>找不到該檔案！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="811"/>
+        <location filename="resultstree.cpp" line="822"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="825"/>
+        <location filename="resultstree.cpp" line="836"/>
         <source>Could not find file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="829"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>請選取資料夾 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="830"/>
+        <location filename="resultstree.cpp" line="841"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>選取目錄 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="832"/>
+        <location filename="resultstree.cpp" line="843"/>
         <source>Please select the directory where file is located.</source>
         <translation>請選取資料夾所在的目錄。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="833"/>
+        <location filename="resultstree.cpp" line="844"/>
         <source>Select Directory</source>
         <translation>選取目錄</translation>
     </message>
