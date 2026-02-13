@@ -98,6 +98,48 @@ jobs:
         run: |
           cmake --build build.cxxstd --config Debug || exit /b !errorlevel!
 
+  build_cmake_minimum:
+
+    runs-on: windows-2022  # use the oldest available runner
+
+    env:
+      CMAKE_VERSION: 3.13
+      CMAKE_VERSION_FULL: 3.13.5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install CMake
+        run: |
+          curl -fsSL https://cmake.org/files/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION_FULL }}-win64-x64.zip -o cmake.zip || exit /b !errorlevel!
+          7z x cmake.zip || exit /b !errorlevel!
+
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.10.0
+          modules: 'qtcharts'
+          setup-python: 'false'
+          cache: true
+          aqtversion: '==3.1.*'  # TODO: remove when aqtinstall 3.2.2 is available
+
+      - name: Run CMake (without GUI)
+        run: |
+          :: TODO: enable DHAVE_RULES?
+          cmake-${{ env.CMAKE_VERSION_FULL }}-win64-x64\bin\cmake.exe -S . -B cmake.output -G "Visual Studio 17 2022" -A x64 -DHAVE_RULES=Off -DBUILD_TESTING=On
+
+      - name: Run CMake (with GUI)
+        run: |
+          :: TODO: enable DHAVE_RULES?
+          cmake-${{ env.CMAKE_VERSION_FULL }}-win64-x64\bin\cmake.exe -S . -B cmake.output.gui -G "Visual Studio 17 2022" -A x64 -DHAVE_RULES=Off -DBUILD_TESTING=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On
+
   build:
     strategy:
       matrix:
