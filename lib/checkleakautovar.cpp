@@ -578,53 +578,62 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     astOperand2AfterCommas = astOperand2AfterCommas->astOperand2();
 
                 // Recursively scan variable comparisons in condition
-                visitAstNodes(astOperand2AfterCommas, [&](const Token *tok3) {
-                    if (!tok3)
-                        return ChildrenToVisit::none;
-                    if (tok3->str() == "&&" || tok3->str() == "||") {
-                        // FIXME: handle && ! || better
-                        return ChildrenToVisit::op1_and_op2;
-                    }
-                    if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
-                        return ChildrenToVisit::op2;
-                    }
-                    if (tok3->str() == "(" && tok3->previous()->isName()) {
-                        const std::vector<const Token *> params = getArguments(tok3->previous());
-                        for (const Token *par : params) {
-                            if (!par->isComparisonOp())
-                                continue;
-                            const Token *vartok = nullptr;
-                            if (isVarTokComparison(par, &vartok, alloc_success_conds) ||
-                                (isVarTokComparison(par, &vartok, alloc_failed_conds))) {
-                                varInfo1.erase(vartok->varId());
-                                varInfo2.erase(vartok->varId());
+                const Token* compToks[] = {
+                    astOperand2AfterCommas,
+                    astOperand2AfterCommas->hasKnownValue(ValueFlow::Value::ValueType::SYMBOLIC) ? astOperand2AfterCommas->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC)->tokvalue : nullptr
+                };
+                for (auto compTok : compToks) {
+                    if (!compTok)
+                        continue;
+                    visitAstNodes(compTok, [&](const Token* tok3) {
+                        if (!tok3)
+                            return ChildrenToVisit::none;
+                        if (tok3->str() == "&&" || tok3->str() == "||") {
+                            // FIXME: handle && ! || better
+                            return ChildrenToVisit::op1_and_op2;
+                        }
+                        if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
+                            return ChildrenToVisit::op2;
+                        }
+                        if (tok3->str() == "(" && tok3->previous()->isName()) {
+                            const std::vector<const Token*> params = getArguments(tok3->previous());
+                            for (const Token* par : params) {
+                                if (!par->isComparisonOp())
+                                    continue;
+                                const Token* vartok = nullptr;
+                                if (isVarTokComparison(par, &vartok, alloc_success_conds) ||
+                                    (isVarTokComparison(par, &vartok, alloc_failed_conds))) {
+                                    varInfo1.erase(vartok->varId());
+                                    varInfo2.erase(vartok->varId());
+                                }
+                            }
+                            return ChildrenToVisit::none;
+                        }
+
+                        const Token* vartok = nullptr;
+                        if (isVarTokComparison(tok3, &vartok, alloc_success_conds)) {
+                            varInfo2.reallocToAlloc(vartok->varId());
+                            varInfo2.erase(vartok->varId());
+                            if (astIsVariableComparison(tok3, "!=", "0", &vartok) &&
+                                (notzero.find(vartok->varId()) != notzero.end()))
+                                varInfo2.clear();
+
+                            if (std::any_of(varInfo1.alloctype.begin(), varInfo1.alloctype.end(), [&](const std::pair<int, VarInfo::AllocInfo>& info) {
+                                if (info.second.status != VarInfo::ALLOC)
+                                    return false;
+                                const Token* ret = getReturnValueFromOutparamAlloc(info.second.allocTok, *mSettings);
+                                return ret && vartok && ret->varId() && ret->varId() == vartok->varId();
+                                })) {
+                                varInfo1.clear();
                             }
                         }
-                        return ChildrenToVisit::none;
-                    }
-
-                    const Token *vartok = nullptr;
-                    if (isVarTokComparison(tok3, &vartok, alloc_success_conds)) {
-                        varInfo2.reallocToAlloc(vartok->varId());
-                        varInfo2.erase(vartok->varId());
-                        if (astIsVariableComparison(tok3, "!=", "0", &vartok) &&
-                            (notzero.find(vartok->varId()) != notzero.end()))
-                            varInfo2.clear();
-
-                        if (std::any_of(varInfo1.alloctype.begin(), varInfo1.alloctype.end(), [&](const std::pair<int, VarInfo::AllocInfo>& info) {
-                            if (info.second.status != VarInfo::ALLOC)
-                                return false;
-                            const Token* ret = getReturnValueFromOutparamAlloc(info.second.allocTok, *mSettings);
-                            return ret && vartok && ret->varId() && ret->varId() == vartok->varId();
-                        })) {
-                            varInfo1.clear();
+                        else if (isVarTokComparison(tok3, &vartok, alloc_failed_conds)) {
+                            varInfo1.reallocToAlloc(vartok->varId());
+                            varInfo1.erase(vartok->varId());
                         }
-                    } else if (isVarTokComparison(tok3, &vartok, alloc_failed_conds)) {
-                        varInfo1.reallocToAlloc(vartok->varId());
-                        varInfo1.erase(vartok->varId());
-                    }
-                    return ChildrenToVisit::none;
-                });
+                        return ChildrenToVisit::none;
+                        });
+                }
 
                 if (!skipIfBlock && !checkScope(closingParenthesis->next(), varInfo1, notzero, recursiveCount)) {
                     varInfo.clear();
