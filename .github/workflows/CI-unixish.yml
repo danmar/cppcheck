@@ -412,8 +412,8 @@ jobs:
     runs-on: ubuntu-22.04  # use the oldest available runner
 
     env:
-      CMAKE_VERSION: 3.13
-      CMAKE_VERSION_FULL: 3.13.5
+      CMAKE_VERSION: 3.22
+      CMAKE_VERSION_FULL: 3.22.6
 
     steps:
       - uses: actions/checkout@v4
@@ -430,17 +430,17 @@ jobs:
 
       - name: Install CMake
         run: |
-          wget https://cmake.org/files/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64.tar.gz
-          tar xf cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64.tar.gz
+          wget https://cmake.org/files/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION_FULL }}-linux-x86_64.tar.gz
+          tar xf cmake-${{ env.CMAKE_VERSION_FULL }}-linux-x86_64.tar.gz
 
       - name: Run CMake (without GUI)
         run: |
-          export PATH=cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64/bin:$PATH
+          export PATH=cmake-${{ env.CMAKE_VERSION_FULL }}-linux-x86_64/bin:$PATH
           cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTING=On
 
       - name: Run CMake (with GUI)
         run: |
-          export PATH=cmake-${{ env.CMAKE_VERSION_FULL }}-Linux-x86_64/bin:$PATH
+          export PATH=cmake-${{ env.CMAKE_VERSION_FULL }}-linux-x86_64/bin:$PATH
           cmake -S . -B cmake.output.gui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTING=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On
 
   build:

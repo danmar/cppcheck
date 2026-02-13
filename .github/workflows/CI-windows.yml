@@ -103,8 +103,8 @@ jobs:
     runs-on: windows-2022  # use the oldest available runner
 
     env:
-      CMAKE_VERSION: 3.13
-      CMAKE_VERSION_FULL: 3.13.5
+      CMAKE_VERSION: 3.22
+      CMAKE_VERSION_FULL: 3.22.6
 
     steps:
       - uses: actions/checkout@v4
@@ -113,7 +113,7 @@ jobs:
 
       - name: Install CMake
         run: |
-          curl -fsSL https://cmake.org/files/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION_FULL }}-win64-x64.zip -o cmake.zip || exit /b !errorlevel!
+          curl -fsSL https://cmake.org/files/v${{ env.CMAKE_VERSION }}/cmake-${{ env.CMAKE_VERSION_FULL }}-windows-x86_64.zip -o cmake.zip || exit /b !errorlevel!
           7z x cmake.zip || exit /b !errorlevel!
 
       - name: Set up Visual Studio environment
@@ -133,12 +133,12 @@ jobs:
       - name: Run CMake (without GUI)
         run: |
           :: TODO: enable DHAVE_RULES?
-          cmake-${{ env.CMAKE_VERSION_FULL }}-win64-x64\bin\cmake.exe -S . -B cmake.output -G "Visual Studio 17 2022" -A x64 -DHAVE_RULES=Off -DBUILD_TESTING=On
+          cmake-${{ env.CMAKE_VERSION_FULL }}-windows-x86_64\bin\cmake.exe -S . -B cmake.output -G "Visual Studio 17 2022" -A x64 -DHAVE_RULES=Off -DBUILD_TESTING=On
 
       - name: Run CMake (with GUI)
         run: |
           :: TODO: enable DHAVE_RULES?
-          cmake-${{ env.CMAKE_VERSION_FULL }}-win64-x64\bin\cmake.exe -S . -B cmake.output.gui -G "Visual Studio 17 2022" -A x64 -DHAVE_RULES=Off -DBUILD_TESTING=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On
+          cmake-${{ env.CMAKE_VERSION_FULL }}-windows-x86_64\bin\cmake.exe -S . -B cmake.output.gui -G "Visual Studio 17 2022" -A x64 -DHAVE_RULES=Off -DBUILD_TESTING=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On
 
   build:
     strategy:
