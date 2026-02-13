@@ -414,8 +414,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mMisraC->setText("Misra C");
     else {
         mUI->mMisraC->setText("Misra C 2012  " + tr("Note: Open source Cppcheck does not fully implement Misra C 2012"));
-        updateAddonCheckBox(mUI->mMisraC, projectFile, dataDir, ADDON_MISRA);
     }
+    updateAddonCheckBox(mUI->mMisraC, projectFile, dataDir, ADDON_MISRA);
     mUI->mMisraVersion->setEnabled(mUI->mMisraC->isChecked());
     connect(mUI->mMisraC, &QCheckBox::toggled, mUI->mMisraVersion, &QComboBox::setEnabled);
 
