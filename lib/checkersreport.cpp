@@ -193,7 +193,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         fout << std::endl;
     }
 
-    for (const auto& addonInfo: mSettings.addonInfos) { 
+    for (const auto& addonInfo: mSettings.addonInfos) {
         if (addonInfo.checkers.empty())
             continue;
         fout << std::endl << std::endl;
