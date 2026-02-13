@@ -99,10 +99,6 @@ Application& ApplicationList::getApplication(const int /*unused*/) {
 const Application& ApplicationList::getApplication(const int index) const {
     return mApplications.at(index);
 }
-QString getPath(const QString &type) {
-    return "/" + type;
-}
-void setPath(const QString & /*unused*/, const QString & /*unused*/) {}
 QString XmlReport::quoteMessage(const QString &message) {
     return message;
 }

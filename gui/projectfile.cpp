@@ -26,6 +26,7 @@
 
 #include <utility>
 
+#include <QCoreApplication>
 #include <QFile>
 #include <QDir>
 #include <QIODevice>
@@ -1175,4 +1176,24 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
     }
 
     return QString();
+}
+
+QStringList ProjectFile::getSearchPaths(QString projectPath, QString appPath, QString datadir, QString dir) {
+    QStringList ret;
+    ret << appPath << (appPath + "/" + dir) << projectPath;
+#ifdef FILESDIR
+    if (FILESDIR[0])
+        ret << FILESDIR << (FILESDIR "/" + dir);
+#endif
+    if (!datadir.isEmpty())
+        ret << datadir << (datadir + "/" + dir);
+    return ret;
+}
+
+QStringList ProjectFile::getSearchPaths(QString dir) const {
+    const QFileInfo inf(mFilename);
+    const QString applicationFilePath = QCoreApplication::applicationFilePath();
+    const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
+    const QString datadir = getDataDir();
+    return getSearchPaths(inf.canonicalFilePath(), appPath, datadir, dir);
 }
