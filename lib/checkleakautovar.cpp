@@ -632,7 +632,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                             varInfo1.erase(vartok->varId());
                         }
                         return ChildrenToVisit::none;
-                        });
+                    });
                 }
 
                 if (!skipIfBlock && !checkScope(closingParenthesis->next(), varInfo1, notzero, recursiveCount)) {
