@@ -295,6 +295,18 @@ static const Token* getReturnValueFromOutparamAlloc(const Token* alloc, const Se
     return nullptr;
 }
 
+static std::vector<const Token*> getComparisonTokens(const Token* tok)
+{
+    std::vector<const Token*> result{ tok };
+    if (tok->hasKnownValue(ValueFlow::Value::ValueType::SYMBOLIC))
+        result.push_back(tok->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC)->tokvalue);
+    for (const Token* op : { tok->astOperand1(), tok->astOperand2() }) {
+        if (op && op->hasKnownValue(ValueFlow::Value::ValueType::SYMBOLIC))
+            result.push_back(op->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC)->tokvalue);
+    }
+    return result;
+}
+
 bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo &varInfo,
                                   std::set<int> notzero,
@@ -578,13 +590,8 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     astOperand2AfterCommas = astOperand2AfterCommas->astOperand2();
 
                 // Recursively scan variable comparisons in condition
-                const Token* compToks[] = {
-                    astOperand2AfterCommas,
-                    astOperand2AfterCommas->hasKnownValue(ValueFlow::Value::ValueType::SYMBOLIC) ? astOperand2AfterCommas->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC)->tokvalue : nullptr
-                };
+                const std::vector<const Token*> compToks = getComparisonTokens(astOperand2AfterCommas);
                 for (const Token* compTok : compToks) {
-                    if (!compTok)
-                        continue;
                     visitAstNodes(compTok, [&](const Token* tok3) {
                         if (!tok3)
                             return ChildrenToVisit::none;
