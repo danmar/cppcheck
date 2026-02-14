@@ -446,6 +446,10 @@ public:
     /** Use Clang parser */
     bool clangParser;
 
+    /** Get paths where we should glob for certain files (dir="cfg"/"platforms"/etc */
+    QStringList getSearchPaths(const QString& dir) const;
+    static QStringList getSearchPaths(const QString& projectPath, const QString& appPath, const QString& datadir, const QString& dir);
+
 protected:
 
     /**
