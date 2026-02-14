@@ -298,12 +298,12 @@ namespace {
                     if (!condTok)
                         break;
                     Analyzer::Action condAction = analyzeRecursive(condTok);
+                    if (condAction.isModified())
+                        break;
                     const bool inLoop = Token::Match(condTok->astTop()->previous(), "for|while (");
                     // Evaluate condition of for and while loops first
                     if (inLoop) {
                         if (Token::findmatch(tok->link(), "goto|break", tok))
-                            break;
-                        if (condAction.isModified())
                             break;
                         valueFlowGenericForward(condTok, analyzer, tokenlist, errorLogger, settings);
                     }
