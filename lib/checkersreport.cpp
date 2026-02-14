@@ -197,8 +197,17 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         if (addonInfo.checkers.empty())
             continue;
         fout << std::endl << std::endl;
-        fout << addonInfo.name << " checkers" << std::endl;
-        fout << std::string(addonInfo.name.size() + 9, '-') << std::endl;
+        std::string title;
+        if (mSettings.premium && addonInfo.name == "premiumaddon.json")
+            title = "Cppcheck Premium";
+        else {
+            title = addonInfo.name;
+            if (endsWith(title, ".json"))
+                title.erase(title.rfind('.'));
+        }
+        title += " checkers";
+        fout << title << std::endl;
+        fout << std::string(title.size(), '-') << std::endl;
 
         for (const auto& checkReq: addonInfo.checkers) {
             const std::string& checker = checkReq.first;
