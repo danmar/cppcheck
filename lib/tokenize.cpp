@@ -9018,8 +9018,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "? %assign%"))
             syntaxError(tok);
-        if (Token::Match(tok, "!|~ %comp%") &&
-            !(cpp && tok->strAt(1) == ">" && Token::simpleMatch(tok->tokAt(-1), "operator")))
+        if (Token::Match(tok, "[!~+-/] %comp%") &&
+            !(cpp && Token::Match(tok->next(), "[<>]") && Token::simpleMatch(tok->tokAt(-1), "operator")))
             syntaxError(tok);
         if (Token::Match(tok, "%comp% {") && (!cpp || tok->str() != ">"))
             syntaxError(tok);
