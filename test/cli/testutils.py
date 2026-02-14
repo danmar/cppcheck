@@ -262,25 +262,31 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
         stdout_lines = stdout.splitlines()
         stdout_1_lines = stdout_1.splitlines()
+
         print('stdout - expected')
         print(stdout_lines)
         print('stdout - actual')
         print(stdout_1_lines)
+
         # strip some common output only seen during analysis
         stdout_lines = [entry for entry in stdout_lines if not entry.startswith('Processing rule: ')]
         stdout_lines = [entry for entry in stdout_lines if not entry.startswith('progress: ')]
+
         # TODO: no messages for checked configurations when using cached data
         #assert stdout_lines == stdout_1_lines
 
         stderr_lines = stderr.splitlines()
         stderr_1_lines = stderr_1.splitlines()
+
         print('stderr - expected')
         print(stderr_lines)
         print('stderr - actual')
         print(stderr_1_lines)
+
         # TODO: filter out checkersReport because it  different amount of active checkers for cached runs
         #stderr_lines = remove_checkers_msg(stderr).splitlines()
         #stderr_1_lines = remove_checkers_msg(stderr_1).splitlines()
+
         assert stderr_lines == stderr_1_lines
 
         cache_content_1 = get_cache_contents()
@@ -292,7 +298,6 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
         assert cache_content == cache_content_1
 
-    if builddir_tmp:
         builddir_tmp.cleanup()
 
     if remove_checkers_report:
