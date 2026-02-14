@@ -40,7 +40,6 @@ enum class ReportType : std::uint8_t {
 
 namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;
-    extern CPPCHECKLIB const std::map<std::string, std::string> premiumCheckers;
 
     struct CPPCHECKLIB MisraInfo {
         int a;
