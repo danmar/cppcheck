@@ -1243,7 +1243,7 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library&
             return nullptr;
     }
     if (alloc != NO_ALLOC) {
-        if (Token::Match(valueExpr->astParent(), "%comp%|%oror%|&&|?|!"))
+        if (Token::Match(valueExpr->astParent(), "%comp%|%oror%|&&|?|!|%"))
             return nullptr;
         if (Token::Match(valueExpr->astParent(), "%or%|&") && valueExpr->astParent()->isBinaryOp())
             return nullptr;

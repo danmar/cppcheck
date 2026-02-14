@@ -2164,6 +2164,13 @@ private:
                        "    return p;\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:5:9]: (error) Memory is allocated but not initialized: *p [uninitdata]\n", errout_str());
+
+        checkUninitVar("char* f(size_t nBytes, size_t nAlign) {\n" // #14485
+                       "    char* p = reinterpret_cast<char*>(malloc(nBytes));\n"
+                       "    if ((uintptr_t)p % nAlign != 0) {}\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     // class / struct..
