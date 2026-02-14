@@ -3028,6 +3028,21 @@ private:
               "    f(nullptr, nullptr);\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
+
+        check("struct T {\n" // #14308
+              "    bool b{};\n"
+              "    T* next{};\n"
+              "};\n"
+              "bool g(const T*& r) {\n"
+              "    const T* t = r;\n"
+              "    r = t->next;\n"
+              "    return t->b;\n"
+              "}\n"
+              "void f(const T* tok) {\n"
+              "    if (g(tok)) {}\n"
+              "    if (tok) {}\n"
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("", errout_str());
     }
 
     // Check if pointer is null and the dereference it
