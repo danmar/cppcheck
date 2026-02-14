@@ -20,12 +20,9 @@ ThreadDetails::~ThreadDetails()
 
 void ThreadDetails::threadDetailsUpdated(QMap<int, CheckThread::Details> threadDetails)
 {
-    mUi->tableWidget->setRowCount(threadDetails.size());
-    int row = 0;
+    QString text("Thread\tStart time\tFile\n");
     for (const auto& td: threadDetails) {
-        mUi->tableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(td.threadIndex)));
-        mUi->tableWidget->setItem(row, 1, new QTableWidgetItem(QString(td.startTime.toString(Qt::TextDate))));
-        mUi->tableWidget->setItem(row, 2, new QTableWidgetItem(td.file));
-        ++row;
+        text += QString("%1\t%2\t%3\n").arg(td.threadIndex).arg(td.startTime.toString(Qt::TextDate)).arg(td.file);
     }
+    mUi->plainTextEdit->setPlainText(text);
 }

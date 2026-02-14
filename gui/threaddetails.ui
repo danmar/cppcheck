@@ -15,25 +15,10 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTableWidget" name="tableWidget">
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <column>
-      <property name="text">
-       <string>Thread</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Start time</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Filename</string>
-      </property>
-     </column>
+    <widget class="QPlainTextEdit" name="plainTextEdit">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
   </layout>
