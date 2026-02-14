@@ -310,7 +310,7 @@ protected:
     /// @}
 
     /**
-     * @bried Details about currently running threads
+     * @brief Details about currently running threads
      */
     QMap<int, CheckThread::Details> mThreadDetails;
 
