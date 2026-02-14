@@ -189,6 +189,9 @@ public:
     /** @brief Are we running from DACA script? */
     bool daca{};
 
+    /** @brief Is --debug-analyzerinfo given? */
+    bool debugainfo{};
+
     /** @brief Is --debug-ast given? */
     bool debugast{};
 

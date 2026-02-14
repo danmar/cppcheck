@@ -973,7 +973,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     mLogger->setAnalyzerInfo(nullptr);
 
                     std::list<ErrorMessage> errors;
-                    analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, file.fsFileId(), hash, errors);
+                    analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, file.fsFileId(), hash, errors, mSettings.debugainfo);
                     analyzerInformation->setFileInfo("CheckUnusedFunctions", mUnusedFunctionsCheck->analyzerInfo(tokenizer));
                     analyzerInformation->close();
                 }
@@ -1019,7 +1019,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             // Calculate hash so it can be compared with old hash / future hashes
             const std::size_t hash = calculateHash(preprocessor, file.spath());
             std::list<ErrorMessage> errors;
-            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, file.fsFileId(), hash, errors)) {
+            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, file.fsFileId(), hash, errors, mSettings.debugainfo)) {
                 while (!errors.empty()) {
                     mErrorLogger.reportErr(errors.front());
                     errors.pop_front();
@@ -1860,12 +1860,17 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
         }
     };
 
-    AnalyzerInformation::processFilesTxt(buildDir, handler);
-
-    // Analyse the tokens
-    // cppcheck-suppress shadowFunction - TODO: fix this
-    for (Check *check : Check::instances())
-        check->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
+    const std::string err = AnalyzerInformation::processFilesTxt(buildDir, handler, mSettings.debugainfo);
+    if (!err.empty()) {
+        const ErrorMessage errmsg({}, "", Severity::error, err, "internalError", Certainty::normal);
+        mErrorLogger.reportErr(errmsg);
+    }
+    else {
+        // Analyse the tokens
+        // cppcheck-suppress shadowFunction - TODO: fix this
+        for (Check *check : Check::instances())
+            check->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
+    }
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;
