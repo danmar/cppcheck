@@ -36,7 +36,7 @@ function(target_dll_compile_definitions TARGET)
     endif()
 
 
-    if (BUILD_SHARED_LIBS AND MSVC)
+    if ((BUILD_SHARED_LIBS OR BUILD_CORE_DLL) AND MSVC)
         if(PARSE_EXPORT)
             target_compile_definitions(${TARGET} PRIVATE ${PARSE_EXPORT})
         endif()
