@@ -980,6 +980,24 @@ private:
                     "}\n");
         ASSERT_EQUALS("[test.cpp:4:13]: error: Out of bounds access in 'x[3]', if 'x' size is 1 and '3' is 3 [containerOutOfBounds]\n",
                       errout_str());
+
+        checkNormal("int main() {\n"
+                    "    const char a[] = \"abc\";\n"
+                    "    std::string_view x{ a };\n"
+                    "    return x[5];\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:4:13]: error: Out of bounds access in 'x[5]', if 'x' size is 4 and '5' is 5 [containerOutOfBounds]\n",
+                      errout_str());
+
+        checkNormal("int f(const std::string& v) {\n"
+                    "    return v[2];\n"
+                    "}\n"
+                    "int main() {\n"
+                    "    std::string_view x{ \"a\" };\n"
+                    "    return f(std::string(x));\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:2:13]: error: Out of bounds access in 'v[2]', if 'v' size is 1 and '2' is 2 [containerOutOfBounds]\n",
+                      errout_str());
     }
 
     void outOfBoundsSymbolic()

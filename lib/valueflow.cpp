@@ -6490,6 +6490,9 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
         if (astIsPointer(args[0])) {
             if (args.size() == 1 && args[0]->tokType() == Token::Type::eString)
                 return {makeContainerSizeValue(Token::getStrLength(args[0]), known)};
+            if (args.size() == 1 && args[0]->variable() && args[0]->variable()->isArray() &&
+                args[0]->variable()->isConst() && args[0]->variable()->dimensions().size() == 1)
+                return {makeContainerSizeValue(args[0]->variable()->dimensions()[0].num, known)};
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
         } else if (astIsContainer(args[0])) {
@@ -6707,23 +6710,25 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 for (const ValueFlow::Value& value : values)
                     setTokenValue(tok, value, settings);
             }
-            else if (Token::Match(tok->previous(), ",|( {|%str%")) {
-                int nArg{};
-                if (const Token* funcTok = getTokenArgumentFunction(tok, nArg)) {
-                    if (const Function* func = funcTok->function()) {
-                        if (const Variable* var = func->getArgumentVar(nArg)) {
-                            if (var->valueType() && var->valueType()->container && var->valueType()->container->size_templateArgNo < 0) {
-                                auto values = tok->tokType() == Token::Type::eString
-                                   ? std::vector<ValueFlow::Value>{makeContainerSizeValue(Token::getStrLength(tok))}
-                                   : getInitListSize(tok, var->valueType(), settings, true);
-                                ValueFlow::Value tokValue;
-                                tokValue.valueType = ValueFlow::Value::ValueType::TOK;
-                                tokValue.tokvalue = tok;
-                                tokValue.setKnown();
-                                values.push_back(std::move(tokValue));
+            else if (Token::Match(tok->previous(), ",|(") && (Token::Match(tok, "{|%str%") || settings.library.detectContainer(tok))) {
+                if (Token* argTok = tok->previous()->astOperand2()) {
+                    int nArg{};
+                    if (const Token* funcTok = getTokenArgumentFunction(argTok, nArg)) {
+                        if (const Function* func = funcTok->function()) {
+                            if (const Variable* var = func->getArgumentVar(nArg)) {
+                                if (var->valueType() && var->valueType()->container && var->valueType()->container->size_templateArgNo < 0) {
+                                    auto values = argTok->tokType() == Token::Type::eString
+                                        ? std::vector<ValueFlow::Value>{makeContainerSizeValue(Token::getStrLength(argTok))}
+                                    : getInitListSize(argTok, var->valueType(), settings, true);
+                                    ValueFlow::Value tokValue;
+                                    tokValue.valueType = ValueFlow::Value::ValueType::TOK;
+                                    tokValue.tokvalue = argTok;
+                                    tokValue.setKnown();
+                                    values.push_back(std::move(tokValue));
 
-                                for (const ValueFlow::Value &value : values)
-                                    setTokenValue(tok, value, settings);
+                                    for (const ValueFlow::Value& value : values)
+                                        setTokenValue(argTok, value, settings);
+                                }
                             }
                         }
                     }
