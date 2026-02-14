@@ -424,7 +424,7 @@ int multiComparePercent(const Token *tok, const char*& haystack, nonneg int vari
                 return 1;
         } else { // %varid%
             if (varid == 0) {
-                throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
+                throw InternalError(tok, "Internal error. Token::Match called with varid 0.");
             }
 
             haystack += 6;

@@ -3980,7 +3980,7 @@ def test_no_valid_configuration(tmp_path):
         '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
         '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
         '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
-        '{}:0:0: information: This file is not analyzed. Cppcheck failed to extract a valid configuration. Use -v for more details. [noValidConfiguration]'.format(test_file)
+        '{}:0:0: information: This file is not analyzed. No working configuration could be extracted. Use -v for more details. [noValidConfiguration]'.format(test_file)
     ]
 
 

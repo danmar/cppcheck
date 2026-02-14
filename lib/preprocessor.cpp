@@ -1008,7 +1008,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     }
     ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
                         (headerType==SystemHeader) ?
-                        "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
+                        "Include file: <" + header + "> not found. Please note: Standard library headers do not need to be provided to get proper results." :
                         "Include file: \"" + header + "\" not found.",
                         (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                         Certainty::normal);

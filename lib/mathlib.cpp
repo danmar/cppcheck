@@ -1224,7 +1224,7 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         return MathLib::toString(MathLib::toBigNumber(first) ^ MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     default:
-        throw InternalError(nullptr, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");
+        throw InternalError(nullptr, std::string("Unexpected action '") + action + "' in MathLib::calculate().");
     }
 }
 
