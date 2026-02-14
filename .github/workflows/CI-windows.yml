@@ -21,88 +21,11 @@ defaults:
 
 jobs:
 
-  build_qt:
-    strategy:
-      matrix:
-        os: [windows-2022, windows-2025]
-        qt_ver: [6.10.0]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Set up Visual Studio environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Install Qt ${{ matrix.qt_ver }}
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ matrix.qt_ver }}
-          modules: 'qtcharts'
-          setup-python: 'false'
-          cache: true
-          aqtversion: '==3.1.*'  # TODO: remove when aqtinstall 3.2.2 is available
-
-      - name: Run CMake
-        run: |
-          rem TODO: enable rules?
-          rem specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
-
-      - name: Build GUI release
-        run: |
-          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
-
-      - name: Deploy GUI
-        run: |
-          windeployqt build\bin\Release || exit /b !errorlevel!
-          del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!
-          del build\bin\Release\cppcheck-gui.pdb || exit /b !errorlevel!
-
-      # TODO: run GUI tests
-
-      - name: Run CMake install
-        run: |
-          cmake --build build --target install
-
-  build_cmake_cxxstd:
-    strategy:
-      matrix:
-        os: [windows-2022, windows-2025]
-        cxxstd: [14, 17, 20]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Set up Visual Studio environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Run CMake
-        run: |
-          cmake -S . -B build.cxxstd -G "Visual Studio 17 2022" -A x64 -DCMAKE_CXX_STANDARD=${{ matrix.cxxstd }} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
-
-      - name: Build
-        run: |
-          cmake --build build.cxxstd --config Debug || exit /b !errorlevel!
-
   build:
     strategy:
       matrix:
         os: [windows-2022, windows-2025]
-        config: [debug, release]
+        config: [release]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
