@@ -250,6 +250,11 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
         # TODO: check that the cached results were actually used - run with --debug-analyzerinfo, check timestamps, etc.
         return_code_1, stdout_1, stderr_1 = run_cppcheck()
 
+        print('exitcode - expected')
+        print(return_code)
+        print('exitcode - actual')
+        print(return_code_1)
+
         # TODO: the following asserts do not show a diff when the test fails
         # this can apparently by fixed by using register_assert_rewrite() but I have no idea how
 
@@ -279,6 +284,11 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
         assert stderr_lines == stderr_1_lines
 
         cache_content_1 = get_cache_contents()
+
+        print('cache - expected')
+        print(cache_content)
+        print('cache - actual')
+        print(cache_content_1)
 
         assert cache_content == cache_content_1
 
