@@ -162,7 +162,7 @@ void ResultsView::setResultsSource(ResultsTree::ResultsSource source)
     mUI->mTree->setResultsSource(source);
 }
 
-void ResultsView::progress(int value, const QString& description)
+void ResultsView::filesCheckedProgress(int value, const QString& description)
 {
     mUI->mProgress->setValue(value);
     mUI->mProgress->setFormat(QString("%p% (%1)").arg(description));

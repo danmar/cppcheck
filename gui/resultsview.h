@@ -307,7 +307,7 @@ public slots:
      * @param value Current progress value
      * @param description Description to accompany the progress
      */
-    void progress(int value, const QString& description);
+    void filesCheckedProgress(int value, const QString& description);
 
     /**
      * @brief Slot for new error to be displayed

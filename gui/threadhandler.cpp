@@ -223,8 +223,8 @@ void ThreadHandler::stop()
 
 void ThreadHandler::initialize(const ResultsView *view)
 {
-    connect(&mResults, &ThreadResult::progress,
-            view, &ResultsView::progress);
+    connect(&mResults, &ThreadResult::filesCheckedProgress,
+            view, &ResultsView::filesCheckedProgress);
 
     connect(&mResults, &ThreadResult::error,
             view, &ResultsView::error);
@@ -234,6 +234,9 @@ void ThreadHandler::initialize(const ResultsView *view)
 
     connect(&mResults, &ThreadResult::debugError,
             this, &ThreadHandler::debugError);
+
+    connect(&mResults, &ThreadResult::progress,
+            this, &ThreadHandler::progress);
 }
 
 void ThreadHandler::loadSettings(const QSettings &settings)

@@ -1071,6 +1071,7 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
 
     settings.exename = QCoreApplication::applicationFilePath().toStdString();
     settings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+    settings.reportProgress = 10;
 
     // default to --check-level=normal for GUI for now
     settings.setCheckLevel(Settings::CheckLevel::normal);
@@ -2118,6 +2119,8 @@ void MainWindow::showThreadDetails()
     auto* threadDetails = new ThreadDetails(this);
     connect(mThread, &ThreadHandler::threadDetailsUpdated,
             threadDetails, &ThreadDetails::threadDetailsUpdated, Qt::QueuedConnection);
+    connect(mThread, &ThreadHandler::progress,
+            threadDetails, &ThreadDetails::progress, Qt::QueuedConnection);
     threadDetails->setAttribute(Qt::WA_DeleteOnClose);
     threadDetails->show();
     mThread->emitThreadDetailsUpdated();

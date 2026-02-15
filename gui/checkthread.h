@@ -111,8 +111,8 @@ signals:
      */
     void done();
 
-    void startCheck(CheckThread::Details details);
-    void finishCheck(CheckThread::Details details);
+    void startCheck(const CheckThread::Details& details);
+    void finishCheck(const CheckThread::Details& details);
 protected:
 
     /**

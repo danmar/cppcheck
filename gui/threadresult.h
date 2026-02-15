@@ -84,6 +84,7 @@ public:
     {
         (void) metric;
     }
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
 public slots:
 
@@ -97,10 +98,10 @@ signals:
     /**
      * @brief Files checked progress
      * @param value Current progress (0 - PROGRESS_MAX)
-     * @param description Description of the current stage (example: 13/45 files checked)
+     * @param description Description of the current stage (example: "13/45 files checked")
      */
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
-    void progress(int value, const QString& description);
+    void filesCheckedProgress(int value, const QString& description);
 
     /**
      * @brief Signal of a new error
@@ -126,6 +127,8 @@ signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void debugError(const ErrorItem &item);
 
+    void progress(const QString &filename, const QString& stage, const std::size_t value);
+
 protected:
 
     /**
@@ -144,17 +147,11 @@ protected:
     std::list<FileSettings> mFileSettings;
     std::list<FileSettings>::const_iterator mItNextFileSettings{mFileSettings.cbegin()};
 
-    /**
-     * @brief Max progress
-     *
-     */
-    quint64 mMaxProgress{};
+    /** @brief Total file size */
+    quint64 mTotalFileSize{};
 
-    /**
-     * @brief Current progress
-     *
-     */
-    quint64 mProgress{};
+    /** @brief File size of checked files */
+    quint64 mCheckedFileSize{};
 
     /**
      * @brief Current number of files checked

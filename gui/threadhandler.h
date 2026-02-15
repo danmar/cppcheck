@@ -221,6 +221,9 @@ public slots:
      */
     void finishCheck(const CheckThread::Details& details);
 
+signals:
+    void progress(const QString &filename, const QString& stage, const std::size_t value);
+
 protected slots:
     /**
      * @brief Slot that a single thread is done

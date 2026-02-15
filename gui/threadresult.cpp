@@ -39,14 +39,14 @@ void ThreadResult::finishCheck(const CheckThread::Details& details)
 {
     std::lock_guard<std::mutex> locker(mutex);
 
-    mProgress += QFile(details.file).size();
+    mCheckedFileSize += QFile(details.file).size();
     mFilesChecked++;
 
-    if (mMaxProgress > 0) {
-        const int value = static_cast<int>(PROGRESS_MAX * mProgress / mMaxProgress);
+    if (mTotalFileSize > 0) {
+        const int value = static_cast<int>(PROGRESS_MAX * mCheckedFileSize / mTotalFileSize);
         const QString description = tr("%1 of %2 files checked").arg(mFilesChecked).arg(mTotalFiles);
 
-        emit progress(value, description);
+        emit filesCheckedProgress(value, description);
     }
 }
 
@@ -58,6 +58,10 @@ void ThreadResult::reportErr(const ErrorMessage &msg)
         emit error(item);
     else
         emit debugError(item);
+}
+
+void ThreadResult::reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
+    emit progress(QString::fromStdString(filename), stage, value);
 }
 
 void ThreadResult::getNextFile(const FileWithDetails*& file)
@@ -88,7 +92,7 @@ void ThreadResult::setFiles(std::list<FileWithDetails> files)
     mTotalFiles = files.size();
     mFiles = std::move(files);
     mItNextFile = mFiles.cbegin();
-    mProgress = 0;
+    mCheckedFileSize = 0;
     mFilesChecked = 0;
 
     // Determine the total size of all of the files to check, so that we can
@@ -96,7 +100,7 @@ void ThreadResult::setFiles(std::list<FileWithDetails> files)
     quint64 sizeOfFiles = std::accumulate(mFiles.cbegin(), mFiles.cend(), 0, [](quint64 total, const FileWithDetails& file) {
         return total + file.size();
     });
-    mMaxProgress = sizeOfFiles;
+    mTotalFileSize = sizeOfFiles;
 }
 
 void ThreadResult::setProject(const ImportProject &prj)
@@ -106,13 +110,13 @@ void ThreadResult::setProject(const ImportProject &prj)
     mItNextFile = mFiles.cbegin();
     mFileSettings = prj.fileSettings;
     mItNextFileSettings = mFileSettings.cbegin();
-    mProgress = 0;
+    mCheckedFileSize = 0;
     mFilesChecked = 0;
     mTotalFiles = prj.fileSettings.size();
 
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
-    mMaxProgress = std::accumulate(prj.fileSettings.begin(), prj.fileSettings.end(), quint64{ 0 }, [](quint64 v, const FileSettings& fs) {
+    mTotalFileSize = std::accumulate(prj.fileSettings.begin(), prj.fileSettings.end(), quint64{ 0 }, [](quint64 v, const FileSettings& fs) {
         return v + QFile(QString::fromStdString(fs.filename())).size();
     });
 }
