@@ -124,6 +124,9 @@ void ThreadResult::reportOut(const std::string & /*unused*/, Color /*unused*/) {
 void ThreadResult::reportErr(const ErrorMessage & /*unused*/) {
     throw 1;
 }
+void ThreadResult::reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) {
+    throw 1;
+}
 
 // Test...
 
