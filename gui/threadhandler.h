@@ -213,16 +213,16 @@ public slots:
      * @brief Slot threads use to signal this class that it started checking a file
      * @param details Details about what file is being checked and by what thread
      */
-    void startCheck(const CheckThread::Details& details);
+    void startCheck(CheckThread::Details details);
 
     /**
      * @brief Slot threads use to signal this class that it finish checking a file
      * @param details Details about what file finished being checked and by what thread
      */
-    void finishCheck(const CheckThread::Details& details);
+    void finishCheck(CheckThread::Details details);
 
 signals:
-    void progress(const QString &filename, const QString& stage, const std::size_t value);
+    void progress(QString filename, QString stage, const std::size_t value);
 
 protected slots:
     /**

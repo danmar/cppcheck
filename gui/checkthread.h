@@ -49,7 +49,6 @@ class ThreadResult;
  */
 class CheckThread : public QThread {
     Q_OBJECT
-
 public:
     struct Details {
         int threadIndex;
@@ -111,8 +110,8 @@ signals:
      */
     void done();
 
-    void startCheck(const CheckThread::Details& details);
-    void finishCheck(const CheckThread::Details& details);
+    void startCheck(CheckThread::Details details);
+    void finishCheck(CheckThread::Details details);
 protected:
 
     /**
@@ -160,5 +159,6 @@ private:
     QStringList mClangIncludePaths;
     QList<SuppressionList::Suppression> mSuppressionsUi;
 };
+Q_DECLARE_METATYPE(CheckThread::Details);
 /// @}
 #endif // CHECKTHREAD_H

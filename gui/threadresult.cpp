@@ -35,7 +35,7 @@ void ThreadResult::reportOut(const std::string &outmsg, Color /*c*/)
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-void ThreadResult::finishCheck(const CheckThread::Details& details)
+void ThreadResult::finishCheck(CheckThread::Details details)
 {
     std::lock_guard<std::mutex> locker(mutex);
 

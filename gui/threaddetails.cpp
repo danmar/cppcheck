@@ -22,7 +22,7 @@ ThreadDetails::~ThreadDetails()
     delete mUi;
 }
 
-void ThreadDetails::threadDetailsUpdated(const QMap<int, CheckThread::Details>& threadDetails)
+void ThreadDetails::threadDetailsUpdated(QMap<int, CheckThread::Details> threadDetails)
 {
     QMutexLocker locker(&mMutex);
     mThreadDetails = threadDetails;
@@ -31,7 +31,7 @@ void ThreadDetails::threadDetailsUpdated(const QMap<int, CheckThread::Details>& 
     }
 }
 
-void ThreadDetails::progress(const QString &filename, const QString& stage, const std::size_t value) {
+void ThreadDetails::progress(QString filename, QString stage, const std::size_t value) {
     QMutexLocker locker(&mMutex);
     mProgress[filename] = {QString(), stage + QString(value > 0 ? ": %1%" : "").arg(value)};
 }

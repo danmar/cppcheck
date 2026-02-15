@@ -92,7 +92,7 @@ public slots:
      * @brief Slot threads use to signal this class that it finish checking a file
      * @param details Details about what file finished being checked and by what thread
      */
-    void finishCheck(const CheckThread::Details& details);
+    void finishCheck(CheckThread::Details details);
 
 signals:
     /**
@@ -127,7 +127,7 @@ signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void debugError(const ErrorItem &item);
 
-    void progress(const QString &filename, const QString& stage, const std::size_t value);
+    void progress(QString filename, QString stage, const std::size_t value);
 
 protected:
 
