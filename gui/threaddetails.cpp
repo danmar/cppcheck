@@ -18,7 +18,7 @@ ThreadDetails::~ThreadDetails()
     delete mUi;
 }
 
-void ThreadDetails::threadDetailsUpdated(QMap<int, CheckThread::Details> threadDetails)
+void ThreadDetails::threadDetailsUpdated(const QMap<int, CheckThread::Details>& threadDetails)
 {
     QString text("Thread\tStart time\tFile\n");
     for (const auto& td: threadDetails) {

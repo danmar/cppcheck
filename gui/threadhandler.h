@@ -213,13 +213,13 @@ public slots:
      * @brief Slot threads use to signal this class that it started checking a file
      * @param details Details about what file is being checked and by what thread
      */
-    void startCheck(CheckThread::Details details);
+    void startCheck(const CheckThread::Details& details);
 
     /**
      * @brief Slot threads use to signal this class that it finish checking a file
      * @param details Details about what file finished being checked and by what thread
      */
-    void finishCheck(CheckThread::Details details);
+    void finishCheck(const CheckThread::Details& details);
 
 protected slots:
     /**

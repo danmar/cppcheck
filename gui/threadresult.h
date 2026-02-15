@@ -91,13 +91,13 @@ public slots:
      * @brief Slot threads use to signal this class that it finish checking a file
      * @param details Details about what file finished being checked and by what thread
      */
-    void finishCheck(CheckThread::Details details);
+    void finishCheck(const CheckThread::Details& details);
 
 signals:
     /**
-     * @brief Progress signal
-     * @param value Current progress
-     * @param description Description of the current stage
+     * @brief Files checked progress
+     * @param value Current progress (0 - PROGRESS_MAX)
+     * @param description Description of the current stage (example: 13/45 files checked)
      */
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void progress(int value, const QString& description);

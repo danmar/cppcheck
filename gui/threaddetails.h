@@ -22,7 +22,7 @@ public:
     }
 
 public slots:
-    void threadDetailsUpdated(QMap<int, CheckThread::Details> threadDetails);
+    void threadDetailsUpdated(const QMap<int, CheckThread::Details>& threadDetails);
 
 private:
     static ThreadDetails* mInstance;

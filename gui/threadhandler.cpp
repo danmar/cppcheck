@@ -328,14 +328,14 @@ void ThreadHandler::setCheckStartTime(QDateTime checkStartTime)
 
 // cppcheck-suppress passedByValueCallback
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-void ThreadHandler::startCheck(CheckThread::Details details)
+void ThreadHandler::startCheck(const CheckThread::Details& details)
 {
     mThreadDetails[details.threadIndex] = details;
     emitThreadDetailsUpdated();
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-void ThreadHandler::finishCheck(CheckThread::Details details)
+void ThreadHandler::finishCheck(const CheckThread::Details& details)
 {
     mThreadDetails.remove(details.threadIndex);
     emitThreadDetailsUpdated();
