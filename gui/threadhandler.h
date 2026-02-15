@@ -222,7 +222,7 @@ public slots:
     void finishCheck(CheckThread::Details details);
 
 signals:
-    void progress(QString filename, QString stage, const std::size_t value);
+    void progress(QString filename, QString stage, std::size_t value);
 
 protected slots:
     /**

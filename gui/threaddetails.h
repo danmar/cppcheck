@@ -25,7 +25,7 @@ public:
 
 public slots:
     void threadDetailsUpdated(QMap<int, CheckThread::Details> threadDetails);
-    void progress(QString filename, QString stage, const std::size_t value);
+    void progress(QString filename, QString stage, std::size_t value);
 
 private slots:
     void updateUI();

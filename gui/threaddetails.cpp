@@ -31,7 +31,7 @@ void ThreadDetails::threadDetailsUpdated(QMap<int, CheckThread::Details> threadD
     }
 }
 
-void ThreadDetails::progress(QString filename, QString stage, const std::size_t value) {
+void ThreadDetails::progress(QString filename, QString stage, std::size_t value) {
     QMutexLocker locker(&mMutex);
     mProgress[filename] = {QString(), stage + QString(value > 0 ? ": %1%" : "").arg(value)};
 }

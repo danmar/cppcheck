@@ -84,7 +84,7 @@ public:
     {
         (void) metric;
     }
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
+    void reportProgress(const std::string &filename, const char stage[], std::size_t value) final;
 
 public slots:
 
@@ -127,7 +127,7 @@ signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void debugError(const ErrorItem &item);
 
-    void progress(QString filename, QString stage, const std::size_t value);
+    void progress(QString filename, QString stage, std::size_t value);
 
 protected:
 
