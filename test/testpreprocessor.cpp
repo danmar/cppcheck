@@ -2866,7 +2866,7 @@ private:
             std::vector<std::string> files;
             TokenList tokenlist{settingsDefault, Standards::Language::CPP};
             // TODO: can this happen from application code? if yes we need to turn it into a proper error
-            ASSERT_THROW_EQUALS_2(preprocess(code, files, "test.cpp", tokenlist, dui), std::runtime_error, "unexpected simplecpp::Output type 9");
+            ASSERT_THROW_EQUALS(preprocess(code, files, "test.cpp", tokenlist, dui), std::runtime_error, "unexpected simplecpp::Output type 9");
             ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
     }

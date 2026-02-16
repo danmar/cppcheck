@@ -533,7 +533,7 @@ private:
 
 #ifndef _WIN32
         // the underlying realpath() call only returns something if the path actually exists
-        ASSERT_THROW_EQUALS_2(Path::getAbsoluteFilePath("testabspath2.txt"), std::runtime_error, "path 'testabspath2.txt' does not exist");
+        ASSERT_THROW_EQUALS(Path::getAbsoluteFilePath("testabspath2.txt"), std::runtime_error, "path 'testabspath2.txt' does not exist");
 #else
         ASSERT_EQUALS(Path::toNativeSeparators(Path::join(cwd, "testabspath2.txt")), Path::getAbsoluteFilePath("testabspath2.txt"));
 #endif
@@ -572,7 +572,7 @@ private:
 #endif
 
 #ifndef _WIN32
-        ASSERT_THROW_EQUALS_2(Path::getAbsoluteFilePath("C:\\path\\files.txt"), std::runtime_error, "path 'C:\\path\\files.txt' does not exist");
+        ASSERT_THROW_EQUALS(Path::getAbsoluteFilePath("C:\\path\\files.txt"), std::runtime_error, "path 'C:\\path\\files.txt' does not exist");
 #endif
 
         // TODO: test UNC paths
