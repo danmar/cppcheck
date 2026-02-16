@@ -37,7 +37,8 @@ $cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options $qt_options \
   --suppress=constVariablePointer:*/moc_*.cpp \
   -DQT_CHARTS_LIB \
   -I$cmake_output/gui -Ifrontend -Igui \
-  gui/*.cpp $cmake_output/gui \
+  -gui/test/data \
+  gui $cmake_output/gui \
   || ec=1
 
 $cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options \
