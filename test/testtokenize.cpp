@@ -6421,7 +6421,6 @@ private:
             tokenizer.createLinks();
             tokenizer.createLinks2();
             tokenizer.simplifyCAlternativeTokens();
-            tokenizer.simplifyOperatorName();
             tokenizer.list.front()->assignIndexes();
         } else { // Full
             tokenizer.simplifyTokens1("");
