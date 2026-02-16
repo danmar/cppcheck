@@ -47,7 +47,8 @@ $cppcheck_bin $selfcheck_options $cppcheck_options $naming_options $qt_options \
   --cppcheck-build-dir=b2 \
   -DQT_CHARTS_LIB \
   -I$cmake_output/gui -Ifrontend -Igui \
-  gui/*.cpp $cmake_output/gui \
+  -igui/test/data \
+  gui $cmake_output/gui \
   || ec=1
 
 $cppcheck_bin $selfcheck_options $cppcheck_options \
