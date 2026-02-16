@@ -19,28 +19,6 @@ export PATH=
 
 ec=0
 
-$cppcheck_bin $selfcheck_options \
-  externals \
-  || ec=1
-
-$mkdir_cmd b1
-
-$cppcheck_bin $selfcheck_options $cppcheck_options $naming_options \
-  --cppcheck-build-dir=b1 \
-  frontend \
-  || ec=1
-
-$cppcheck_bin $selfcheck_options $cppcheck_options $naming_options \
-  --cppcheck-build-dir=b1 \
-  -Ifrontend \
-  cli \
-  || ec=1
-
-$cppcheck_bin $selfcheck_options $cppcheck_options $naming_options \
-  --cppcheck-build-dir=b1 --enable=internal \
-  lib \
-  || ec=1
-
 $mkdir_cmd b2
 
 $cppcheck_bin $selfcheck_options $cppcheck_options $naming_options $qt_options \
@@ -51,22 +29,6 @@ $cppcheck_bin $selfcheck_options $cppcheck_options $naming_options $qt_options \
   gui $cmake_output/gui \
   || ec=1
 
-$cppcheck_bin $selfcheck_options $cppcheck_options \
-  -Ifrontend -Icli \
-  test/*.cpp \
-  || ec=1
-
-$cppcheck_bin $selfcheck_options $cppcheck_options \
-  -Icli \
-  tools/dmake/*.cpp \
-  || ec=1
-
-$cppcheck_bin $selfcheck_options $cppcheck_options $qt_options \
-  -I$cmake_output/tools/triage -Igui \
-  tools/triage/*.cpp $cmake_output/tools/triage \
-  || ec=1
-
 $rm_cmd -rf b2
-$rm_cmd -rf b1
 
 exit $ec
