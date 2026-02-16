@@ -4082,12 +4082,28 @@ void CheckOther::checkShadowVariables()
         return;
     logChecker("CheckOther::checkShadowVariables"); // style
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+
     for (const Scope & scope : symbolDatabase->scopeList) {
         if (!scope.isExecutable() || scope.type == ScopeType::eLambda)
             continue;
         const Scope *functionScope = &scope;
         while (functionScope && functionScope->type != ScopeType::eFunction && functionScope->type != ScopeType::eLambda)
             functionScope = functionScope->nestedIn;
+
+        // Check shadowed variables in the outer scope
+        if (scope.type == ScopeType::eFunction && scope.function) {
+            for (const Variable &arg : scope.function->argumentList) {
+                if (arg.nameToken() && arg.nameToken()->isExpandedMacro())
+                    continue;
+                const Token *shadowed = findShadowed(scope.nestedIn, arg, arg.nameToken()->linenr());
+                if (!shadowed)
+                    shadowed = findShadowed(scope.functionOf, arg, arg.nameToken()->linenr());
+                if (shadowed)
+                    shadowError(arg.nameToken(), shadowed, (shadowed->varId() != 0) ? "variable" : "function");
+            }
+        }
+
+        // Check shadowed variables in the inner scope
         for (const Variable &var : scope.varlist) {
             if (var.nameToken() && var.nameToken()->isExpandedMacro()) // #8903
                 continue;
