@@ -121,6 +121,7 @@ private:
         TEST_CASE(varScope41);      // #11845
         TEST_CASE(varScope42);
         TEST_CASE(varScope43);
+        TEST_CASE(varScope44);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(intToPointerCast);
@@ -1943,6 +1944,32 @@ private:
               "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:12]: (style) The scope of the variable 'x' can be reduced. [variableScope]\n", errout_str());
+    }
+
+    void varScope44() { // #14496
+        check("char* f() {\n"
+              "    char* p = nullptr;\n"
+              "    {\n"
+              "        p = strdup(\"abc\");\n"
+              "        if (p) {\n"
+              "            return p;\n"
+              "        }\n"
+              "    }\n"
+              "    return nullptr;\n"
+              "}\n"
+              "char* g() {\n"
+              "    char* q = NULL;\n"
+              "    {\n"
+              "        q = strdup(\"abc\");\n"
+              "        if (q) {\n"
+              "            return q;\n"
+              "        }\n"
+              "    }\n"
+              "    return nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:11]: (style) The scope of the variable 'p' can be reduced. [variableScope]\n"
+                      "[test.cpp:12:11]: (style) The scope of the variable 'q' can be reduced. [variableScope]\n",
+                      errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
