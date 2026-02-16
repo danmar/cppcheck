@@ -1788,7 +1788,7 @@ static Token * createAstAtToken(Token *tok)
     }
 
     if ((Token::Match(tok, "%type% %name%|*|&|&&|::") && !Token::Match(tok, "return|new|delete")) ||
-        (Token::Match(tok, ":: %tyoe%") && !tok->next()->isKeyword())) {
+        (Token::Match(tok, ":: %type%") && !tok->next()->isKeyword())) {
         int typecount = tok->str() == "::" ? 1 : 0;
         Token *typetok = tok;
         while (Token::Match(typetok, "%type%|::|*|&|&&|<")) {
