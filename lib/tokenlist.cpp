@@ -1787,11 +1787,11 @@ static Token * createAstAtToken(Token *tok)
         }
     }
 
-    if (Token::Match(tok, "%type% %name%|*|&|&&|::") && !Token::Match(tok, "return|new|delete")) {
+    if (Token::Match(tok, "%type%| %name%|*|&|&&|::") && !Token::Match(tok, "return|new|delete")) {
         int typecount = 0;
         Token *typetok = tok;
         while (Token::Match(typetok, "%type%|::|*|&|&&|<")) {
-            if (typetok->isName() && !Token::simpleMatch(typetok->previous(), "::"))
+            if (typetok->isName() && (!Token::simpleMatch(typetok->previous(), "::") || tok->str() == "::"))
                 typecount++;
             if (typetok->str() == "<") {
                 if (Token* closing = typetok->findClosingBracket()) {
@@ -1811,7 +1811,7 @@ static Token * createAstAtToken(Token *tok)
             !Token::Match(tok, "return|throw") &&
             Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
-            !typetok->previous()->isKeyword() &&
+            (!typetok->previous()->isKeyword() || typetok->previous()->isOperatorKeyword()) &&
             (skipMethodDeclEnding(typetok->link()) || Token::Match(typetok->link(), ") ;|{")))
             return typetok;
     }
