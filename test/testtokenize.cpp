@@ -425,6 +425,7 @@ private:
         TEST_CASE(astrvaluedecl);
         TEST_CASE(astorkeyword);
         TEST_CASE(astenumdecl);
+        TEST_CASE(astfuncdecl);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7419,7 +7420,7 @@ private:
 
     void astfuncdecl() {
         ASSERT_EQUALS("", testAst("bool operator==(const S& a, const S& b);", AstStyle::Simple, ListSimplification::Full));
-        ASSERT_EQUALS("", testAst("::int32_t f() {}"));
+        ASSERT_EQUALS("", testAst("::int32_t f();"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
