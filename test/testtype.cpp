@@ -465,6 +465,19 @@ private:
         check(code2, dinit(CheckOptions, $.settings = &settingsWin));
         ASSERT_EQUALS("[test.cpp:2:3]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
 
+        const char code3[] = "long f() {\n"
+                             "    int n = 1;\n"
+                             "    return n << 12;\n"
+                             "}\n";
+        check(code3, dinit(CheckOptions, $.settings = &settings));
+        ASSERT_EQUALS("", errout_str());
+
+        const char code4[] = "long f(int n) {\n"
+                             "    return n << 12;\n"
+                             "}\n";
+        check(code4, dinit(CheckOptions, $.settings = &settings));
+        ASSERT_EQUALS("[test.cpp:2:5]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
+
         // typedef
         check("size_t f(int x, int y) {\n"
               "  return x * y;\n"
