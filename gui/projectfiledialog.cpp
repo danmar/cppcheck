@@ -40,7 +40,6 @@
 #include <QByteArray>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QCoreApplication>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFileDialog>
@@ -142,22 +141,10 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
 
     mUI->premiumLicense->setVisible(false);
 
-    // Checkboxes for the libraries..
-    const QString applicationFilePath = QCoreApplication::applicationFilePath();
-    const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
-    const QString datadir = getDataDir();
-    QStringList searchPaths;
-    searchPaths << appPath << appPath + "/cfg" << inf.canonicalPath();
-#ifdef FILESDIR
-    if (FILESDIR[0])
-        searchPaths << FILESDIR << FILESDIR "/cfg";
-#endif
-    if (!datadir.isEmpty())
-        searchPaths << datadir << datadir + "/cfg";
     QStringList libs;
     // Search the std.cfg first since other libraries could depend on it
     QString stdLibraryFilename;
-    for (const QString &sp : searchPaths) {
+    for (const QString &sp : projectFile->getSearchPaths("cfg")) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));
@@ -179,7 +166,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
             break;
     }
     // Search other libraries
-    for (const QString &sp : searchPaths) {
+    for (const QString &sp : projectFile->getSearchPaths("cfg")) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));
@@ -218,22 +205,15 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     for (const Platform::Type builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
-    for (QString sp : searchPaths) {
-        if (sp.endsWith("/cfg"))
-            sp = sp.mid(0,sp.length()-3) + "platforms";
+    for (const QString& sp : projectFile->getSearchPaths("platforms")) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.xml"));
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
         for (const QFileInfo& item : dir.entryInfoList()) {
             const QString platformFile = item.fileName();
-
-            const std::vector<std::string> paths = {
-                Path::getCurrentPath(), // TODO: do we want to look in CWD?
-                applicationFilePath.toStdString(),
-            };
             Platform plat2;
-            if (!plat2.loadFromFile(paths, platformFile.toStdString()))
+            if (!plat2.loadFromFile({sp.toStdString()}, platformFile.toStdString()))
                 continue;
 
             if (platformFiles.indexOf(platformFile) == -1)
@@ -414,8 +394,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mMisraC->setText("Misra C");
     else {
         mUI->mMisraC->setText("Misra C 2012  " + tr("Note: Open source Cppcheck does not fully implement Misra C 2012"));
-        updateAddonCheckBox(mUI->mMisraC, projectFile, dataDir, ADDON_MISRA);
     }
+    updateAddonCheckBox(mUI->mMisraC, projectFile, dataDir, ADDON_MISRA);
     mUI->mMisraVersion->setEnabled(mUI->mMisraC->isChecked());
     connect(mUI->mMisraC, &QCheckBox::toggled, mUI->mMisraVersion, &QComboBox::setEnabled);
 

@@ -108,7 +108,7 @@ static bool isClassStructUnionEnumStart(const Token * tok)
     if (!Token::Match(tok->previous(), "class|struct|union|enum|%name%|>|>> {"))
         return false;
     const Token * tok2 = tok->previous();
-    while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|)|;|>|>>"))
+    while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|)|;"))
         tok2 = tok2->previous();
     return Token::Match(tok2, "class|struct|union|enum") && !Token::simpleMatch(tok2->tokAt(-1), "->");
 }
@@ -9018,8 +9018,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "? %assign%"))
             syntaxError(tok);
-        if (Token::Match(tok, "!|~ %comp%") &&
-            !(cpp && tok->strAt(1) == ">" && Token::simpleMatch(tok->tokAt(-1), "operator")))
+        if (Token::Match(tok, "[!~+-/] %comp%") &&
+            !(cpp && Token::Match(tok->next(), "[<>]") && Token::simpleMatch(tok->tokAt(-1), "operator")))
             syntaxError(tok);
         if (Token::Match(tok, "%comp% {") && (!cpp || tok->str() != ">"))
             syntaxError(tok);

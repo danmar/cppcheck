@@ -1511,7 +1511,7 @@ ValueFlow::Value ValueFlow::getLifetimeObjValue(const Token *tok, bool inconclus
     // There should only be one lifetime
     if (values.size() != 1)
         return ValueFlow::Value{};
-    return values.front();
+    return std::move(values.front());
 }
 
 template<class Predicate>
@@ -3652,7 +3652,7 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     continue;
 
                 ValueFlow::Value v = makeSymbolic(arg);
-                v.errorPath = c.errorPath;
+                v.errorPath = std::move(c.errorPath);
                 v.errorPath.emplace_back(tok, "Passed to " + tok->str());
                 if (c.intvalue == 0)
                     v.setImpossible();
@@ -5070,8 +5070,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
             std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), "!=", tok->values(), 0);
             if (result.size() != 1)
                 continue;
-            ValueFlow::Value value = result.front();
-            setTokenValue(tok, std::move(value), settings);
+            setTokenValue(tok, std::move(result.front()), settings);
         }
     }
 }
@@ -5490,7 +5489,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
                                      const Settings& settings,
                                      const Variable* arg,
                                      const Scope* functionScope,
-                                     const std::list<ValueFlow::Value>& argvalues)
+                                     std::list<ValueFlow::Value> argvalues)
 {
     // Is argument passed by value or const reference, and is it a known non-class type?
     if (arg->isReference() && !arg->isConst() && !arg->isClass())
@@ -5504,7 +5503,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
     valueFlowForward(const_cast<Token*>(functionScope->bodyStart->next()),
                      functionScope->bodyEnd,
                      arg->nameToken(),
-                     argvalues,
+                     std::move(argvalues),
                      tokenlist,
                      errorLogger,
                      settings);
@@ -5731,7 +5730,7 @@ static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const 
                     argvalues.push_back(std::move(v));
                 }
                 if (!argvalues.empty())
-                    valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, argvalues);
+                    valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, std::move(argvalues));
             }
         }
     }
@@ -6491,6 +6490,9 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
         if (astIsPointer(args[0])) {
             if (args.size() == 1 && args[0]->tokType() == Token::Type::eString)
                 return {makeContainerSizeValue(Token::getStrLength(args[0]), known)};
+            if (args.size() == 1 && args[0]->variable() && args[0]->variable()->isArray() &&
+                args[0]->variable()->isConst() && args[0]->variable()->dimensions().size() == 1)
+                return {makeContainerSizeValue(args[0]->variable()->dimensions()[0].num, known)};
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
         } else if (astIsContainer(args[0])) {
@@ -6708,23 +6710,25 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 for (const ValueFlow::Value& value : values)
                     setTokenValue(tok, value, settings);
             }
-            else if (Token::Match(tok->previous(), ",|( {|%str%")) {
-                int nArg{};
-                if (const Token* funcTok = getTokenArgumentFunction(tok, nArg)) {
-                    if (const Function* func = funcTok->function()) {
-                        if (const Variable* var = func->getArgumentVar(nArg)) {
-                            if (var->valueType() && var->valueType()->container && var->valueType()->container->size_templateArgNo < 0) {
-                                auto values = tok->tokType() == Token::Type::eString
-                                   ? std::vector<ValueFlow::Value>{makeContainerSizeValue(Token::getStrLength(tok))}
-                                   : getInitListSize(tok, var->valueType(), settings, true);
-                                ValueFlow::Value tokValue;
-                                tokValue.valueType = ValueFlow::Value::ValueType::TOK;
-                                tokValue.tokvalue = tok;
-                                tokValue.setKnown();
-                                values.push_back(std::move(tokValue));
+            else if (Token::Match(tok->previous(), ",|(") && (Token::Match(tok, "{|%str%") || settings.library.detectContainer(tok))) {
+                if (Token* argTok = tok->previous()->astOperand2()) {
+                    int nArg{};
+                    if (const Token* funcTok = getTokenArgumentFunction(argTok, nArg)) {
+                        if (const Function* func = funcTok->function()) {
+                            if (const Variable* var = func->getArgumentVar(nArg)) {
+                                if (var->valueType() && var->valueType()->container && var->valueType()->container->size_templateArgNo < 0) {
+                                    auto values = argTok->tokType() == Token::Type::eString
+                                        ? std::vector<ValueFlow::Value>{makeContainerSizeValue(Token::getStrLength(argTok))}
+                                    : getInitListSize(argTok, var->valueType(), settings, true);
+                                    ValueFlow::Value tokValue;
+                                    tokValue.valueType = ValueFlow::Value::ValueType::TOK;
+                                    tokValue.tokvalue = argTok;
+                                    tokValue.setKnown();
+                                    values.push_back(std::move(tokValue));
 
-                                for (const ValueFlow::Value &value : values)
-                                    setTokenValue(tok, value, settings);
+                                    for (const ValueFlow::Value& value : values)
+                                        setTokenValue(argTok, value, settings);
+                                }
                             }
                         }
                     }

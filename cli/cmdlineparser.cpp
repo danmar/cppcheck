@@ -621,6 +621,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.cppHeaderProbe = true;
         }
 
+        else if (std::strcmp(argv[i], "--debug-analyzerinfo") == 0)
+            mSettings.debugainfo = true;
+
         else if (std::strcmp(argv[i], "--debug-ast") == 0)
             mSettings.debugast = true;
 

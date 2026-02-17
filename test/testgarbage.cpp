@@ -848,7 +848,7 @@ private:
     }
 
     void garbageCode95() { // #6804
-        ASSERT_THROW_INTERNAL(checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }"), AST); // do not crash
+        ASSERT_THROW_INTERNAL(checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }"), SYNTAX); // do not crash
     }
 
     void garbageCode96() { // #6807

@@ -13214,14 +13214,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("struct A { bool x; };\n"
+        check("struct A { bool x; };\n" // #14481
               "bool f(A* a) {\n"
               "    if (a) {\n"
               "        return a->x;\n"
               "    }\n"
               "    return false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:11]: (style) Parameter 'a' can be declared as pointer to const [constParameterPointer]\n", errout_str());
 
         check("struct A { int* x; };\n"
               "bool f(A a) {\n"

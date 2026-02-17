@@ -44,6 +44,7 @@ jobs:
       - name: Set up Cygwin
         uses: cygwin/cygwin-install-action@master
         with:
+          site: https://mirrors.cicku.me/cygwin/
           platform: ${{ matrix.platform }}
           packages: ${{ matrix.packages }}
 

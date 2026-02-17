@@ -133,12 +133,15 @@ void CheckersReport::countCheckers()
             ++mActiveCheckersCount;
         ++mAllCheckersCount;
     }
-    for (const auto& checkReq: checkers::premiumCheckers) {
-        if (mActiveCheckers.count(checkReq.first) > 0)
-            ++mActiveCheckersCount;
-        ++mAllCheckersCount;
+    for (const auto& addonInfo: mSettings.addonInfos) {
+        for (const auto& checkReq: addonInfo.checkers) {
+            if (mActiveCheckers.count(checkReq.first) > 0)
+                ++mActiveCheckersCount;
+            ++mAllCheckersCount;
+        }
     }
-    if (mSettings.premiumArgs.find("misra-c-") != std::string::npos || mSettings.addons.count("misra")) {
+
+    if (mSettings.addons.count("misra")) {
         const bool doUnusedFunctionOnly = Settings::unusedFunctionOnly();
         for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
             const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
@@ -190,105 +193,32 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         fout << std::endl;
     }
 
-    const bool cppcheckPremium = mSettings.premium;
-
-    auto reportSection = [&fout, cppcheckPremium]
-                         (const std::string& title,
-                          const Settings& settings,
-                          const std::set<std::string>& activeCheckers,
-                          const std::map<std::string, std::string>& premiumCheckers,
-                          const std::string& substring) {
+    for (const auto& addonInfo: mSettings.addonInfos) {
+        if (addonInfo.checkers.empty())
+            continue;
         fout << std::endl << std::endl;
+        std::string title;
+        if (mSettings.premium && addonInfo.name == "premiumaddon.json")
+            title = "Cppcheck Premium";
+        else {
+            title = addonInfo.name;
+            if (endsWith(title, ".json"))
+                title.erase(title.rfind('.'));
+        }
+        title += " checkers";
         fout << title << std::endl;
         fout << std::string(title.size(), '-') << std::endl;
-        if (!cppcheckPremium) {
-            fout << "Not available, Cppcheck Premium is not used" << std::endl;
-            return;
-        }
-        int maxCheckerSize = 0;
-        for (const auto& checkReq: premiumCheckers) {
+
+        for (const auto& checkReq: addonInfo.checkers) {
             const std::string& checker = checkReq.first;
-            if (checker.find(substring) != std::string::npos && checker.size() > maxCheckerSize)
-                maxCheckerSize = checker.size();
-        }
-        for (const auto& checkReq: premiumCheckers) {
-            const std::string& checker = checkReq.first;
-            if (checker.find(substring) == std::string::npos)
-                continue;
-            std::string req = checkReq.second;
-            bool active = cppcheckPremium && activeCheckers.count(checker) > 0;
-            if (substring == "::") {
-                if (req == "warning")
-                    active &= settings.severity.isEnabled(Severity::warning);
-                else if (req == "style")
-                    active &= settings.severity.isEnabled(Severity::style);
-                else if (req == "portability")
-                    active &= settings.severity.isEnabled(Severity::portability);
-                else if (!req.empty())
-                    active = false; // FIXME: handle req
-            }
+            const bool active = mActiveCheckers.count(checkReq.first) > 0;
+            const std::string& req = checkReq.second;
             fout << (active ? "Yes  " : "No   ") << checker;
-            if (!cppcheckPremium) {
-                if (!req.empty())
-                    req = "premium," + req;
-                else
-                    req = "premium";
-            }
-            if (!req.empty())
-                req = "require:" + req;
-            if (!active)
-                fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << req;
+            if (!active && !req.empty())
+                fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
             fout << std::endl;
         }
-    };
-
-    reportSection("Premium checkers", mSettings, mActiveCheckers, checkers::premiumCheckers, "::");
-    reportSection("Autosar", mSettings, mActiveCheckers, checkers::premiumCheckers, "Autosar: ");
-    reportSection("Cert C", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C: ");
-    reportSection("Cert C++", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C++: ");
-
-    const int misraCVersion = getMisraCVersion(mSettings);
-
-    if (misraCVersion == 0) {
-        fout << std::endl << std::endl;
-        fout << "Misra C" << std::endl;
-        fout << "-------" << std::endl;
-        fout << "Misra is not enabled" << std::endl;
-    } else {
-        fout << std::endl << std::endl;
-        fout << "Misra C " << misraCVersion << std::endl;
-        fout << "------------" << std::endl;
-        for (const checkers::MisraInfo& info: checkers::misraC2012Directives) {
-            const std::string directive = "Dir " + std::to_string(info.a) + "." + std::to_string(info.b);
-            const bool active = isMisraRuleActive(mActiveCheckers, directive);
-            fout << (active ? "Yes  " : "No   ") << "Misra C " << misraCVersion << ": " << directive;
-            std::string extra;
-            if (misraCVersion == 2012 && info.amendment >= 1)
-                extra = " amendment:" + std::to_string(info.amendment);
-            if (!extra.empty())
-                fout << std::string(10 - directive.size(), ' ') << extra;
-            fout << '\n';
-        }
-        for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
-            const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
-            const bool active = isMisraRuleActive(mActiveCheckers, rule);
-            fout << (active ? "Yes  " : "No   ") << "Misra C " << misraCVersion << ": " << rule;
-            std::string extra;
-            if (misraCVersion == 2012 && info.amendment >= 1)
-                extra = " amendment:" + std::to_string(info.amendment);
-            std::string reqs;
-            if (info.amendment >= 3)
-                reqs += ",premium";
-            if (!active && !reqs.empty())
-                extra += " require:" + reqs.substr(1);
-            if (!extra.empty())
-                fout << std::string(10 - rule.size(), ' ') << extra;
-            fout << '\n';
-        }
     }
-
-    reportSection("Misra C++ 2008", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2008: ");
-    reportSection("Misra C++ 2023", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2023: ");
 
     return fout.str();
 }

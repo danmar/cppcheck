@@ -3980,7 +3980,7 @@ def test_no_valid_configuration(tmp_path):
         '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
         '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
         '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
-        '{}:0:0: information: This file is not analyzed. Cppcheck failed to extract a valid configuration. Use -v for more details. [noValidConfiguration]'.format(test_file)
+        '{}:0:0: information: This file is not analyzed. No working configuration could be extracted. Use -v for more details. [noValidConfiguration]'.format(test_file)
     ]
 
 
@@ -4062,22 +4062,122 @@ def __test_active_checkers(tmp_path, active_cnt, total_cnt, use_misra=False, use
 
 
 def test_active_unusedfunction_only(tmp_path):
-    __test_active_checkers(tmp_path, 1, 975, use_unusedfunction_only=True)
+    __test_active_checkers(tmp_path, 1, 186, use_unusedfunction_only=True)
 
 
 def test_active_unusedfunction_only_builddir(tmp_path):
     checkers_exp = [
         'CheckUnusedFunctions::check'
     ]
-    __test_active_checkers(tmp_path, 1, 975, use_unusedfunction_only=True, checkers_exp=checkers_exp)
+    __test_active_checkers(tmp_path, 1, 186, use_unusedfunction_only=True, checkers_exp=checkers_exp)
 
 
 def test_active_unusedfunction_only_misra(tmp_path):
-    __test_active_checkers(tmp_path, 1, 1175, use_unusedfunction_only=True, use_misra=True)
+    __test_active_checkers(tmp_path, 1, 386, use_unusedfunction_only=True, use_misra=True)
 
 
 def test_active_unusedfunction_only_misra_builddir(tmp_path):
     checkers_exp = [
         'CheckUnusedFunctions::check'
     ]
-    __test_active_checkers(tmp_path, 1, 1175, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
+    __test_active_checkers(tmp_path, 1, 386, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
+
+
+def test_analyzerinfo(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    build_dir = tmp_path / 'b1'
+    os.makedirs(build_dir)
+
+    test_a1_file = build_dir / 'test.a1'
+
+    args = [
+        '-q',
+        '--debug-analyzerinfo',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '--enable=all',
+        str(test_file)
+    ]
+
+    stderr_exp = [
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file),
+        "{}:1:6: style: The function 'f' is never used. [unusedFunction]".format(test_file)
+    ]
+
+    def run_and_assert_cppcheck(stdout_exp):
+        exitcode, stdout, stderr = cppcheck(args)
+        assert exitcode == 0, stdout
+        assert stdout.splitlines() == stdout_exp
+        assert stderr.splitlines() == stderr_exp
+
+    test_a1_file_s = str(test_a1_file).replace('\\', '/')
+
+    # no cached results
+    run_and_assert_cppcheck([
+        "no cached result '{}' found".format(test_a1_file_s)
+    ])
+
+    # cached results
+    run_and_assert_cppcheck([
+        "skipping analysis - loaded 1 cached finding(s) from '{}'".format(test_a1_file_s)
+    ])
+
+    # modified file
+    with open(test_file, 'a') as f:
+        f.write('\n#define DEF')
+
+    run_and_assert_cppcheck([
+        "discarding cached result - hash mismatch" # TODO: add filename
+    ])
+
+    # invalid XML
+    with open(test_a1_file, 'a') as f:
+        f.write('.')
+
+    run_and_assert_cppcheck([
+        "discarding cached result - failed to load '{}' (XML_ERROR_PARSING_TEXT)".format(test_a1_file_s)
+    ])
+
+    # missing root node
+    with open(test_a1_file, 'w') as f:
+        f.write('<?xml version="1.0"?>')
+
+    run_and_assert_cppcheck([
+        "discarding cached result - no root node found" # TODO: add filename
+    ])
+
+    # mismatched root node
+    with open(test_a1_file, 'w') as f:
+        f.write('<?xml version="1.0"?><root/>')
+
+    run_and_assert_cppcheck([
+        "discarding cached result - unexpected root node" # TODO: add filename
+    ])
+
+    # missing 'hash' attribute
+    with open(test_a1_file, 'w') as f:
+        f.write('<?xml version="1.0"?><analyzerinfo/>')
+
+    run_and_assert_cppcheck([
+        "discarding cached result - no 'hash' attribute found" # TODO: add filename
+    ])
+
+    # invalid 'hash' attribute
+    with open(test_a1_file, 'w') as f:
+        f.write('<?xml version="1.0"?><analyzerinfo hash="hash"/>')
+
+    run_and_assert_cppcheck([
+        "discarding cached result - hash mismatch" # TODO: add filename
+    ])
+
+    # TODO:
+    # - invalid error
+    # - internalError

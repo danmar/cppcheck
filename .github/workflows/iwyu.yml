@@ -26,7 +26,7 @@ jobs:
           #  image: "fedora:latest"
           #  stdlib: libc++
           #  clang_inc: '-isystem/usr/lib/clang/20/include'
-          - os: macos-13
+          - os: macos-26
             image: ""
             stdlib: libc++  # no libstdc++ on macOS
             mapping_file_opt: '-Xiwyu --mapping_file=$(realpath ./macos.imp)'
@@ -100,18 +100,21 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           brew install include-what-you-use pcre coreutils
-          ln -s iwyu_tool.py /usr/local/bin/iwyu_tool
+          # on Apple Silicon files are symlinked under /opt/homebrew/bin
+          ln -s /opt/homebrew/bin/iwyu_tool.py /usr/local/bin/iwyu_tool
 
       # Fails on OpenSUSE:
       # Warning: Failed to restore: Tar failed with error: Unable to locate executable file: tar. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also check the file mode to verify the file is executable.
       # Also the shell is broken afterwards:
       # OCI runtime exec failed: exec failed: unable to start container process: exec: "sh": executable file not found in $PATH: unknown
+      #
+      # On macos-26 we need to perform the Python setup because the default installation is managed externally managed
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
-          setup-python: 'false'
+          setup-python: ${{ contains(matrix.os, 'macos') }}
           install-deps: false
           cache: true
 
