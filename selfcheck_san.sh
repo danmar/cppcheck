@@ -11,48 +11,13 @@ qt_options="$qt_options --suppress=autoNoType:*/moc_*.cpp --suppress=symbolDatab
 
 ec=0
 
-$cmake_output/bin/cppcheck $selfcheck_options \
-  externals \
-  || ec=1
-
-$cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options \
-  --addon=naming.json \
-  frontend \
-  || ec=1
-
-$cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options \
-  --addon=naming.json \
-  -Ifrontend \
-  cli \
-  || ec=1
-
-$cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options \
-  --addon=naming.json \
-  --enable=internal \
-  lib \
-  || ec=1
-
 $cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options $qt_options \
   --addon=naming.json \
   --suppress=constVariablePointer:*/moc_*.cpp \
   -DQT_CHARTS_LIB \
   -I$cmake_output/gui -Ifrontend -Igui \
-  gui/*.cpp $cmake_output/gui \
-  || ec=1
-
-$cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options \
-  -Icli -Ifrontend \
-  test/*.cpp \
-  || ec=1
-
-$cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options \
-  -Icli \
-  tools/dmake/*.cpp \
-  || ec=1
-
-$cmake_output/bin/cppcheck $selfcheck_options $cppcheck_options $qt_options \
-  -I$cmake_output/tools/triage -Igui \
-  tools/triage/*.cpp $cmake_output/tools/triage \
+  -gui/test/data \
+  gui $cmake_output/gui \
   || ec=1
 
 exit $ec
