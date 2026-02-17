@@ -1946,7 +1946,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3:12]: (style) The scope of the variable 'x' can be reduced. [variableScope]\n", errout_str());
     }
 
-    varScope45() {
+    void varScope45() {
         check("void g(int x, int y) {\n" // #14497
               "    int a = x, b = y;\n"
               "    if (a) {}\n"
