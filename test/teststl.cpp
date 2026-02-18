@@ -1010,6 +1010,12 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2:12] -> [test.cpp:4:21]: (warning) Either the condition 'col>textline.size()' is redundant or 'col' can have the value textline.size(). Expression 'textline[col]' causes access out of bounds. [containerOutOfBounds]\n",
             errout_str());
+
+        check("void f(const std::vector<int>& v) {\n" // #12742
+              "    for (unsigned i = 0; i < v.size();)\n"
+              "    (void)v[i++];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void outOfBoundsIndexExpression() {
