@@ -4531,7 +4531,7 @@ struct ConditionHandler {
                 }
 
                 // Variable changed in loop code
-                const Token* const start = top;
+                const Token* const start = top->strAt(-1) == "for" ? top->astOperand2() : top; // skip init statement
                 const Token* const block = top->link()->next();
                 const Token* const end = block->link();
 
