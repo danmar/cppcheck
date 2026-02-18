@@ -4678,6 +4678,13 @@ private:
               "    return { [](int* p) { return *p; } };
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+		check("void f() {\n"
+			  "    int i = 0;\n"
+			  "    auto x = [&]() { int* p = &i; if (*p) {} };\n"
+			  "    x();\n"
+			  "}\n");
+		ASSERT_EQUALS("[test.cpp:3:24]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]", errout_str());
     }
 
     void constArray() {
