@@ -4666,16 +4666,16 @@ private:
                       errout_str());
 
         check("using fp_t = int (*)(int*);\n" // #14510
-              "fp_t g_fp;
-              "struct S { fp_t m_fp; };
-              "void g(fp_t);
-              "S f(S* s) {
-	          "    g_fp = [](int* p) { return *p; };
-	          "    s->m_fp = [](int* p) { return *p; };
-              "    g([](int* p) { return *p; });
-              "    auto x = [](int* p) { return *p; };
-	          "    g(x);
-              "    return { [](int* p) { return *p; } };
+              "fp_t g_fp;\n"
+              "struct S { fp_t m_fp; };\n"
+              "void g(fp_t);\n"
+              "S f(S* s) {\n"
+	          "    g_fp = [](int* p) { return *p; };\n"
+	          "    s->m_fp = [](int* p) { return *p; };\n"
+              "    g([](int* p) { return *p; });\n"
+              "    auto x = [](int* p) { return *p; };\n"
+	          "    g(x);\n"
+              "    return { [](int* p) { return *p; } };\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
