@@ -4664,6 +4664,20 @@ private:
         ASSERT_EQUALS("[test.cpp:1:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:4:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
+
+        check("using fp_t = int (*)(int*);\n" // #14510
+              "fp_t g_fp;
+              "struct S { fp_t m_fp; };
+              "void g(fp_t);
+              "S f(S* s) {
+	          "    g_fp = [](int* p) { return *p; };
+	          "    s->m_fp = [](int* p) { return *p; };
+              "    g([](int* p) { return *p; });
+              "    auto x = [](int* p) { return *p; };
+	          "    g(x);
+              "    return { [](int* p) { return *p; } };
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constArray() {
