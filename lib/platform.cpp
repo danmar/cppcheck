@@ -52,11 +52,7 @@ bool Platform::set(Type t)
         sizeof_wchar_t = sizeof(wchar_t);
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
-        if (type == Type::Unspecified) {
-            defaultSign = '\0';
-        } else {
-            defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
-        }
+        defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
         char_bit = 8;
         calculateBitMembers();
         return true;
@@ -157,7 +153,10 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
     else if (platformstr == "native")
         set(Type::Native);
     else if (platformstr == "unspecified")
+    {
+        std::cout << "Platform 'unspecified' is deprecated and will be removed in a future version. It is also now identical to 'native' (i.e. char type signedness based on compiler instead of unknown)." << std::endl;
         set(Type::Unspecified);
+    }
     else if (paths.empty()) {
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;
@@ -234,7 +233,8 @@ bool Platform::loadFromFile(const std::vector<std::string>& paths, const std::st
     if (err != tinyxml2::XML_SUCCESS)
         return false;
 
-    return loadFromXmlDocument(&doc);
+    std::string errmsg; // TODO
+    return loadFromXmlDocument(&doc, errmsg);
 }
 
 static const char* xmlText(const tinyxml2::XMLElement* node, bool& error)
@@ -261,20 +261,33 @@ static unsigned int xmlTextAsBool(const tinyxml2::XMLElement* node, bool& error)
     return retval;
 }
 
-bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
+bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc, std::string& errmsg)
 {
     const tinyxml2::XMLElement * const rootnode = doc->FirstChildElement();
 
-    if (!rootnode || std::strcmp(rootnode->Name(), "platform") != 0)
+    if (!rootnode)
+    {
+        errmsg = "no root node found";
         return false;
+    }
 
-    bool error = false;
+    if (std::strcmp(rootnode->Name(), "platform") != 0)
+    {
+        errmsg = "invalid root node";
+        return false;
+    }
+
+    // TODO: improve error reporting
+    bool res = true;
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        bool error = false;
         const char* name = node->Name();
         if (std::strcmp(name, "default-sign") == 0) {
             const char * const str = xmlText(node, error);
-            if (!error)
+            if (!error && (*str == 'u' || *str == 's'))
                 defaultSign = *str;
+            else
+                error = true;
         } else if (std::strcmp(name, "char_bit") == 0)
             char_bit = xmlTextAsUInt(node, error);
         else if (std::strcmp(name, "sizeof") == 0) {
@@ -307,10 +320,15 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
         else if (std::strcmp(node->Name(), "windows") == 0) {
             windows = xmlTextAsBool(node, error);
         }
+        if (error)
+        {
+            res = false;
+            errmsg = std::string("'") + name + "' failed";
+        }
     }
     calculateBitMembers();
     type = Type::File;
-    return !error;
+    return res;
 }
 
 std::string Platform::getLimitsDefines(bool c99) const
