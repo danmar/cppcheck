@@ -1098,7 +1098,10 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         if (allocType == No)
             continue;
 
-        if (tok != tok->next()->astOperand1() && !isNew)
+        const Token* ftok = tok->next()->astOperand1();
+        while (Token::simpleMatch(ftok, "::"))
+            ftok = ftok->astOperand2() ? ftok->astOperand2() : ftok->astOperand1();
+        if (tok != ftok && !isNew)
             continue;
 
         if (isReopenStandardStream(tok))

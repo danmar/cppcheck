@@ -2752,6 +2752,18 @@ private:
               "    if (std::freopen(NULL, \"w+b\", fp2) == NULL) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n" // #14172
+              "    if (malloc(4) == nullptr) {}\n"
+              "    if (::malloc(4) == nullptr) {}\n"
+              "    if (std::malloc(4) == nullptr) {}\n"
+              "    if (::std::malloc(4) == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:9]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:3:11]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:4:14]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:5:16]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n",
+                      errout_str());
     }
 
     void smartPointerFunctionParam() {
