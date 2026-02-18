@@ -6599,7 +6599,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2:23]: (style) Variable 's' is assigned a value that is never used. [unreadVariable]\n", errout_str());
 
         functionVariableUsage("void f() {\n" // #14201
-                              "    std::pair<T, U> p;
+                              "    std::pair<T, U> p;\n"
                               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
