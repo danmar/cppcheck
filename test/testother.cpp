@@ -4670,21 +4670,21 @@ private:
               "struct S { fp_t m_fp; };\n"
               "void g(fp_t);\n"
               "S f(S* s) {\n"
-	          "    g_fp = [](int* p) { return *p; };\n"
-	          "    s->m_fp = [](int* p) { return *p; };\n"
+              "    g_fp = [](int* p) { return *p; };\n"
+              "    s->m_fp = [](int* p) { return *p; };\n"
               "    g([](int* p) { return *p; });\n"
               "    auto x = [](int* p) { return *p; };\n"
-	          "    g(x);\n"
+              "    g(x);\n"
               "    return { [](int* p) { return *p; } };\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-		check("void f() {\n"
-			  "    int i = 0;\n"
-			  "    auto x = [&]() { int* p = &i; if (*p) {} };\n"
-			  "    x();\n"
-			  "}\n");
-		ASSERT_EQUALS("[test.cpp:3:27]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n", errout_str());
+        check("void f() {\n"
+              "    int i = 0;\n"
+              "    auto x = [&]() { int* p = &i; if (*p) {} };\n"
+              "    x();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:27]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n", errout_str());
     }
 
     void constArray() {
