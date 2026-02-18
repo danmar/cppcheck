@@ -384,8 +384,24 @@ void CheckType::checkLongCast()
                     if (type && checkTypeCombination(*type, *retVt, *mSettings) &&
                         type->pointer == 0U &&
                         type->originalTypeName.empty() &&
-                        !tok->astOperand1()->hasKnownIntValue())
-                        ret = tok;
+                        !tok->astOperand1()->hasKnownIntValue()) {
+                        std::pair<MathLib::bigint, MathLib::bigint> opRange1, opRange2;
+                        if (!getExpressionResultRange(tok->astOperand1()->astOperand1(), *mSettings, opRange1) || !getExpressionResultRange(tok->astOperand1()->astOperand2(), *mSettings, opRange2)) {
+                            ret = tok;
+                            break;
+                        }
+
+                        if (!mSettings->platform.isIntValue(opRange1.first) || !mSettings->platform.isIntValue(opRange1.second) ||
+                            !mSettings->platform.isIntValue(opRange2.first) || !mSettings->platform.isIntValue(opRange2.second)) {
+                            ret = tok;
+                            break;
+                        }
+
+                        if (!isOperationResultWithinIntRange(tok->astOperand1(), *mSettings, &opRange1, &opRange2)) {
+                            ret = tok;
+                            break;
+                        }
+                    }
                 }
                 // All return statements must have problem otherwise no warning
                 if (ret != tok) {

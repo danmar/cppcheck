@@ -41,11 +41,14 @@
 #include <functional>
 #include <initializer_list>
 #include <iterator>
+#include <limits>
 #include <list>
 #include <set>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+
+#define INTEGER_SHIFT_LIMIT (sizeof(int) * 8 - 1) // The number of bits, where a left shift cannot be guaranteed to be within int range.
 
 const Token* findExpression(const nonneg int exprid,
                             const Token* start,
@@ -924,6 +927,137 @@ Token* getCondTokFromEnd(Token* endBlock)
 const Token* getCondTokFromEnd(const Token* endBlock)
 {
     return getCondTokFromEndImpl(endBlock);
+}
+
+static std::pair<MathLib::bigint, MathLib::bigint> getIntegralMinMaxValues(int bits, ValueType::Sign sign)
+{
+    using bigint = MathLib::bigint;
+    using biguint = MathLib::biguint;
+
+    if (bits <= 0)
+        return { bigint(0), bigint(0) };
+
+    // Unsigned: [0, 2^bits - 1]
+    if (sign == ValueType::Sign::UNSIGNED) {
+        // If bits exceed what MathLib can safely shift, saturate to max representable
+        if (bits >= MathLib::bigint_bits) {
+            biguint max_u = std::numeric_limits<biguint>::max();
+            return { bigint(0), bigint(max_u) };
+        }
+        biguint max_u = (biguint(1) << bits) - 1;
+        return { bigint(0), bigint(max_u) };
+    }
+
+    // Signed: [-(2^(bits-1)), 2^(bits-1)-1]
+    if (bits >= MathLib::bigint_bits) {
+        bigint min_s = std::numeric_limits<bigint>::min();
+        bigint max_s = std::numeric_limits<bigint>::max();
+        return { min_s, max_s };
+    }
+    bigint max_s = (bigint(1) << (bits - 1)) - 1;
+    bigint min_s = -(bigint(1) << (bits - 1));
+    return { min_s, max_s };
+}
+
+static bool getIntegralTypeRange(const ValueType* type, const Settings& settings, std::pair<MathLib::bigint, MathLib::bigint>& range)
+{
+    if (!type || !type->isIntegral())
+        return false;
+
+    const int bits = type->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer) * 8;
+    if (bits <= 0 || bits > 64)
+        return false;
+
+    range = getIntegralMinMaxValues(bits, type->sign);
+
+    return true;
+}
+
+bool getExpressionResultRange(const Token* expr, const Settings& settings, std::pair<MathLib::bigint, MathLib::bigint>& exprRange)
+{
+    if (!expr)
+        return false;
+
+    // Early return for known values
+    if (expr->hasKnownIntValue()) {
+        exprRange = { expr->getKnownIntValue(), expr->getKnownIntValue() };
+        return true;
+    }
+
+    // Early return for non-integral expressions
+    if (!expr->valueType() || !expr->valueType()->isIntegral())
+        return false;
+
+    //Check binary op - bitwise and
+    if (expr->isBinaryOp() && expr->str() == "&") {
+        std::pair<MathLib::bigint, MathLib::bigint> leftRange, rightRange;
+        if (getExpressionResultRange(expr->astOperand1(), settings, leftRange) &&
+            getExpressionResultRange(expr->astOperand2(), settings, rightRange)) {
+
+            if (leftRange.second >= INT64_MAX || rightRange.second >= INT64_MAX)
+                // Abort for values larger than INT64_MAX since bigint do not handle them well
+                return false;
+
+            exprRange.first = leftRange.first & rightRange.first;
+            exprRange.second = leftRange.second & rightRange.second;
+
+            // Return false if negative values after bitwise &
+            return !(exprRange.first < 0 || exprRange.second < 0);
+        }
+    }
+
+    // Find original type before casts
+    const Token* exprToCheck = expr;
+    while (exprToCheck->isCast()) {
+        const Token* castFrom = exprToCheck->astOperand2() ? exprToCheck->astOperand2() : exprToCheck->astOperand1();
+        if (!castFrom || !castFrom->valueType() || !castFrom->valueType()->isIntegral())
+            break;
+        if (castFrom->valueType()->pointer >= 1)
+            break;
+        if (castFrom->valueType()->type >= exprToCheck->valueType()->type &&
+            castFrom->valueType()->sign == ValueType::Sign::SIGNED)
+            break;
+        exprToCheck = castFrom;
+    }
+
+    return getIntegralTypeRange(exprToCheck->valueType(), settings, exprRange);
+}
+
+template<typename Op>
+static bool checkAllRangeOperations(const std::pair<MathLib::bigint, MathLib::bigint>& left,
+                                    const std::pair<MathLib::bigint, MathLib::bigint>& right,
+                                    const Settings& settings,
+                                    Op operation)
+{
+    return settings.platform.isIntValue(operation(left.first, right.first)) &&
+           settings.platform.isIntValue(operation(left.first, right.second)) &&
+           settings.platform.isIntValue(operation(left.second, right.first)) &&
+           settings.platform.isIntValue(operation(left.second, right.second));
+}
+
+bool isOperationResultWithinIntRange(const Token* op, const Settings& settings, std::pair<MathLib::bigint, MathLib::bigint>* leftRange, std::pair<MathLib::bigint, MathLib::bigint>* rightRange)
+{
+    if (!op || !leftRange || !rightRange)
+        return false;
+
+    if (op->str() == "<<") {
+        // If the lefthand operand is 31 or higher the resulting shift will be a negative value or greater than int range.
+        if ((rightRange->first >= INTEGER_SHIFT_LIMIT) || rightRange->second >= INTEGER_SHIFT_LIMIT)
+            return false;
+
+        return checkAllRangeOperations(*leftRange, *rightRange, settings,
+                                       [](auto a, auto b) {
+            return a << b;
+        });
+    }
+
+    if (op->str() == "*")
+        return checkAllRangeOperations(*leftRange, *rightRange, settings,
+                                       [](auto a, auto b) {
+            return a * b;
+        });
+
+    return false;
 }
 
 Token* getInitTok(Token* tok) {
