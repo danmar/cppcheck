@@ -4684,7 +4684,7 @@ private:
 			  "    auto x = [&]() { int* p = &i; if (*p) {} };\n"
 			  "    x();\n"
 			  "}\n");
-		ASSERT_EQUALS("[test.cpp:3:24]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]", errout_str());
+		ASSERT_EQUALS("[test.cpp:3:27]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n", errout_str());
     }
 
     void constArray() {
