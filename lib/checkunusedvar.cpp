@@ -724,7 +724,6 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointer;
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
-                     i->isStlType() ||
                      mTokenizer->getSymbolDatabase()->isRecordTypeWithoutSideEffects(i->type()) ||
                      mSettings->library.detectContainer(i->typeStartToken()) ||
                      mSettings->library.getTypeCheck("unusedvar", i->typeStartToken()->str()) == Library::TypeCheck::check)
