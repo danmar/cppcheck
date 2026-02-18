@@ -6597,6 +6597,11 @@ private:
                               "    }\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2:23]: (style) Variable 's' is assigned a value that is never used. [unreadVariable]\n", errout_str());
+
+        functionVariableUsage("void f() {\n" // #14201
+                              "    std::pair<T, U> p;
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void localVarClass() {
