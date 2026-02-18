@@ -1869,7 +1869,7 @@ void CheckOther::checkConstPointer()
             continue;
         if (!var->isLocal() && !var->isArgument())
             continue;
-        if (var->scope() && var->scope()->type == ScopeType::eLambda)
+        if (var->isArgument() && var->scope() && var->scope()->type == ScopeType::eLambda)
             continue;
         const Token* const nameTok = var->nameToken();
         if (tok == nameTok && var->isLocal() && !astIsRangeBasedForDecl(nameTok)) {
