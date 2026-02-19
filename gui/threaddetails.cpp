@@ -43,10 +43,10 @@ void ThreadDetails::updateUI() {
     {
         QMutexLocker locker(&mMutex);
         for (const auto& td: mThreadDetails) {
-            auto& progress = mProgress[td.file];
-            if (progress.first.isEmpty() && !progress.second.isEmpty())
-                progress.first = QTime::currentTime().toString(Qt::TextDate);
-            text += QString("%1\t%2\t%3\n\t%4\t%5\n").arg(td.threadIndex).arg(td.startTime.toString(Qt::TextDate)).arg(td.file).arg(progress.first).arg(progress.second);
+            auto& timeProgress = mProgress[td.file];
+            if (timeProgress.first.isEmpty() && !timeProgress.second.isEmpty())
+                timeProgress.first = QTime::currentTime().toString(Qt::TextDate);
+            text += QString("%1\t%2\t%3\n\t%4\t%5\n").arg(td.threadIndex).arg(td.startTime.toString(Qt::TextDate)).arg(td.file).arg(timeProgress.first).arg(timeProgress.second);
         }
     }
     mUi->plainTextEdit->setPlainText(text);

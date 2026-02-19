@@ -84,6 +84,7 @@ public:
     {
         (void) metric;
     }
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) - false positive this is an overload
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) final;
 
 public slots:
