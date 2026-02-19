@@ -1998,7 +1998,7 @@ void CheckOther::checkConstPointer()
     for (const Variable *p: pointers) {
         bool inconclusive = false;
         if (p->isArgument()) {
-            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(false, (bool*)nullptr, &inconclusive) || p->scope()->function->hasVirtualSpecifier())
+            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(false, nullptr, &inconclusive) || p->scope()->function->hasVirtualSpecifier())
                 continue;
             if (p->isMaybeUnused())
                 continue;
@@ -2020,7 +2020,7 @@ void CheckOther::checkConstPointer()
     }
 }
 
-void CheckOther::constVariableError(const Variable *var, const Function *function, bool* inconclusive)
+void CheckOther::constVariableError(const Variable *var, const Function *function, const bool *inconclusive)
 {
     if (!var) {
         reportError(nullptr, Severity::style, "constParameter", "Parameter 'x' can be declared with const");
