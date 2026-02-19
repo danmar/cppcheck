@@ -290,11 +290,11 @@ private:
 /// RAII class for reporting progress messages
 class CPPCHECKLIB ProgressReporter {
 public:
-    ProgressReporter(ErrorLogger& e, int reportProgressInterval, const std::string& filename, const std::string& stage) :
+    ProgressReporter(ErrorLogger& e, int reportProgressInterval, std::string filename, std::string stage) :
         errorLogger(e),
         reportProgressInterval(reportProgressInterval),
-        filename(filename),
-        stage(stage) {
+        filename(std::move(filename)),
+        stage(std::move(stage)) {
         report(0);
     }
 
