@@ -1013,7 +1013,7 @@ private:
 
         check("void f(const std::vector<int>& v) {\n" // #12742
               "    for (unsigned i = 0; i < v.size();)\n"
-              "    (void)v[i++];\n"
+              "        (void)v[i++];\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
