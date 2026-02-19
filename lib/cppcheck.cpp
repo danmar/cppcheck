@@ -1516,6 +1516,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
         if (isCtuInfo && addonInfo.name != "misra" && !addonInfo.ctu)
             continue;
 
+        ProgressReporter(mErrorLogger, mSettings.reportProgress >= 0, files.front(), "addon:" + addonInfo.name + (isCtuInfo ? " (ctu)" : ""));
+
         std::vector<picojson::value> results;
 
         try {
