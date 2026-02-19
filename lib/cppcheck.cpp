@@ -1316,6 +1316,8 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig)
 {
+    ProgressReporter(mErrorLogger, mSettings.reportProgress >= 0, tokenizer.list.getSourceFilePath(), "Run checkers");
+
     CheckUnusedFunctions unusedFunctionsChecker;
 
     // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
