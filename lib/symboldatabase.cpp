@@ -6518,7 +6518,7 @@ const Scope *Scope::findInNestedListRecursive(const std::string & name) const
     if (it != nestedList.end())
         return *it;
 
-    for (Scope* scope: nestedList) {
+    for (const Scope* scope: nestedList) {
         const Scope *child = scope->findInNestedListRecursive(name);
         if (child)
             return child;
