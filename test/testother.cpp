@@ -4676,6 +4676,24 @@ private:
         ASSERT_EQUALS("[test.cpp:1:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:4:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
+
+        check("class A {\n"
+              "public:\n"
+              "    void func01(QPoint* pt1) {\n"
+              "        if (nullptr == pt1) {}\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:25]: (style) Parameter 'pt1' can be declared as pointer to const [constParameterPointer]\n",
+                      errout_str());
+
+        check("class B : public QObject {\n"
+              "public:\n"
+              "    void func02(QPoint* pt2) {\n"
+              "        if (nullptr == pt2) {}\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:25]: (style, inconclusive) Parameter 'pt2' can be declared as pointer to const [constParameterPointer]\n",
+                      errout_str());
     }
 
     void constArray() {
