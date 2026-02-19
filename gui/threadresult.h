@@ -84,7 +84,7 @@ public:
     {
         (void) metric;
     }
-    void reportProgress(const std::string &filename, const char stage[], std::size_t value) final;
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) final;
 
 public slots:
 
