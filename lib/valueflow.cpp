@@ -5958,9 +5958,12 @@ static Token* findStartToken(const Variable* var, Token* start, const Library& l
     }))
         return first->previous();
     // Compute the outer scope
-    while (scope && scope->nestedIn != var->scope())
+    while (scope && scope->nestedIn != var->scope()) {
+        if (scope->type == ScopeType::eLambda && !Token::simpleMatch(scope->bodyEnd, "} ("))
+            return start;
         scope = scope->nestedIn;
-    if (!scope)
+    }
+    if (!scope || (scope->type == ScopeType::eLambda && !Token::simpleMatch(scope->bodyEnd, "} (")))
         return start;
     auto* tok = const_cast<Token*>(scope->bodyStart);
     if (!tok)
