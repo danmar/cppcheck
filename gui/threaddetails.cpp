@@ -22,6 +22,7 @@ ThreadDetails::~ThreadDetails()
     delete mUi;
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param) - false positive
 void ThreadDetails::threadDetailsUpdated(QMap<int, CheckThread::Details> threadDetails)
 {
     QMutexLocker locker(&mMutex);
@@ -31,6 +32,7 @@ void ThreadDetails::threadDetailsUpdated(QMap<int, CheckThread::Details> threadD
     }
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param) - false positive
 void ThreadDetails::progress(QString filename, QString stage, std::size_t value) {
     QMutexLocker locker(&mMutex);
     mProgress[filename] = {QString(), stage + QString(value > 0 ? ": %1%" : "").arg(value)};
