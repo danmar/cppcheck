@@ -290,36 +290,37 @@ private:
 /// RAII class for reporting progress messages
 class CPPCHECKLIB ProgressReporter {
 public:
-    ProgressReporter(ErrorLogger& e, bool reportProgress, const std::string& filename, const std::string& stage) :
+    ProgressReporter(ErrorLogger& e, int reportProgressInterval, const std::string& filename, const std::string& stage) :
         errorLogger(e),
-        reportProgress(reportProgress),
+        reportProgressInterval(reportProgressInterval),
         filename(filename),
         stage(stage) {
-        if (reportProgress)
-            errorLogger.reportProgress(filename, stage.c_str(), 0);
+        report(0);
     }
 
     ~ProgressReporter() {
-        if (reportProgress)
-            errorLogger.reportProgress(filename, stage.c_str(), 100);
+        lastTime = 0;
+        errorLogger.reportProgress(filename, stage.c_str(), 100);
     }
 
     void report(int value) {
-        if (!reportProgress)
+        if (reportProgressInterval < 0 || value == lastValue)
             return;
-        const auto t = std::time(nullptr);
-        if (t != lastTime) {
+        const std::time_t t = std::time(nullptr);
+        if (t >= lastTime + reportProgressInterval) {
             errorLogger.reportProgress(filename, stage.c_str(), value);
             lastTime = t;
+            lastValue = value;
         }
     }
 
 private:
     ErrorLogger& errorLogger;
-    const bool reportProgress;
+    const int reportProgressInterval;
     const std::string filename;
     const std::string stage;
     std::time_t lastTime{0};
+    int lastValue{-1};
 };
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */

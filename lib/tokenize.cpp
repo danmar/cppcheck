@@ -1167,7 +1167,7 @@ void Tokenizer::simplifyTypedefCpp()
     std::vector<Space> spaceInfo(1);
 
     const std::time_t maxTime = mSettings.typedefMaxTime > 0 ? std::time(nullptr) + mSettings.typedefMaxTime: 0;
-    ProgressReporter progressReporter(mErrorLogger, (mSettings.reportProgress >= 0), list.getSourceFilePath(), "Tokenize (typedef)");
+    ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, list.getSourceFilePath(), "Tokenize (typedef)");
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         progressReporter.report(tok->progressValue());
@@ -2931,7 +2931,7 @@ bool Tokenizer::simplifyUsing()
     };
     std::list<Using> usingList;
 
-    ProgressReporter progressReporter(mErrorLogger, (mSettings.reportProgress >= 0), list.getSourceFilePath(), "Tokenize (using)");
+    ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, list.getSourceFilePath(), "Tokenize (using)");
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         progressReporter.report(tok->progressValue());

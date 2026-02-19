@@ -198,7 +198,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         return it->second.count(tok->str()) > 0 ? startScope : nullptr;
     };
 
-    ProgressReporter progressReporter(mErrorLogger, (mSettings.reportProgress >= 0), mTokenizer.list.getSourceFilePath(), "SymbolDatabase (find all scopes)");
+    ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, mTokenizer.list.getSourceFilePath(), "SymbolDatabase (find all scopes)");
 
     // find all scopes
     for (const Token *tok = mTokenizer.tokens(); tok; tok = tok ? tok->next() : nullptr) {

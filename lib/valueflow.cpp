@@ -7348,7 +7348,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
                           const Settings& settings,
                           TimerResultsIntf* timerResults)
 {
-    ProgressReporter progressReporter(errorLogger, settings.reportProgress >= 0, tokenlist.getSourceFilePath(), "ValueFlow");
+    ProgressReporter progressReporter(errorLogger, settings.reportProgress, tokenlist.getSourceFilePath(), "ValueFlow");
 
     for (Token* tok = tokenlist.front(); tok; tok = tok->next())
         tok->clearValueFlow();

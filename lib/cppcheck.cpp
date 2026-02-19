@@ -1316,7 +1316,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig)
 {
-    const ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress >= 0, tokenizer.list.getSourceFilePath(), "Run checkers");
+    const ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, tokenizer.list.getSourceFilePath(), "Run checkers");
 
     CheckUnusedFunctions unusedFunctionsChecker;
 
@@ -1516,7 +1516,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
         if (isCtuInfo && addonInfo.name != "misra" && !addonInfo.ctu)
             continue;
 
-        ProgressReporter(mErrorLogger, mSettings.reportProgress >= 0, files.front(), "addon:" + addonInfo.name + (isCtuInfo ? " (ctu)" : ""));
+        ProgressReporter(mErrorLogger, mSettings.reportProgress, files.front(), "addon:" + addonInfo.name + (isCtuInfo ? " (ctu)" : ""));
 
         std::vector<picojson::value> results;
 
