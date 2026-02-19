@@ -1163,6 +1163,8 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings& 
         return false;
     if (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean())
         return true;
+    if (isNullOperand(tok))
+        return true;
     bool needsCheck = tok->varId() > 0;
     if (!needsCheck) {
         if (tok->isArithmeticalOp())
