@@ -1996,8 +1996,9 @@ void CheckOther::checkConstPointer()
             nonConstPointers.emplace(var);
     }
     for (const Variable *p: pointers) {
+        bool inconclusive = false;
         if (p->isArgument()) {
-            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
+            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(false, (bool*)nullptr, &inconclusive) || p->scope()->function->hasVirtualSpecifier())
                 continue;
             if (p->isMaybeUnused())
                 continue;
@@ -2014,12 +2015,12 @@ void CheckOther::checkConstPointer()
                 continue;
             if (p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
-            constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
+            constVariableError(p, p->isArgument() ? p->scope()->function : nullptr, &inconclusive);
         }
     }
 }
 
-void CheckOther::constVariableError(const Variable *var, const Function *function)
+void CheckOther::constVariableError(const Variable *var, const Function *function, bool* inconclusive)
 {
     if (!var) {
         reportError(nullptr, Severity::style, "constParameter", "Parameter 'x' can be declared with const");
@@ -2050,7 +2051,7 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
         id += "Pointer";
     }
 
-    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, (inconclusive && *inconclusive) ? Certainty::inconclusive : Certainty::normal);
 }
 
 //---------------------------------------------------------------------------

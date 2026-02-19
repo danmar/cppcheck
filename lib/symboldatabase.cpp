@@ -4810,8 +4810,10 @@ void Function::addArguments(const Scope *scope)
     }
 }
 
-bool Function::isImplicitlyVirtual(bool defaultVal, bool* pFoundAllBaseClasses) const
+bool Function::isImplicitlyVirtual(bool defaultVal, bool* pFoundAllBaseClasses, bool* inconclusive) const
 {
+    if (inconclusive)
+        *inconclusive = false; // assume not inconclusive.
     if (hasVirtualSpecifier() || hasOverrideSpecifier() || hasFinalSpecifier())
         return true;
     bool foundAllBaseClasses = true;
@@ -4821,7 +4823,10 @@ bool Function::isImplicitlyVirtual(bool defaultVal, bool* pFoundAllBaseClasses) 
         *pFoundAllBaseClasses = foundAllBaseClasses;
     if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
-    return defaultVal; //If we can't see all the bases classes then we can't say conclusively
+    //If we can't see all the bases classes then we can't say conclusively, set inconclusive (if possible) and return default value
+    if (inconclusive)
+        *inconclusive = true;
+    return defaultVal;
 }
 
 std::vector<const Function*> Function::getOverloadedFunctions() const

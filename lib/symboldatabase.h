@@ -783,7 +783,7 @@ public:
     void addArguments(const Scope *scope);
 
     /** @brief check if this function is virtual in the base classes */
-    bool isImplicitlyVirtual(bool defaultVal = false, bool* pFoundAllBaseClasses = nullptr) const;
+    bool isImplicitlyVirtual(bool defaultVal = false, bool* pFoundAllBaseClasses = nullptr, bool* inconclusive = nullptr) const;
 
     std::vector<const Function*> getOverloadedFunctions() const;
 
