@@ -200,6 +200,9 @@ public slots:
     /** @brief Slot for showing the library editor */
     void showLibraryEditor();
 
+    /** @brief Slot for showing the thread details window */
+    void showThreadDetails();
+
 private slots:
 
     /** @brief Slot for checkthread's done signal */
