@@ -32,6 +32,7 @@ void ThreadDetails::threadDetailsUpdated(QMap<int, CheckThread::Details> threadD
     }
 }
 
+// cppcheck-suppress passedByValue
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - false positive
 void ThreadDetails::progress(QString filename, QString stage, std::size_t value) {
     QMutexLocker locker(&mMutex);

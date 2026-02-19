@@ -337,6 +337,7 @@ void ThreadHandler::startCheck(CheckThread::Details details)
     emitThreadDetailsUpdated();
 }
 
+// cppcheck-suppress passedByValueCallback
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void ThreadHandler::finishCheck(CheckThread::Details details)
 {
