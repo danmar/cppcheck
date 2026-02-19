@@ -60,6 +60,7 @@ void ThreadResult::reportErr(const ErrorMessage &msg)
         emit debugError(item);
 }
 
+// NOLINTNEXTLINE(readability-avoid-const-params-in-decls) - false positive this is an overload
 void ThreadResult::reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
     emit progress(QString::fromStdString(filename), stage, value);
 }
