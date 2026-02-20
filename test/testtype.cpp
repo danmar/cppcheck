@@ -477,6 +477,13 @@ private:
         check(code3b, dinit(CheckOptions, $.settings = &settings));
         ASSERT_EQUALS("[test.cpp:2:5]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
 
+        const char code3c[] = "long f() {\n"
+                              "    unsigned int n = 1U << 20;\n"
+                              "    return n << 20;\n"
+                              "}\n";
+        check(code3c, dinit(CheckOptions, $.settings = &settings));
+        ASSERT_EQUALS("[test.cpp:3:5]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
+
         const char code4a[] = "long f(int x) {\n"
                               "    int y = 0x07FFFF;\n"
                               "    return ((x & y) << (12 & x));\n"
