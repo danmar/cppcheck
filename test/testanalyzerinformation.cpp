@@ -126,7 +126,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS("'premium-invalidLicense' encountered", AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -145,7 +145,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS("'premium-internalError' encountered", AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -164,7 +164,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS("'internalError' encountered", AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -185,7 +185,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(true, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS("", AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(1, errorList.size());
         }
 
@@ -201,7 +201,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(true, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS("", AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -222,7 +222,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 99, errorList));
+            ASSERT_EQUALS("hash mismatch", AnalyzerInformationTest::skipAnalysis(doc, 99, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -234,7 +234,37 @@ private:
             const tinyxml2::XMLError xmlError = doc.Parse("");
             ASSERT_EQUALS(tinyxml2::XML_ERROR_EMPTY_DOCUMENT, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS("no root node found", AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Unexpected root node
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<ainfo/>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS("unexpected root node", AnalyzerInformationTest::skipAnalysis(doc, 99, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // No 'hash' attribute found
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo/>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS("no 'hash' attribute found", AnalyzerInformationTest::skipAnalysis(doc, 99, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
     }
