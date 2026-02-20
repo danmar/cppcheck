@@ -122,6 +122,7 @@ private:
         TEST_CASE(varScope42);
         TEST_CASE(varScope43);
         TEST_CASE(varScope44);
+        TEST_CASE(varScope45);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(intToPointerCast);
@@ -1970,6 +1971,17 @@ private:
         ASSERT_EQUALS("[test.cpp:2:11]: (style) The scope of the variable 'p' can be reduced. [variableScope]\n"
                       "[test.cpp:12:11]: (style) The scope of the variable 'q' can be reduced. [variableScope]\n",
                       errout_str());
+    }
+
+    void varScope45() {
+        check("void g(int x, int y) {\n" // #14497
+              "    int a = x, b = y;\n"
+              "    if (a) {}\n"
+              "    else {\n"
+              "        if (b) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:16]: (style) The scope of the variable 'b' can be reduced. [variableScope]\n", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)

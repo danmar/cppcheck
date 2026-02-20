@@ -7964,8 +7964,8 @@ void Tokenizer::elseif()
 
             if (Token::Match(tok2, "}|;")) {
                 if (tok2->next() && tok2->strAt(1) != "else") {
-                    tok->insertToken("{");
-                    tok2->insertToken("}");
+                    tok->insertToken("{")->isSimplifiedScope(true);
+                    tok2->insertToken("}")->isSimplifiedScope(true);
                     Token::createMutualLinks(tok->next(), tok2->next());
                     break;
                 }
