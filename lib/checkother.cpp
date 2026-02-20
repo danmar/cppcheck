@@ -2039,7 +2039,9 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
 
     ErrorPath errorPath;
     std::string id = "const" + vartype;
-    std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray;
+    std::string message = !(inconclusive && *inconclusive) ?
+                          "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray :
+                          "$symbol:" + varname + "\nEither there is missing override/final keyword, or the " + vartype + " '$symbol' can be " + ptrRefArray;
     errorPath.emplace_back(var->nameToken(), message);
     if (var->isArgument() && function && function->functionPointerUsage) {
         errorPath.emplace_front(function->functionPointerUsage, "You might need to cast the function pointer here");
@@ -2051,7 +2053,7 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
         id += "Pointer";
     }
 
-    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, (inconclusive && *inconclusive) ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------

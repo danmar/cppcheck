@@ -4686,14 +4686,21 @@ private:
         ASSERT_EQUALS("[test.cpp:3:25]: (style) Parameter 'pt1' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
 
-        check("class B : public QObject {\n"
+        check("class A : public QObject {\n"
               "public:\n"
-              "    void func02(QPoint* pt2) {\n"
+              "    void func01(QPoint* pt2) {\n"
               "        if (nullptr == pt2) {}\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:3:25]: (style, inconclusive) Parameter 'pt2' can be declared as pointer to const [constParameterPointer]\n",
+        ASSERT_EQUALS("[test.cpp:3:25]: (style) Either there is missing override/final keyword, or the Parameter 'pt2' can be pointer to const [constParameterPointer]\n",
                       errout_str());
+        check("class A : public QObject {\n"
+              "public:\n"
+              "    void func01(QPoint* pt3) override {\n"
+              "        if (nullptr == pt3) {}\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constArray() {
