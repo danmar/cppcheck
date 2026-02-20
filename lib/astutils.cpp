@@ -1046,14 +1046,14 @@ bool isOperationResultWithinIntRange(const Token* op, const Settings& settings, 
             return false;
 
         return checkAllRangeOperations(*leftRange, *rightRange, settings,
-                                       [](auto a, auto b) {
+                                       [](MathLib::bigint a, MathLib::bigint b) {
             return a << b;
         });
     }
 
     if (op->str() == "*")
         return checkAllRangeOperations(*leftRange, *rightRange, settings,
-                                       [](auto a, auto b) {
+                                       [](MathLib::bigint a, MathLib::bigint b) {
             return a * b;
         });
 
