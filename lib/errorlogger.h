@@ -291,36 +291,35 @@ private:
 class CPPCHECKLIB ProgressReporter {
 public:
     ProgressReporter(ErrorLogger& e, int reportProgressInterval, std::string filename, std::string stage) :
-        errorLogger(e),
-        reportProgressInterval(reportProgressInterval),
-        filename(std::move(filename)),
-        stage(std::move(stage)) {
+        mErrorLogger(e),
+        mReportProgressInterval(reportProgressInterval),
+        mFilename(std::move(filename)),
+        mStage(std::move(stage)) {
         report(0);
     }
 
     ~ProgressReporter() {
-        lastTime = 0;
-        errorLogger.reportProgress(filename, stage.c_str(), 100);
+        mErrorLogger.reportProgress(mFilename, mStage.c_str(), 100);
     }
 
     void report(int value) {
-        if (reportProgressInterval < 0 || value == lastValue)
+        if (mReportProgressInterval < 0 || value == mLastValue)
             return;
         const std::time_t t = std::time(nullptr);
-        if (t >= lastTime + reportProgressInterval) {
-            errorLogger.reportProgress(filename, stage.c_str(), value);
-            lastTime = t;
-            lastValue = value;
+        if (t >= mLastTime + mReportProgressInterval) {
+            mErrorLogger.reportProgress(mFilename, mStage.c_str(), value);
+            mLastTime = t;
+            mLastValue = value;
         }
     }
 
 private:
-    ErrorLogger& errorLogger;
-    const int reportProgressInterval;
-    const std::string filename;
-    const std::string stage;
-    std::time_t lastTime{0};
-    int lastValue{-1};
+    ErrorLogger& mErrorLogger;
+    const int mReportProgressInterval;
+    const std::string mFilename;
+    const std::string mStage;
+    std::time_t mLastTime{0};
+    int mLastValue{-1};
 };
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */
