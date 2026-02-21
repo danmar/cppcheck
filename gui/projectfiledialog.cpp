@@ -458,7 +458,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());
     mUI->mToolClangTidy->setChecked(projectFile->getClangTidy());
     if (CheckThread::clangTidyCmd().isEmpty()) {
-        mUI->mToolClangTidy->setText(tr("Clang-tidy (not found)"));
+        mUI->mToolClangTidy->setText("Clang-Tidy (" + tr("not found") + ")");
         mUI->mToolClangTidy->setEnabled(false);
     }
     mUI->mEditTags->setText(projectFile->getTags().join(';'));
@@ -626,9 +626,9 @@ void ProjectFileDialog::browseImportProject()
     const QFileInfo inf(mProjectFile->getFilename());
     const QDir &dir = inf.absoluteDir();
     QMap<QString,QString> filters;
-    filters[tr("Visual Studio")] = "*.sln *.vcxproj";
+    filters["Visual Studio"] = "*.sln *.vcxproj";
     filters[tr("Compile database")] = "compile_commands.json";
-    filters[tr("Borland C++ Builder 6")] = "*.bpr";
+    filters["Borland C++ Builder 6"] = "*.bpr";
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
                                                     dir.canonicalPath(),
                                                     toFilterString(filters));
