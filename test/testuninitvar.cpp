@@ -6663,6 +6663,26 @@ private:
                         "    return ret;\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("int f() {\n" // #12944
+                        "    int i;\n"
+                        "    auto x = [&]() { return i; };\n"
+                        "    i = 5;\n"
+                        "    return x();\n"
+                        "}\n"
+                        "int g() {\n"
+                        "    int i;\n"
+                        "    {\n"
+                        "        auto x = [&]() { return i; };\n"
+                        "        i = 5;\n"
+                        "        return x();\n"
+                        "    }\n"
+                        "}\n"
+                        "int h() {\n"
+                        "    int j;\n"
+                        "    return [&]() { return j; }();\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:17:27]: (error) Uninitialized variable: j [uninitvar]\n", errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
