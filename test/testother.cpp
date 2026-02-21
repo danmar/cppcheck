@@ -10468,7 +10468,7 @@ private:
 
         // Member variable pointers
         check("void podMemPtrs() {\n"
-              "    int POD::*memptr;\n"
+              "    const int POD::*memptr;\n"
               "    memptr = &POD::a;\n"
               "    memptr = &POD::b;\n"
               "    if (memptr)\n"

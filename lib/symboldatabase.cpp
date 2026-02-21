@@ -5266,6 +5266,26 @@ const Variable *Scope::getVariable(const std::string &varname) const
 
 static const Token* skipPointers(const Token* tok)
 {
+    const Token *start = tok;
+    bool memberPointer = false;
+    while (tok) {
+        if (Token::simpleMatch(tok, "::")) {
+            tok = tok->next();
+            continue;
+        }
+        if (Token::Match(tok, "%type% ::")) {
+            tok = tok->tokAt(2);
+            memberPointer = true;
+            continue;
+        }
+        if (Token::Match(tok, "%type% <") && tok->linkAt(1)) {
+            tok = tok->linkAt(1)->next();
+            continue;
+        }
+        break;
+    }
+    if (memberPointer && !Token::simpleMatch(tok, "*"))
+        return start;
     while (Token::Match(tok, "*|&|&&") || (Token::Match(tok, "( [*&]") && Token::Match(tok->link()->next(), "(|["))) {
         tok = tok->next();
         if (tok && tok->strAt(-1) == "(" && Token::Match(tok, "%type% ::"))
