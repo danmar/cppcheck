@@ -123,6 +123,7 @@ private:
         TEST_CASE(varScope43);
         TEST_CASE(varScope44);
         TEST_CASE(varScope45);
+        TEST_CASE(varScope46);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(intToPointerCast);
@@ -1982,6 +1983,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2:16]: (style) The scope of the variable 'b' can be reduced. [variableScope]\n", errout_str());
+    }
+
+    void varScope46() {
+        check("void f() {\n"
+              "    int y1;\n"
+              "    for (int i = 0; i < 3; ++i) {\n"
+              "        for(int j = 0; j < 3; ++j) {\n"
+              "                y1 = 2 * 1;\n"
+              "                y1 += 1;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:9]: (style) The scope of the variable 'y1' can be reduced. [variableScope]\n",
+                      errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)

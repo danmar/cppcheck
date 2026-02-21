@@ -1370,7 +1370,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok == forHeadEnd)
             forHeadEnd = nullptr;
 
-        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
+        if (loopVariable && noContinue && (tok->scope() == scope || tok->scope()->type != ScopeType::eSwitch) && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;
             std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
             if (range.first)
@@ -1544,6 +1544,9 @@ void CheckOther::checkPassByReference()
 
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->isClass() || var->isPointer() || (var->isArray() && !var->isStlType()) || var->isReference() || var->isEnumType())
+            continue;
+
+        if (!var->scope())
             continue;
 
         const bool isRangeBasedFor = astIsRangeBasedForDecl(var->nameToken());
