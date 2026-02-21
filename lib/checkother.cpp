@@ -1546,9 +1546,6 @@ void CheckOther::checkPassByReference()
         if (!var || !var->isClass() || var->isPointer() || (var->isArray() && !var->isStlType()) || var->isReference() || var->isEnumType())
             continue;
 
-        if (!var->scope())
-            continue;
-
         const bool isRangeBasedFor = astIsRangeBasedForDecl(var->nameToken());
         if (!var->isArgument() && !isRangeBasedFor)
             continue;
