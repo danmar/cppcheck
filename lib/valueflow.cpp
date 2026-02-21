@@ -3006,10 +3006,10 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
                 if (tok2 && tok2 != op1 && (!tok2->variable() || !tok2->variable()->isArray()) && !(tok2->valueType() && tok2->valueType()->container))
                     continue;
             }
-            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok->astOperand1(), settings)) {
+            for (ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok->astOperand1(), settings)) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
-                ErrorPath errorPath = lt.errorPath;
+                ErrorPath& errorPath = lt.errorPath;
                 errorPath.emplace_back(tok, "Address of variable taken here.");
 
                 ValueFlow::Value value;
@@ -4209,7 +4209,7 @@ static void valueFlowAfterAssign(TokenList &tokenlist,
                         continue;
                     ids.insert(value.tokvalue->exprId());
                 }
-                for (ValueFlow::Value value : values) {
+                for (ValueFlow::Value& value : values) {
                     if (!value.isSymbolicValue())
                         continue;
                     const Token* expr = value.tokvalue;
@@ -5052,7 +5052,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
                 for (const ValuePtr<InferModel>& model : iteratorModels) {
                     std::vector<ValueFlow::Value> result =
                         infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
-                    for (ValueFlow::Value value : result) {
+                    for (ValueFlow::Value& value : result) {
                         value.valueType = ValueFlow::Value::ValueType::INT;
                         setTokenValue(tok, std::move(value), settings);
                     }
@@ -5815,10 +5815,10 @@ static void valueFlowFunctionReturn(TokenList& tokenlist, ErrorLogger& errorLogg
 
         bool hasKnownValue = false;
 
-        for (const ValueFlow::Value& v : getCommonValuesFromTokens(returns)) {
-            setFunctionReturnValue(function, tok, v, settings, false);
+        for (ValueFlow::Value& v : getCommonValuesFromTokens(returns)) {
             if (v.isKnown())
                 hasKnownValue = true;
+            setFunctionReturnValue(function, tok, std::move(v), settings, false);
         }
 
         if (hasKnownValue)
@@ -5844,10 +5844,10 @@ static void valueFlowFunctionReturn(TokenList& tokenlist, ErrorLogger& errorLogg
         if (programMemory.empty() && !arguments.empty())
             continue;
         std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, settings);
-        for (const ValueFlow::Value& v : values) {
+        for (ValueFlow::Value& v : values) {
             if (v.isUninitValue())
                 continue;
-            setFunctionReturnValue(function, tok, v, settings);
+            setFunctionReturnValue(function, tok, std::move(v), settings);
         }
     }
 }
@@ -6663,8 +6663,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             continue;
         }
 
-        for (const ValueFlow::Value& value : values) {
-            valueFlowForward(nameToken->next(), var->nameToken(), value, tokenlist, errorLogger, settings);
+        for (ValueFlow::Value& value : values) {
+            valueFlowForward(nameToken->next(), var->nameToken(), std::move(value), tokenlist, errorLogger, settings);
         }
     }
 
@@ -6710,8 +6710,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     const Token* constructorArgs = tok;
                     values = getContainerSizeFromConstructor(constructorArgs, tok->valueType(), settings, true);
                 }
-                for (const ValueFlow::Value& value : values)
-                    setTokenValue(tok, value, settings);
+                for (ValueFlow::Value& value : values)
+                    setTokenValue(tok, std::move(value), settings);
             }
             else if (Token::Match(tok->previous(), ",|(") && (Token::Match(tok, "{|%str%") || settings.library.detectContainer(tok))) {
                 if (Token* argTok = tok->previous()->astOperand2()) {
@@ -6748,8 +6748,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     Token* rhs = tok->tokAt(2)->astOperand2();
                     std::vector<ValueFlow::Value> values = getInitListSize(rhs, containerTok->valueType(), settings);
                     valueFlowContainerSetTokValue(tokenlist, errorLogger, settings, containerTok, rhs);
-                    for (const ValueFlow::Value& value : values)
-                        valueFlowForward(containerTok->next(), containerTok, value, tokenlist, errorLogger, settings);
+                    for (ValueFlow::Value& value : values)
+                        valueFlowForward(containerTok->next(), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 }
             } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() &&
                        tok->astOperand1()->valueType()->container) {
@@ -7014,8 +7014,8 @@ static void valueFlowSafeFunctions(const TokenList& tokenlist, const SymbolDatab
                 argValues.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                 argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " size is 1000000");
                 argValues.back().safe = true;
-                for (const ValueFlow::Value &value : argValues)
-                    valueFlowForward(const_cast<Token*>(functionScope->bodyStart), arg.nameToken(), value, tokenlist, errorLogger, settings);
+                for (ValueFlow::Value &value : argValues)
+                    valueFlowForward(const_cast<Token*>(functionScope->bodyStart), arg.nameToken(), std::move(value), tokenlist, errorLogger, settings);
                 continue;
             }
 
