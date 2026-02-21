@@ -71,7 +71,7 @@ For release builds it is recommended that you use:
 -DUSE_MATCHCOMPILER=ON
 
 For building the tests use the flag.
--DBUILD_TESTS=ON
+-DBUILDING_TESTS=ON
 
 Using cmake you can generate project files for Visual Studio,XCode,etc.
 
