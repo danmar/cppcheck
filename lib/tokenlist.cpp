@@ -1883,6 +1883,7 @@ namespace {
     struct OnException {
         std::function<void()> f;
 
+        // NOLINTNEXTLINE(bugprone-exception-escape) - reported with libc++ only
         ~OnException() {
 #ifndef _MSC_VER
 #if defined(__cpp_lib_uncaught_exceptions)
