@@ -215,7 +215,7 @@ private:
     void suspiciousFloatingPointCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
     void passedByValueError(const Variable* var, bool inconclusive, bool isRangeBasedFor = false);
-    void constVariableError(const Variable *var, const Function *function);
+    void constVariableError(const Variable *var, const Function *function, const bool *inconclusive = nullptr);
     void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
     void unknownSignCharArrayIndexError(const Token *tok);

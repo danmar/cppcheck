@@ -1996,8 +1996,9 @@ void CheckOther::checkConstPointer()
             nonConstPointers.emplace(var);
     }
     for (const Variable *p: pointers) {
+        bool inconclusive = false;
         if (p->isArgument()) {
-            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
+            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(false, nullptr, &inconclusive) || p->scope()->function->hasVirtualSpecifier())
                 continue;
             if (p->isMaybeUnused())
                 continue;
@@ -2014,12 +2015,12 @@ void CheckOther::checkConstPointer()
                 continue;
             if (p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
-            constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
+            constVariableError(p, p->isArgument() ? p->scope()->function : nullptr, &inconclusive);
         }
     }
 }
 
-void CheckOther::constVariableError(const Variable *var, const Function *function)
+void CheckOther::constVariableError(const Variable *var, const Function *function, const bool *inconclusive)
 {
     if (!var) {
         reportError(nullptr, Severity::style, "constParameter", "Parameter 'x' can be declared with const");
@@ -2038,7 +2039,9 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
 
     ErrorPath errorPath;
     std::string id = "const" + vartype;
-    std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray;
+    std::string message = !(inconclusive && *inconclusive) ?
+                          "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray :
+                          "$symbol:" + varname + "\nEither there is missing override/final keyword, or the " + vartype + " '$symbol' can be " + ptrRefArray;
     errorPath.emplace_back(var->nameToken(), message);
     if (var->isArgument() && function && function->functionPointerUsage) {
         errorPath.emplace_front(function->functionPointerUsage, "You might need to cast the function pointer here");
