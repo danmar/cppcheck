@@ -27,7 +27,7 @@ jobs:
       QT_VERSION: 6.10.0
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
@@ -47,7 +47,7 @@ jobs:
           sudo apt-get install -y clang-tidy-22
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005 # v4.3.0
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
@@ -86,7 +86,7 @@ jobs:
         run: |
           cmake --build cmake.output --target run-clang-tidy-csa 2> /dev/null
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: success() || failure()
         with:
           name: Compilation Database

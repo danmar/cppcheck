@@ -19,26 +19,26 @@ jobs:
   convert_via_pandoc:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
       - run: |
           mkdir output
 
-      - uses: docker://pandoc/latex:3.6.3
+      - uses: docker://pandoc/latex:3.6.3@sha256:48831aabd0a24e180a34c0bc5dd09792af43dbd7c2a2d394fbc6b10f9c48fe50
         with:
           args: --output=output/manual.html man/manual.md
 
-      - uses: docker://pandoc/latex:3.6.3
+      - uses: docker://pandoc/latex:3.6.3@sha256:48831aabd0a24e180a34c0bc5dd09792af43dbd7c2a2d394fbc6b10f9c48fe50
         with:
           args: --output=output/manual.pdf man/manual.md
 
-      - uses: docker://pandoc/latex:3.6.3
+      - uses: docker://pandoc/latex:3.6.3@sha256:48831aabd0a24e180a34c0bc5dd09792af43dbd7c2a2d394fbc6b10f9c48fe50
         with:
           args: --output=output/manual-premium.pdf man/manual-premium.md
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: output
           path: output
@@ -46,7 +46,7 @@ jobs:
   manpage:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
@@ -59,7 +59,7 @@ jobs:
         run: |
           make man
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: cppcheck.1
           path: cppcheck.1

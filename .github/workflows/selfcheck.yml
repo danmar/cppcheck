@@ -24,12 +24,12 @@ jobs:
       QT_VERSION: 6.10.0
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2.20
         with:
           key: ${{ github.workflow }}-${{ runner.os }}
 
@@ -42,7 +42,7 @@ jobs:
           sudo apt-get install -y libgl-dev  # fixes missing dependency for Qt in CMake
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005 # v4.3.0
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
@@ -198,7 +198,7 @@ jobs:
         env:
           DISABLE_VALUEFLOW: 1
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: Callgrind Output
           path: ./callgrind.*
