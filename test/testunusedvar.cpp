@@ -154,6 +154,7 @@ private:
         TEST_CASE(localvar69);
         TEST_CASE(localvar70);
         TEST_CASE(localvar71);
+        TEST_CASE(localvar72);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -4044,6 +4045,15 @@ private:
         functionVariableUsage("struct A { explicit A(int i); };\n" // #12363
                               "void f() { A a(0); }\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void localvar72() {
+        functionVariableUsage("void f()\n"
+                              "{\n"
+                              "  struct S {};\n"
+                              "  int S::* mp;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:12]: (style) Unused variable: mp [unusedVariable]\n", errout_str());
     }
 
     void localvarloops() {
