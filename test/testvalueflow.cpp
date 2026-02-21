@@ -7406,6 +7406,12 @@ private:
                "    return a[0];\n"
                "}";
         ASSERT(!isKnownContainerSizeValue(tokenValues(code, "a ["), 6).empty());
+
+        code = "void f(const char a[]) {\n" // #14518
+               "    std::string s(a);\n"
+               "    if (s.empty()) {}\n"
+               "}";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "s ."), 0).empty());
     }
 
     void valueFlowContainerElement()
