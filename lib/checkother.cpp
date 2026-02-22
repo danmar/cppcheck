@@ -1331,6 +1331,15 @@ static bool mayDependOn(const ValueType *other, const ValueType *original)
     return otherPtr > originalPtr;
 }
 
+static bool isOnlyUsedInCurrentScope(const Variable* var, const Token *tok, const Scope* scope)
+{
+    if (tok->scope() == scope)
+        return true;
+    if (tok->scope()->type == ScopeType::eSwitch)
+        return false;
+    return !Token::findmatch(tok->scope()->bodyEnd, "%varid%", scope->bodyEnd, var->declarationId());
+}
+
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
 {
     const Scope* scope = tok->next()->scope();
@@ -1370,7 +1379,8 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok == forHeadEnd)
             forHeadEnd = nullptr;
 
-        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
+        if (loopVariable && noContinue && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId()) &&
+            isOnlyUsedInCurrentScope(var, tok, scope)) { // Assigned in outer scope.
             loopVariable = false;
             std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
             if (range.first)
@@ -1868,6 +1878,8 @@ void CheckOther::checkConstPointer()
         if (!var)
             continue;
         if (!var->isLocal() && !var->isArgument())
+            continue;
+        if (var->isArgument() && var->scope() && var->scope()->type == ScopeType::eLambda)
             continue;
         const Token* const nameTok = var->nameToken();
         if (tok == nameTok && var->isLocal() && !astIsRangeBasedForDecl(nameTok)) {
