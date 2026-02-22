@@ -1335,6 +1335,8 @@ static bool isOnlyUsedInCurrentScope(const Variable* var, const Token *tok, cons
 {
     if (tok->scope() == scope)
         return true;
+    if (tok->scope()->type == ScopeType::eSwitch)
+        return false;
     return !Token::findmatch(tok->scope()->bodyEnd, "%varid%", scope->bodyEnd, var->declarationId());
 }
 
