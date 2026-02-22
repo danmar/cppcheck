@@ -21,7 +21,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     env:
       QT_VERSION: 6.10.0
