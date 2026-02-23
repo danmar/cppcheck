@@ -7741,6 +7741,19 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:8:10]: (style, inconclusive) Technically the member function 'Fred::f2' can be const. [functionConst]\n", errout_str());
+
+        checkConst("struct T {\n" // #14390
+                   "    std::vector<int*> v;\n"
+                   "    void f() {\n"
+                   "        for (const auto& p : v)\n"
+                   "            *p = 0;\n"
+                   "    }\n"
+                   "    void g() {\n"
+                   "        for (auto* p : v)\n"
+                   "            *p = 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void const_shared_ptr() { // #8674
