@@ -1958,9 +1958,9 @@ private:
 
     void assign6() {
         check("struct S { S* p; };\n" // #14524
-               "void f() {\n"
-               "    S s;\n"
-               "    s.p = static_cast<S*>(malloc(sizeof(S)));\n"
+              "void f() {\n"
+              "    S s;\n"
+              "    s.p = static_cast<S*>(malloc(sizeof(S)));\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5:1]: (error) Memory leak: s.p [memleak]\n", errout_str());
     }
