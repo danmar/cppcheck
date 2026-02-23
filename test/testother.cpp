@@ -9899,6 +9899,17 @@ private:
         ASSERT_EQUALS("[test.cpp:2:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n"
                       "[test.cpp:7:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
                       errout_str());
+
+        check("struct S {\n"
+              "    std::string m;\n"
+              "    int f(const std::string& s);\n"
+              "};\n"
+              "int S::f(const std::string& s) {\n"
+              "    std::string c = s;\n"
+              "    m.clear();\n"
+              "    return c.size();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkNegativeShift() {

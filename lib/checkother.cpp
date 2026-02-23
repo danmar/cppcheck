@@ -3339,13 +3339,11 @@ static bool checkVariableAssignment(const Token* tok, const Settings& settings)
         return false;
     if (isVariableChanged(var, settings))
         return false;
-    if (var->isMember()) {
-        const Scope* scope = tok->scope();
-        while (scope && scope->type != ScopeType::eFunction)
-            scope = scope->nestedIn;
-        if (!scope || !scope->function || (!scope->function->isConst() && !scope->function->isStatic()))
-            return false;
-    }
+    const Scope* scope = tok->scope();
+    while (scope && scope->type != ScopeType::eFunction)
+        scope = scope->nestedIn;
+    if (!scope || !scope->function || (scope->functionOf && !scope->function->isConst() && !scope->function->isStatic()))
+        return false;
     return true;
 }
 
