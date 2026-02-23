@@ -590,7 +590,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     astOperand2AfterCommas = astOperand2AfterCommas->astOperand2();
 
                 // Recursively scan variable comparisons in condition
-                for (const Token* compTok : getComparisonTokens(astOperand2AfterCommas) {
+                for (const Token* compTok : getComparisonTokens(astOperand2AfterCommas)) {
                     visitAstNodes(compTok, [&](const Token* tok3) {
                         if (!tok3)
                             return ChildrenToVisit::none;
