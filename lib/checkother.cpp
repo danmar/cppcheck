@@ -3294,7 +3294,7 @@ static bool isLargeObject(const Variable* var, const Settings& settings)
 {
     return var && !var->isGlobal() &&
            (!var->type() || !var->type()->classScope ||
-            (var->valueType() && var->valueType()->getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * settings.platform.sizeof_pointer));  
+            (var->valueType() && var->valueType()->getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * settings.platform.sizeof_pointer));
 }
 
 //---------------------------------------------------------------------------
