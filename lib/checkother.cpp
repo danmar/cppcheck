@@ -3342,9 +3342,7 @@ static bool checkVariableAssignment(const Token* tok, const Settings& settings)
     const Scope* scope = tok->scope();
     while (scope && scope->type != ScopeType::eFunction)
         scope = scope->nestedIn;
-    if (!scope || !scope->function || (scope->functionOf && !scope->function->isConst() && !scope->function->isStatic()))
-        return false;
-    return true;
+    return scope && scope->function && (!scope->functionOf || scope->function->isConst() || scope->function->isStatic());
 }
 
 void CheckOther::checkRedundantCopy()
