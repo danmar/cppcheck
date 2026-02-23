@@ -3337,8 +3337,10 @@ static bool checkVariableAssignment(const Token* tok, const Settings& settings)
     const Variable* var = tok->variable();
     if (!var || !isLargeObject(var, settings))
         return false;
-    if (isVariableChanged(var, settings))
+    if (findVariableChanged(tok->tokAt(2), tok->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(), /*globalvar*/ false, settings))
         return false;
+    if (var->isLocal() || (var->isArgument() && !var->isReference()))
+        return true;
     const Scope* scope = tok->scope();
     while (scope && scope->type != ScopeType::eFunction)
         scope = scope->nestedIn;

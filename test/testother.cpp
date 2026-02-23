@@ -9910,6 +9910,19 @@ private:
               "    return c.size();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n"
+              "    std::string m;\n"
+              "    int f(std::string s);\n"
+              "};\n"
+              "int S::f(std::string s) {\n"
+              "    s += m;\n"
+              "    std::string c = s;\n"
+              "    m.clear();\n"
+              "    return c.size();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7:17]: (performance, inconclusive) Use const reference for 'c' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
+                      errout_str());
     }
 
     void checkNegativeShift() {
