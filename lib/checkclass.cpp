@@ -2545,8 +2545,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                     }
                 }
             } else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->str() == "(") { // range-based for-loop (C++11)
-                // TODO: We could additionally check what is done with the elements to avoid false negatives. Here we just rely on "const" keyword being used.
-                if (lhs->astParent()->strAt(1) != "const")
+                const Variable* loopVar = lhs->astOperand1()->variable();
+                if (!loopVar || !loopVar->valueType())
+                    return false;
+                if (!loopVar->valueType()->isConst(loopVar->valueType()->pointer))
                     return false;
             } else {
                 if (lhs->isAssignmentOp()) {
