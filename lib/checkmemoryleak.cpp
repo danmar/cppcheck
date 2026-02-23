@@ -64,7 +64,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         tok2 = tok2->link();
         tok2 = tok2 ? tok2->next() : nullptr;
     }
-    if (tok2 && tok2->isCpp() && tok2->isKeyword() && Token::simpleMatch(tok2->astParent(), "(") && tok2->astParent()->isCast())
+    if (tok2 && tok2->isCpp() && tok2->isKeyword() && endsWith(tok2->str(), "_cast"))
         tok2 = tok2->astParent()->next();
     if (!tok2)
         return No;
