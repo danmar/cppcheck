@@ -9886,6 +9886,19 @@ private:
               "    if (s.empty()) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6:16]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying. [redundantCopyLocalConst]\n", errout_str());
+
+        check("void f1(const std::string& s) {\n"
+              "    std::string s1 = s;\n"
+              "    (void)s1;\n"
+              "}\n"
+              "void f2() {\n"
+              "    const std::string s;\n"
+              "    std::string s1 = s;\n"
+              "    (void)s1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n"
+                      "[test.cpp:7:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
+                      errout_str());
     }
 
     void checkNegativeShift() {
