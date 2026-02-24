@@ -1157,7 +1157,7 @@ public:
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
-    Scope *findInNestedListRecursive(const std::string & name);
+    const Scope *findInNestedListRecursive(const std::string & name) const;
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,

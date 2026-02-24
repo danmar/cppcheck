@@ -706,10 +706,10 @@ void CheckBufferOverrun::bufferOverflowError(const Token *tok, const ValueFlow::
 
 void CheckBufferOverrun::arrayIndexThenCheck()
 {
-    if (!mSettings->severity.isEnabled(Severity::portability))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    logChecker("CheckBufferOverrun::arrayIndexThenCheck");
+    logChecker("CheckBufferOverrun::arrayIndexThenCheck"); // style
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {

@@ -105,8 +105,9 @@ int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, 
 }
 
 
-CheckThread::CheckThread(ThreadResult &result) :
-    mResult(result)
+CheckThread::CheckThread(ThreadResult &result, int threadIndex)
+    : mResult(result)
+    , mThreadIndex(threadIndex)
 {}
 
 void CheckThread::setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs)
@@ -147,9 +148,14 @@ void CheckThread::run()
     while (file && mState == Running) {
         const std::string& fname = file->spath();
         qDebug() << "Checking file" << QString::fromStdString(fname);
+
+        const Details details{ mThreadIndex, QString::fromStdString(fname), QTime::currentTime(), };
+        emit startCheck(details);
+
         cppcheck.check(*file);
         runAddonsAndTools(mSettings, nullptr, QString::fromStdString(fname));
-        emit fileChecked(QString::fromStdString(fname));
+
+        emit finishCheck(details);
 
         if (mState == Running)
             mResult.getNextFile(file);
@@ -160,9 +166,15 @@ void CheckThread::run()
     while (fileSettings && mState == Running) {
         const std::string& fname = fileSettings->filename();
         qDebug() << "Checking file" << QString::fromStdString(fname);
-        cppcheck.check(*fileSettings);
+
+        const Details details{ mThreadIndex, QString::fromStdString(fname), QTime::currentTime(), };
+        emit startCheck(details);
+
+        cppcheck.check(*file);
         runAddonsAndTools(mSettings, fileSettings, QString::fromStdString(fname));
-        emit fileChecked(QString::fromStdString(fname));
+
+        emit finishCheck(details);
+
 
         if (mState == Running)
             mResult.getNextFileSettings(fileSettings);
@@ -486,3 +498,4 @@ QString CheckThread::clangTidyCmd()
 
     return QString();
 }
+

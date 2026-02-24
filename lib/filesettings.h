@@ -34,6 +34,9 @@
 class FileWithDetails
 {
 public:
+    /**
+     * @throws std::runtime_error thrown if given path is empty
+     */
     FileWithDetails(std::string path, Standards::Language lang, std::size_t size)
         : mLang(lang)
         , mSize(size)

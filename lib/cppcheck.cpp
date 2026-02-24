@@ -1316,6 +1316,8 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig)
 {
+    const ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, tokenizer.list.getSourceFilePath(), "Run checkers");
+
     CheckUnusedFunctions unusedFunctionsChecker;
 
     // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
@@ -1513,6 +1515,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     for (const AddonInfo &addonInfo : mSettings.addonInfos) {
         if (isCtuInfo && addonInfo.name != "misra" && !addonInfo.ctu)
             continue;
+
+        ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, files.front(), "addon:" + addonInfo.name + (isCtuInfo ? " (ctu)" : ""));
 
         std::vector<picojson::value> results;
 

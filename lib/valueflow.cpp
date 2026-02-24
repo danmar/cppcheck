@@ -4531,7 +4531,7 @@ struct ConditionHandler {
                 }
 
                 // Variable changed in loop code
-                const Token* const start = top;
+                const Token* const start = top->strAt(-1) == "for" ? top->astOperand2() : top; // skip init statement
                 const Token* const block = top->link()->next();
                 const Token* const end = block->link();
 
@@ -5958,9 +5958,12 @@ static Token* findStartToken(const Variable* var, Token* start, const Library& l
     }))
         return first->previous();
     // Compute the outer scope
-    while (scope && scope->nestedIn != var->scope())
+    while (scope && scope->nestedIn != var->scope()) {
+        if (scope->type == ScopeType::eLambda && !Token::simpleMatch(scope->bodyEnd, "} ("))
+            return start;
         scope = scope->nestedIn;
-    if (!scope)
+    }
+    if (!scope || (scope->type == ScopeType::eLambda && !Token::simpleMatch(scope->bodyEnd, "} (")))
         return start;
     auto* tok = const_cast<Token*>(scope->bodyStart);
     if (!tok)
@@ -6491,7 +6494,7 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
             if (args.size() == 1 && args[0]->tokType() == Token::Type::eString)
                 return {makeContainerSizeValue(Token::getStrLength(args[0]), known)};
             if (args.size() == 1 && args[0]->variable() && args[0]->variable()->isArray() &&
-                args[0]->variable()->isConst() && args[0]->variable()->dimensions().size() == 1)
+                args[0]->variable()->isConst() && args[0]->variable()->dimensions().size() == 1 && args[0]->variable()->dimensions()[0].known)
                 return {makeContainerSizeValue(args[0]->variable()->dimensions()[0].num, known)};
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
@@ -7207,7 +7210,9 @@ struct ValueFlowPassRunner {
         std::size_t n = state.settings.vfOptions.maxIterations;
         while (n > 0 && values != getTotalValues()) {
             values = getTotalValues();
+            const std::string passnum = std::to_string(state.settings.vfOptions.maxIterations - n + 1);
             if (std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
+                ProgressReporter progressReporter(state.errorLogger, state.settings.reportProgress >= 0, state.tokenlist.getSourceFilePath(), std::string("ValueFlow::") + pass->name() + (' ' + passnum));
                 return run(pass);
             }))
                 return true;
@@ -7351,6 +7356,8 @@ void ValueFlow::setValues(TokenList& tokenlist,
                           const Settings& settings,
                           TimerResultsIntf* timerResults)
 {
+    ProgressReporter progressReporter(errorLogger, settings.reportProgress, tokenlist.getSourceFilePath(), "ValueFlow");
+
     for (Token* tok = tokenlist.front(); tok; tok = tok->next())
         tok->clearValueFlow();
 

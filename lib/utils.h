@@ -281,6 +281,9 @@ bool strToInt(const std::string& str, T &num, std::string* err = nullptr)
     return true;
 }
 
+/**
+ * @throws std::runtime_error thrown if conversion failed
+ */
 template<typename T>
 T strToInt(const std::string& str)
 {
