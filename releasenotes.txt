@@ -15,11 +15,14 @@ GUI:
 
 Changed interface:
 - removed CMake option "DISABLE_CRTDBG_MAP_ALLOC"
+- The "unspecified" platform has been deprecated and will be removed in a future version. It is also now identical to 'native' (i.e. char type signedness based on compiler instead of unknown).
+-
 -
 
 Infrastructure & dependencies:
 -
 
 Other:
+- The possibility of an unknown signedness of the char type in a platform definition has been removed.
 - The built-in "win*" and "unix*" platforms will now default to signed char type instead of unknown signedness. If you require unsigned chars please specify "--funsigned-char"
 -

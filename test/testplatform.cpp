@@ -56,9 +56,9 @@ private:
         friend class TestPlatform;
     };
 
-    static bool readPlatform(PlatformTest& platform, const char* xmldata) {
+    static bool readPlatform(PlatformTest& platform, const char* xmldata, std::string& errmsg) {
         tinyxml2::XMLDocument doc;
-        return (doc.Parse(xmldata) == tinyxml2::XML_SUCCESS) && platform.loadFromXmlDocument(&doc);
+        return (doc.Parse(xmldata) == tinyxml2::XML_SUCCESS) && platform.loadFromXmlDocument(&doc, errmsg);
     }
 
     void empty() const {
@@ -66,7 +66,9 @@ private:
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n<platform/>";
         PlatformTest platform;
         // TODO: this should fail - platform files need to be complete
-        TODO_ASSERT(!readPlatform(platform, xmldata));
+        std::string errmsg;
+        TODO_ASSERT(!readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("", errmsg);
     }
 
     void valid_config_win32a() const {
@@ -229,7 +231,10 @@ private:
                                    "  </sizeof>\n"
                                    " </platform>";
         PlatformTest platform;
-        ASSERT(readPlatform(platform, xmldata));
+        std::string errmsg;
+        ASSERT(readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("", errmsg);
+        ASSERT_EQUALS("", errmsg);
         ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(!platform.isWindows());
         ASSERT_EQUALS(8, platform.char_bit);
@@ -274,7 +279,9 @@ private:
                                    "  </sizeof>\n"
                                    " </platform>";
         PlatformTest platform;
-        ASSERT(readPlatform(platform, xmldata));
+        std::string errmsg;
+        ASSERT(readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("", errmsg);
         ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(platform.isWindows());
         ASSERT_EQUALS(20, platform.char_bit);
@@ -320,7 +327,9 @@ private:
                                    " </platform>";
         PlatformTest platform;
         // TODO: needs to fail - files need to be complete
-        TODO_ASSERT(!readPlatform(platform, xmldata));
+        std::string errmsg;
+        TODO_ASSERT(!readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("", errmsg);
     }
 
     void valid_config_file_4() const {
@@ -330,7 +339,7 @@ private:
                                    "<platform>\n"
                                    "  <windows>true</windows>\n"
                                    "  <char_bit>0</char_bit>\n"
-                                   "  <default-sign>z</default-sign>\n"
+                                   "  <default-sign>s</default-sign>\n"
                                    "  <sizeof>\n"
                                    "    <bool>0</bool>\n"
                                    "    <short>0</short>\n"
@@ -346,11 +355,13 @@ private:
                                    "  </sizeof>\n"
                                    " </platform>";
         PlatformTest platform;
-        ASSERT(readPlatform(platform, xmldata));
+        std::string errmsg;
+        ASSERT(readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("", errmsg);
         ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(platform.isWindows());
         ASSERT_EQUALS(0, platform.char_bit);
-        ASSERT_EQUALS('z', platform.defaultSign);
+        ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(0, platform.sizeof_bool);
         ASSERT_EQUALS(0, platform.sizeof_short);
         ASSERT_EQUALS(0, platform.sizeof_int);
@@ -390,7 +401,9 @@ private:
                                    "  </sizeof>\n"
                                    " </platform>";
         PlatformTest platform;
-        ASSERT(!readPlatform(platform, xmldata));
+        std::string errmsg;
+        ASSERT(!readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("", errmsg);
     }
 
     void empty_elements() const {
@@ -416,7 +429,9 @@ private:
                                    "  </sizeof>\n"
                                    " </platform>";
         PlatformTest platform;
-        ASSERT(!readPlatform(platform, xmldata));
+        std::string errmsg;
+        ASSERT(!readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("'sizeof' failed", errmsg); // TODO: improve message
     }
 
     void default_platform() const {
@@ -447,15 +462,21 @@ private:
     void no_root_node() const {
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>";
         PlatformTest platform;
-        ASSERT(!readPlatform(platform, xmldata));
+        std::string errmsg;
+        ASSERT(!readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("no root node found", errmsg);
     }
 
     void wrong_root_node() const {
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platforms/>";
         PlatformTest platform;
-        ASSERT(!readPlatform(platform, xmldata));
+        std::string errmsg;
+        ASSERT(!readPlatform(platform, xmldata, errmsg));
+        ASSERT_EQUALS("invalid root node", errmsg);
     }
+
+    // TODO: test unspecified
 };
 
 REGISTER_TEST(TestPlatform)
