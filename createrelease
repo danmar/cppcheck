@@ -47,6 +47,9 @@
 #
 # Create 2.18.x branch
 # git checkout -b 2.18.x ; git push -u origin 2.18.x
+# in fork:
+#  * add upstream: git remote add upstream git@github.com:danmar/cppcheck.git
+#  * add branch:   git fetch upstream 2.19.x
 #
 # Release notes:
 # - ensure safety critical issues are listed properly
