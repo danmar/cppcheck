@@ -3342,8 +3342,12 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
     assert(defEnd != defStart);
     if (pred(defStart, defEnd))
         return true;
-    if (isUnknownType(defStart, defEnd))
+    if (isUnknownType(defStart, defEnd)) {
+        const Token* tok = function->token ? function->token->next() : function->tokenDef->next();
+        if (tok->valueType() && tok->valueType()->type >= ValueType::Type::RECORD)
+            return false;
         return unknown;
+    }
     return false;
 }
 

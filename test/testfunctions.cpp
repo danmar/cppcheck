@@ -86,6 +86,7 @@ private:
         TEST_CASE(checkMissingReturn5);
         TEST_CASE(checkMissingReturn6); // #13180
         TEST_CASE(checkMissingReturn7); // #14370 - FN try/catch
+        TEST_CASE(checkMissingReturnStdInt); // #14482 - FN std::int32_t
 
         // std::move for locar variable
         TEST_CASE(returnLocalStdMove1);
@@ -1916,6 +1917,11 @@ private:
               "    try { return readData(); }\n"
               "    catch (...) { }\n");
         ASSERT_EQUALS("[test.cpp:3:19]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
+    }
+
+    void checkMissingReturnStdInt() {// #14482 - FN
+        check("std::int32_t f() {}\n");
+        ASSERT_EQUALS("[test.cpp:1:19]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
     }
 
     // NRVO check
