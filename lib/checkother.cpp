@@ -3294,9 +3294,11 @@ static bool constructorTakesReference(const Scope * const classScope)
 
 static bool isLargeObject(const Variable* var, const Settings& settings)
 {
-    return var && !var->isGlobal() &&
-           (!var->type() || !var->type()->classScope ||
-            (var->valueType() && var->valueType()->getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * settings.platform.sizeof_pointer));
+    if (!var || var->isGlobal() || !var->valueType())
+        return false;
+    ValueType vt = *var->valueType();
+    vt.reference = Reference::None;
+    return vt.getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * settings.platform.sizeof_pointer;
 }
 
 //---------------------------------------------------------------------------
@@ -3332,12 +3334,14 @@ static bool checkFunctionReturnsRef(const Token* tok, const Settings& settings)
     return false;
 }
 
-static bool checkVariableAssignment(const Token* tok, const Settings& settings)
+static bool checkVariableAssignment(const Token* tok, const ValueType* vtLhs, const Settings& settings)
 {
     if (!Token::Match(tok, "%var% ;"))
         return false;
     const Variable* var = tok->variable();
     if (!var || !isLargeObject(var, settings))
+        return false;
+    if (!vtLhs || !vtLhs->isTypeEqual(var->valueType()))
         return false;
     if (findVariableChanged(tok->tokAt(2), tok->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(), /*globalvar*/ false, settings))
         return false;
@@ -3381,7 +3385,7 @@ void CheckOther::checkRedundantCopy()
         const Token* tok = startTok->next()->astOperand2();
         if (!tok)
             continue;
-        if (!checkFunctionReturnsRef(tok, *mSettings) && !checkVariableAssignment(tok, *mSettings))
+        if (!checkFunctionReturnsRef(tok, *mSettings) && !checkVariableAssignment(tok, var->valueType(), *mSettings))
             continue;
         redundantCopyError(startTok, startTok->str());
     }

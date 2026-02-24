@@ -9944,6 +9944,21 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7:17]: (performance, inconclusive) Use const reference for 'c' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
                       errout_str());
+
+        check("int f(const char* c) {\n" // #14530
+              "    std::string s = c;\n"
+              "    return s.rfind('.');\n"
+              "}\n"
+              "struct M {\n"
+              "    M(const std::array<double, 9>& a);\n"
+              "    double m[3][3];\n"
+              "    double trace() const;\n"
+              "};\n"
+              "double g(const std::array<double, 9>& a) {\n"
+              "    M m = a;\n"
+              "    return m.trace();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkNegativeShift() {
