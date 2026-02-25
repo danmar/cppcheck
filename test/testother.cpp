@@ -10613,6 +10613,21 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2:10]: (style) Variable 'a' can be declared as pointer to const [constVariablePointer]\n",
             errout_str());
+
+        check("std::string f() {\n" // #14534
+              "    std::string s = \"abc\";\n"
+              "    s = \"def\";\n"
+              "    return s;\n"
+              "}\n"
+              "const char* g() {\n"
+              "    const char* p = \"abc\";\n"
+              "    p = \"def\";\n"
+              "    return p;\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:2:19] -> [test.cpp:3:7]: (style) Redundant initialization for 's'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+            "[test.cpp:7:19] -> [test.cpp:8:7]: (style) Redundant initialization for 'p'. The initialized value is overwritten before it is read. [redundantInitialization]\n",
+            errout_str());
     }
 
     void redundantVarAssignment_struct() {
