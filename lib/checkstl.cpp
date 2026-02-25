@@ -1970,10 +1970,8 @@ static bool isc_strConcat(const Token* tok)
         const Token* dot = op->astOperand1();
         if (!Token::simpleMatch(dot, "."))
             continue;
-        if (!Token::Match(dot->astOperand1(), "%var%")) // TODO: function returning string
-            continue;
-        const Variable* var = dot->astOperand1()->variable();
-        if (!var || !var->isStlStringType())
+        const ValueType* vtObject = dot->astOperand1()->valueType();
+        if (!vtObject || !vtObject->container || !vtObject->container->stdStringLike)
             continue;
         if (!Token::Match(dot->astOperand2(), "c_str|data ( )"))
             continue;
@@ -1982,10 +1980,8 @@ static bool isc_strConcat(const Token* tok)
     }
     if (!cstr)
         return false;
-    const Token* strTok = (cstr == tok->astOperand1()) ? tok->astOperand2() : tok->astOperand1();
-    if (strTok->variable() && strTok->variable()->isStlStringType())
-        return true;
-    return strTok->valueType() && strTok->valueType()->container && strTok->valueType()->container->stdStringLike;
+    const ValueType* vtStr = (cstr == tok->astOperand1() ? tok->astOperand2() : tok->astOperand1())->valueType();
+    return vtStr && vtStr->container && vtStr->container->stdStringLike;
 }
 
 namespace {
