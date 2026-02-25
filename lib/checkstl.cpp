@@ -1968,7 +1968,7 @@ static bool isc_strConcat(const Token* tok)
         if (!Token::simpleMatch(op, "("))
             continue;
         const Token* dot = op->astOperand1();
-        if (!Token::simpleMatch(dot, "."))
+        if (!Token::simpleMatch(dot, ".") || !dot->astOperand1())
             continue;
         const ValueType* vtObject = dot->astOperand1()->valueType();
         if (!vtObject || !vtObject->container || !vtObject->container->stdStringLike)
