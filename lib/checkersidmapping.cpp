@@ -24,7 +24,7 @@ std::vector<checkers::IdMapping> checkers::idMappingAutosar{
     {"m0-1-1", "unreachableCode,duplicateBreak"},
     {"m0-1-2", "unsignedLessThanZero"},
     {"m0-1-3", "unusedVariable,unusedStructMember"},
-    {"a0-1-1", "unreadVariable,unusedValue,redundantAssignment"},
+    {"a0-1-1", "unreadVariable,redundantAssignment"},
     {"m0-1-9", "redundantAssignment,redundantInitialization"},
     {"m0-1-10", "unusedFunction"},
     {"m0-2-1", "overlappingWriteUnion,overlappingWriteFunction"},

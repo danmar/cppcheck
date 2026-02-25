@@ -395,7 +395,6 @@ static const std::set<std::string> autosarCheckers{
     "unsignedLessThanZero",
     "unusedFunction",
     "unusedStructMember",
-    "unusedValue",
     "unusedVariable",
     "useInitializationList",
     "variableScope",
