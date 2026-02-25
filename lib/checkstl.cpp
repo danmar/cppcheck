@@ -1959,6 +1959,34 @@ static bool isLocal(const Token *tok)
     return var && !var->isStatic() && var->isLocal();
 }
 
+static bool isc_strConcat(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "+"))
+        return false;
+    const Token* cstr = nullptr;
+    for (const Token* op : { tok->astOperand1(), tok->astOperand2() }) {
+        if (!Token::simpleMatch(op, "("))
+            continue;
+        const Token* dot = op->astOperand1();
+        if (!Token::simpleMatch(dot, "."))
+            continue;
+        if (!Token::Match(dot->astOperand1(), "%var%")) // TODO: function returning string
+            continue;
+        const Variable* var = dot->astOperand1()->variable();
+        if (!var || !var->isStlStringType())
+            continue;
+        if (!Token::Match(dot->astOperand2(), "c_str|data ( )"))
+            continue;
+        cstr = op;
+    }
+    if (!cstr)
+        return false;
+    const Token* strTok = (cstr == tok->astOperand1()) ? tok->astOperand2() : tok->astOperand1();
+    if (strTok->variable() && strTok->variable()->isStlStringType())
+        return true;
+    return strTok->valueType() && strTok->valueType()->container && strTok->valueType()->container->stdStringLike;
+}
+
 namespace {
     const std::set<std::string> stl_string_stream = {
         "istringstream", "ostringstream", "stringstream", "wstringstream"
@@ -2072,9 +2100,7 @@ void CheckStl::string_c_str()
                        tok->variable() && (tok->variable()->isStlStringType() || tok->variable()->isStlStringViewType()) &&
                        tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType()) {
                 string_c_strConstructor(tok, tok->variable()->getTypeName());
-            } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER &&
-                       ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable() && tok->previous()->variable()->isStlStringType()) ||
-                        (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable() && tok->tokAt(-5)->variable()->isStlStringType()))) {
+            else if (printPerformance && isc_strConcat(tok)) {
                 string_c_strConcat(tok);
             } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::Match(tok->astOperand2()->astOperand1(), ". c_str|data ( )")) {
                 const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
