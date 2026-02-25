@@ -4680,6 +4680,22 @@ private:
               "    return s->x.c_str();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("std::string f(const std::string& s) {\n" // #14533
+              "    auto x = std::string(\"abc\") + s.c_str();\n"
+              "    auto y = s.c_str() + std::string(\"def\");\n"
+              "    return x + y;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:33]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant. [stlcstrConcat]\n"
+                      "[test.cpp:3:24]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant. [stlcstrConcat]\n",
+                      errout_str());
+
+        check("std::string get();\n"
+              "std::string f(const std::string& s) {\n"
+              "    return get() + s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:18]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant. [stlcstrConcat]\n",
+                      errout_str());
     }
 
     void uselessCalls() {
