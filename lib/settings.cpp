@@ -511,7 +511,6 @@ static const std::set<std::string> certCppCheckers{
     "uninitStructMember",
     "uninitdata",
     "uninitvar",
-    "useAfterFree",
     "useClosedFile",
     "virtualCallInConstructor",
     "virtualDestructor",

@@ -104,7 +104,7 @@ std::vector<checkers::IdMapping> checkers::idMappingCertCpp{
     {"EXP52", "sizeofCalculation"},
     {"EXP53", "uninitvar,uninitdata,uninitStructMember"},
     {"EXP54", "uninitvar,danglingLifetime,danglingReference,danglingTemporaryLifetime,danglingTempReference,returnDanglingLifetime"},
-    {"EXP61", "danglingLifetime,danglingReference,danglingTemporaryLifetime,danglingTempReference,returnDanglingLifetime,useAfterFree"},
+    {"EXP61", "danglingLifetime,danglingReference,danglingTemporaryLifetime,danglingTempReference,returnDanglingLifetime,deallocuse,deallocret"},
     {"EXP63", "accessMoved"},
     {"FIO50", "IOWithoutPositioning"},
     {"MEM50", "deallocuse"},
