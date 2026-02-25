@@ -95,7 +95,7 @@ void CheckExceptionSafety::destructorsError(const Token * const tok, const std::
 
 void CheckExceptionSafety::deallocThrow()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("exceptDeallocThrow"))
         return;
 
     logChecker("CheckExceptionSafety::deallocThrow"); // warning

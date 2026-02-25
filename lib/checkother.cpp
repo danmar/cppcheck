@@ -415,7 +415,7 @@ void CheckOther::warningDangerousTypeCast()
     // Only valid on C++ code
     if (!mTokenizer->isCPP())
         return;
-    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("cstyleCast"))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("dangerousTypeCast"))
         return;
 
     logChecker("CheckOther::warningDangerousTypeCast"); // warning,c++
