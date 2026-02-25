@@ -631,7 +631,7 @@ void CheckOther::checkRedundantAssignment()
                                   [&](const Token *rhs) {
                         if (Token::simpleMatch(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
-                        if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
+                        if (Token::Match(rhs, "%num%|%name%") && !rhs->varId())
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, ":: %name%") && rhs->hasKnownIntValue())
                             return ChildrenToVisit::none;
