@@ -1978,6 +1978,7 @@ static bool isc_strConcat(const Token* tok)
         if (!Token::Match(dot->astOperand2(), "c_str|data ( )"))
             continue;
         cstr = op;
+        break;
     }
     if (!cstr)
         return false;
@@ -2100,7 +2101,7 @@ void CheckStl::string_c_str()
                        tok->variable() && (tok->variable()->isStlStringType() || tok->variable()->isStlStringViewType()) &&
                        tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType()) {
                 string_c_strConstructor(tok, tok->variable()->getTypeName());
-            else if (printPerformance && isc_strConcat(tok)) {
+            } else if (printPerformance && isc_strConcat(tok)) {
                 string_c_strConcat(tok);
             } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::Match(tok->astOperand2()->astOperand1(), ". c_str|data ( )")) {
                 const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
