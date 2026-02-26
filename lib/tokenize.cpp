@@ -1043,7 +1043,7 @@ void Tokenizer::simplifyTypedef()
                 if (t != ts.nameToken())
                     existing_data_type += t->str() + " ";
             }
-            numberOfTypedefs[ts.name()].insert(existing_data_type);
+            numberOfTypedefs[ts.name()].emplace(std::move(existing_data_type));
             continue;
         }
     }

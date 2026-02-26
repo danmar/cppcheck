@@ -104,7 +104,7 @@ std::string ImportProject::collectArgs(const std::string &cmd, std::vector<std::
         return "Missing closing quote in command string";
 
     if (!arg.empty())
-        args.push_back(arg);
+        args.push_back(std::move(arg));
 
     return "";
 }
