@@ -389,6 +389,8 @@ namespace simplecpp {
          */
         void constFoldQuestionOp(Token *&tok1);
 
+        void simpleSquash(Token *&tok, const std::string & result);
+        void squashTokens(Token *&tok, const std::set<std::string> & breakPoints, bool forwardDirection, const std::string & result);
         std::string readUntil(Stream &stream, const Location &location, char start, char end, OutputList *outputList);
         void lineDirective(unsigned int fileIndex, unsigned int line, Location &location);
 
