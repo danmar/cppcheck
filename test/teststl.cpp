@@ -4703,6 +4703,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:14]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant. [stlcstrConcat]\n",
                       errout_str());
+        
+        check("std::string get();\n"
+              "std::string f(std::string & s) {\n"
+              "    s = get().c_str();\n"
+              "    std::string s2{ get().c_str() };\n"
+              "    return s2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:5]: (performance) Assigning the result of c_str() to a std::string is slow and redundant. [stlcstrAssignment]\n"
+                      "[test.cpp:4:17]: (performance) Constructing a std::string from the result of c_str() is slow and redundant. [stlcstrConstructor]\n",
+                      errout_str());
     }
 
     void uselessCalls() {
