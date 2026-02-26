@@ -327,7 +327,7 @@ static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppres
 
         std::list<::ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty()) {
-            callStack.emplace_back(s.fileName, s.lineNumber, 0);
+            callStack.emplace_back(s.fileName, s.lineNumber == -1 ? 0 : s.lineNumber, 0); // TODO: get rid of s.lineNumber == -1 hack
         }
         const std::string unmatchedSuppressionId = s.isPolyspace ? "unmatchedPolyspaceSuppression" : "unmatchedSuppression";
         errorLogger.reportErr(::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, unmatchedSuppressionId, Certainty::normal));

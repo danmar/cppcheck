@@ -542,7 +542,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         "uninitvar:test.cpp"));
-        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:0:0]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
         // suppress all for this file only
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -558,7 +558,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         "*:test.cpp"));
-        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: * [unmatchedSuppression]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:0:0]: (information) Unmatched suppression: * [unmatchedSuppression]\n", errout_str());
 
         // suppress uninitvar for this file and line
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"

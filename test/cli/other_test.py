@@ -3371,11 +3371,10 @@ def test_suppress_unmatched_wildcard(tmp_path):  # #13660
     exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
-    # TODO: invalid locations - see #13659
     assert stderr.splitlines() == [
-        'test*.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
-        'test*.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
-        'tes?.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]'
+        'test*.c:0:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'test*.c:0:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
+        'tes?.c:0:0: information: Unmatched suppression: id2 [unmatchedSuppression]'
     ]
 
 
@@ -3400,12 +3399,11 @@ def test_suppress_unmatched_wildcard_unchecked(tmp_path):
     exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
-    # TODO: invalid locations - see #13659
     assert stderr.splitlines() == [
-        'test*.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
-        'tes?.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
-        '*:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
-        'test*.c:-1:0: information: Unmatched suppression: * [unmatchedSuppression]'
+        'test*.c:0:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'tes?.c:0:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        '*:0:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
+        'test*.c:0:0: information: Unmatched suppression: * [unmatchedSuppression]'
     ]
 
 
@@ -3859,12 +3857,12 @@ error2:lib\\test.c
     ret, stdout, stderr = cppcheck(args)
     assert stdout == ''
     assert stderr.splitlines() == [
-        f'{lib_file}:-1:0: information: Unmatched suppression: error [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
+        f'{lib_file}:0:0: information: Unmatched suppression: error [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
     ]
     assert ret == 0, stdout
 
