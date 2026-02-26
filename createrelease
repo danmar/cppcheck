@@ -12,6 +12,10 @@
 # create jira issue "CI: update cppcheck binary"
 # cd ~/cppchecksolutions/addon/tools && python3 ci-update-cppcheck.py
 #
+# update mappings..
+# cd ~/cppchecksolutions/addon/coverage
+# CPPCHECK_REPO=~/cppchecksolutions/cppcheck python3 coverage.py --code
+#
 # check every isPremiumEnabled call: TODO write helper script
 # - every id should be in --errorlist
 #   git grep 'isPremiumEnabled[(]"' | sed 's/.*isPremiumEnabled[(]"//' | sed 's/".*//' | sort | uniq > ids1.txt
