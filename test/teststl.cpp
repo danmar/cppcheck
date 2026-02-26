@@ -4703,7 +4703,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:14]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant. [stlcstrConcat]\n",
                       errout_str());
-        
+
         check("std::string get();\n"
               "std::string f(std::string & s) {\n"
               "    s = get().c_str();\n"
