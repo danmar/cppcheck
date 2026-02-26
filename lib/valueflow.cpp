@@ -3682,7 +3682,7 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     continue;
                 if (vartok->exprId() == 0)
                     continue;
-                if (Token::Match(tok, "<<|>>|/") && !astIsLHS(vartok))
+                if (Token::Match(tok, "<<|>>|/|-") && !astIsLHS(vartok))
                     continue;
                 if (Token::Match(tok, "<<|>>|^|+|-|%or%") && constant->intvalue != 0)
                     continue;
