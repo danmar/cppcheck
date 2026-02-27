@@ -343,7 +343,7 @@ void CheckClass::constructors()
                 }
             }
         }
-        
+
         if (scope->numConstructors == 0) {
 
             // Mark all variables not used
@@ -370,7 +370,6 @@ void CheckClass::constructors()
                 if (isInitialized(usage, FunctionType::eConstructor))
                     continue;
 
-                // Is there missing member copy in copy/move constructor or assignment operator?
                 const Variable& var = *usage.var;
                 if (diagVars.find(&var) == diagVars.end())
                     uninitVarError(scope->bodyStart, false, FunctionType::eConstructor, var.scope()->className, var.name(), false, false);
