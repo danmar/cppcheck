@@ -2545,8 +2545,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                     }
                 }
             } else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->str() == "(") { // range-based for-loop (C++11)
-                // TODO: We could additionally check what is done with the elements to avoid false negatives. Here we just rely on "const" keyword being used.
-                if (lhs->astParent()->strAt(1) != "const")
+                const Variable* loopVar = lhs->astOperand1()->variable();
+                if (!loopVar || !loopVar->valueType())
+                    return false;
+                if (!loopVar->valueType()->isConst(loopVar->valueType()->pointer))
                     return false;
             } else {
                 if (lhs->isAssignmentOp()) {
@@ -2748,15 +2750,17 @@ namespace { // avoid one-definition-rule violation
 
 void CheckClass::initializerListOrder()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("initializerList"))
-        return;
+    if (!mSettings->isPremiumEnabled("initializerList")) {
+        if (!mSettings->severity.isEnabled(Severity::style))
+            return;
 
-    // This check is not inconclusive.  However it only determines if the initialization
-    // order is incorrect.  It does not determine if being out of order causes
-    // a real error.  Out of order is not necessarily an error but you can never
-    // have an error if the list is in order so this enforces defensive programming.
-    if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
-        return;
+        // This check is not inconclusive.  However it only determines if the initialization
+        // order is incorrect.  It does not determine if being out of order causes
+        // a real error.  Out of order is not necessarily an error but you can never
+        // have an error if the list is in order so this enforces defensive programming.
+        if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
+            return;
+    }
 
     logChecker("CheckClass::initializerListOrder"); // style,inconclusive
 

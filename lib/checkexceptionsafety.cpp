@@ -95,7 +95,7 @@ void CheckExceptionSafety::destructorsError(const Token * const tok, const std::
 
 void CheckExceptionSafety::deallocThrow()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("exceptDeallocThrow"))
         return;
 
     logChecker("CheckExceptionSafety::deallocThrow"); // warning
@@ -257,7 +257,8 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
             tok = tok->linkAt(1);  // skip till start of catch clauses
         if (tok->str() == "throw")
             return tok;
-        if (tok->function() && Token::simpleMatch(tok->astParent(), "(")) {
+        if (tok->function() && (Token::simpleMatch(tok->astParent(), "(") ||
+                                (Token::simpleMatch(tok->astParent(), ".") && Token::simpleMatch(tok->astParent()->astParent(), "(")))) {
             const Function * called = tok->function();
             // check if called function has an exception specification
             if (called->isThrow() && called->throwArg)

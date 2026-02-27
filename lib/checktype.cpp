@@ -383,8 +383,12 @@ void CheckType::checkLongCast()
                     const ValueType *type = tok->astOperand1()->valueType();
                     if (type && checkTypeCombination(*type, *retVt, *mSettings) &&
                         type->pointer == 0U &&
-                        type->originalTypeName.empty())
-                        ret = tok;
+                        type->originalTypeName.empty()) {
+                        if (!tok->astOperand1()->hasKnownIntValue()) {
+                            ret = tok;
+                        } else if (!mSettings->platform.isIntValue(tok->astOperand1()->getKnownIntValue()))
+                            ret = tok;
+                    }
                 }
                 // All return statements must have problem otherwise no warning
                 if (ret != tok) {

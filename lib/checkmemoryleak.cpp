@@ -56,6 +56,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 {
     // What we may have...
     //     * var = (char *)malloc(10);
+    //     * var = static_cast<char *>(malloc(10));
     //     * var = new char[10];
     //     * var = strdup("hello");
     //     * var = strndup("hello", 3);
@@ -63,6 +64,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         tok2 = tok2->link();
         tok2 = tok2 ? tok2->next() : nullptr;
     }
+    if (tok2 && tok2->isCpp() && tok2->isKeyword() && endsWith(tok2->str(), "_cast"))
+        tok2 = tok2->astParent()->next();
     if (!tok2)
         return No;
     if (tok2->str() == "::")

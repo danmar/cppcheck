@@ -26,6 +26,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <ctime>
 #include <list>
 #include <set>
 #include <string>
@@ -284,6 +285,41 @@ public:
 
 private:
     static const std::set<std::string> mCriticalErrorIds;
+};
+
+/// RAII class for reporting progress messages
+class CPPCHECKLIB ProgressReporter {
+public:
+    ProgressReporter(ErrorLogger& e, int reportProgressInterval, std::string filename, std::string stage) :
+        mErrorLogger(e),
+        mReportProgressInterval(reportProgressInterval),
+        mFilename(std::move(filename)),
+        mStage(std::move(stage)) {
+        report(0);
+    }
+
+    ~ProgressReporter() {
+        mErrorLogger.reportProgress(mFilename, mStage.c_str(), 100);
+    }
+
+    void report(int value) {
+        if (mReportProgressInterval < 0 || value == mLastValue)
+            return;
+        const std::time_t t = std::time(nullptr);
+        if (t >= mLastTime + mReportProgressInterval) {
+            mErrorLogger.reportProgress(mFilename, mStage.c_str(), value);
+            mLastTime = t;
+            mLastValue = value;
+        }
+    }
+
+private:
+    ErrorLogger& mErrorLogger;
+    const int mReportProgressInterval;
+    const std::string mFilename;
+    const std::string mStage;
+    std::time_t mLastTime{0};
+    int mLastValue{-1};
 };
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */

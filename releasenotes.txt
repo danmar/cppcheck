@@ -15,6 +15,7 @@ GUI:
 
 Changed interface:
 - removed CMake option "DISABLE_CRTDBG_MAP_ALLOC"
+- CMake option "BUILD_TESTS" has been deprecated and will be removed in Cppcheck 2.22 - use "BUILD_TESTING" instead
 -
 
 Infrastructure & dependencies:
@@ -22,4 +23,5 @@ Infrastructure & dependencies:
 
 Other:
 - The built-in "win*" and "unix*" platforms will now default to signed char type instead of unknown signedness. If you require unsigned chars please specify "--funsigned-char"
+- bumped minimum required CMake version to 3.22
 -

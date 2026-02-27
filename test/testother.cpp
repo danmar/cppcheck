@@ -2746,7 +2746,9 @@ private:
         check("void f(std::string str) {\n"
               "    std::string s2 = str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1:20]: (performance) Function parameter 'str' should be passed by const reference. [passedByValue]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:17]: (performance, inconclusive) Use const reference for 's2' to avoid unnecessary data copying. [redundantCopyLocalConst]\n"
+                      "[test.cpp:1:20]: (performance) Function parameter 'str' should be passed by const reference. [passedByValue]\n",
+                      errout_str());
 
         check("void f(std::string str) {\n"
               "    std::string& s2 = str;\n"
@@ -4720,6 +4722,33 @@ private:
         ASSERT_EQUALS("[test.cpp:1:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:4:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
+
+        check("using fp_t = int (*)(int*);\n" // #14510
+              "fp_t g_fp;\n"
+              "struct S { fp_t m_fp; };\n"
+              "void g(fp_t);\n"
+              "S f(S* s) {\n"
+              "    g_fp = [](int* p) { return *p; };\n"
+              "    s->m_fp = [](int* p) { return *p; };\n"
+              "    g([](int* p) { return *p; });\n"
+              "    auto x = [](int* p) { return *p; };\n"
+              "    g(x);\n"
+              "    return { [](int* p) { return *p; } };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n"
+              "    int i = 0;\n"
+              "    auto x = [&]() { int* p = &i; if (*p) {} };\n"
+              "    x();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:27]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n", errout_str());
+
+        check("int f() {\n"
+              "    int i = 0;\n"
+              "    return [](int* p) { return *p; }(&i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:20]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n", errout_str());
     }
 
     void constArray() {
@@ -9928,6 +9957,58 @@ private:
               "    if (s.empty()) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6:16]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying. [redundantCopyLocalConst]\n", errout_str());
+
+        check("void f1(const std::string& s) {\n"
+              "    std::string s1 = s;\n"
+              "    (void)s1;\n"
+              "}\n"
+              "void f2() {\n"
+              "    const std::string s;\n"
+              "    std::string s1 = s;\n"
+              "    (void)s1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n"
+                      "[test.cpp:7:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
+                      errout_str());
+
+        check("struct S {\n"
+              "    std::string m;\n"
+              "    int f(const std::string& s);\n"
+              "};\n"
+              "int S::f(const std::string& s) {\n"
+              "    std::string c = s;\n"
+              "    m.clear();\n"
+              "    return c.size();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n"
+              "    std::string m;\n"
+              "    int f(std::string s);\n"
+              "};\n"
+              "int S::f(std::string s) {\n"
+              "    s += m;\n"
+              "    std::string c = s;\n"
+              "    m.clear();\n"
+              "    return c.size();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7:17]: (performance, inconclusive) Use const reference for 'c' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
+                      errout_str());
+
+        check("int f(const char* c) {\n" // #14530
+              "    std::string s = c;\n"
+              "    return s.rfind('.');\n"
+              "}\n"
+              "struct M {\n"
+              "    M(const std::array<double, 9>& a);\n"
+              "    double m[3][3];\n"
+              "    double trace() const;\n"
+              "};\n"
+              "double g(const std::array<double, 9>& a) {\n"
+              "    M m = a;\n"
+              "    return m.trace();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkNegativeShift() {
@@ -10596,6 +10677,21 @@ private:
               "}");
         ASSERT_EQUALS(
             "[test.cpp:2:10]: (style) Variable 'a' can be declared as pointer to const [constVariablePointer]\n",
+            errout_str());
+
+        check("std::string f() {\n" // #14534
+              "    std::string s = \"abc\";\n"
+              "    s = \"def\";\n"
+              "    return s;\n"
+              "}\n"
+              "const char* g() {\n"
+              "    const char* p = \"abc\";\n"
+              "    p = \"def\";\n"
+              "    return p;\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:2:19] -> [test.cpp:3:7]: (style) Redundant initialization for 's'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+            "[test.cpp:7:19] -> [test.cpp:8:7]: (style) Redundant initialization for 'p'. The initialized value is overwritten before it is read. [redundantInitialization]\n",
             errout_str());
     }
 

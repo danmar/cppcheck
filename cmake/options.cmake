@@ -57,13 +57,24 @@ if(BUILD_CORE_DLL AND NOT MSVC)
     message(FATAL_ERROR "Building of lib as DLL is only supported with Visual Studio")
 endif()
 option(BUILD_TESTS          "Build tests"                                                   OFF)
+if(DEFINED BUILD_TESTS)
+    message(WARNING "BUILD_TESTS has been deprecated and will be removed in Cppcheck 2.22 - please use BUILD_TESTING instead")
+    if(DEFINED BUILD_TESTING)
+        message(WARNING "BUILD_TESTS and BUILD_TESTING have been defined at the same time - ignoring BUILD_TESTS")
+    else()
+        set(BUILD_TESTING "${BUILD_TESTS}")
+    endif()
+elseif(NOT DEFINED BUILD_TESTING)
+    # disable tests by default - TODO: remove this
+    set(BUILD_TESTING OFF)
+endif()
 option(REGISTER_TESTS       "Register tests in CTest"                                       ON)
 option(ENABLE_CHECK_INTERNAL "Enable internal checks"                                       OFF)
 option(DISABLE_DMAKE        "Disable run-dmake dependencies"                                OFF)
 option(BUILD_MANPAGE        "Enable man target to build manpage"                            OFF)
 
 option(BUILD_CLI            "Build the CLI application"                                     ON)
-if(NOT BUILD_CLI AND BUILD_TESTS)
+if(NOT BUILD_CLI AND BUILD_TESTING)
     message(FATAL_ERROR "Building the tests requires the CLI to be build as well")
 endif()
 
@@ -113,14 +124,10 @@ option(ENABLE_CSA_ALPHA     "Enable Clang Static Analyzer alpha checkers for run
 # TODO: disable by default like make build?
 option(FILESDIR "Hard-coded directory for files to load from"                               OFF)
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.16")
-    set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
-    # need to disable the prologue or it will be treated like a system header and not emit any warnings
-    # see https://gitlab.kitware.com/cmake/cmake/-/issues/21219
-    set(CMAKE_PCH_PROLOGUE "")
-else()
-    set(CMAKE_DISABLE_PRECOMPILE_HEADERS On CACHE BOOL "Disable precompiled headers")
-endif()
+set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
+# need to disable the prologue or it will be treated like a system header and not emit any warnings
+# see https://gitlab.kitware.com/cmake/cmake/-/issues/21219
+set(CMAKE_PCH_PROLOGUE "")
 
 set(CMAKE_INCLUDE_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/include      CACHE PATH "Output directory for headers")
 set(CMAKE_LIB_DIRS_CONFIGCMAKE     ${CMAKE_INSTALL_PREFIX}/lib          CACHE PATH "Output directory for libraries")

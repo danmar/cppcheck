@@ -1674,6 +1674,7 @@ private:
         TEST_CASE(assign3);
         TEST_CASE(assign4); // #11019
         TEST_CASE(assign5);
+        TEST_CASE(assign6);
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -1953,6 +1954,15 @@ private:
               "    return s;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void assign6() {
+        check("struct S { S* p; };\n" // #14524
+              "void f() {\n"
+              "    S s;\n"
+              "    s.p = static_cast<S*>(malloc(sizeof(S)));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5:1]: (error) Memory leak: s.p [memleak]\n", errout_str());
     }
 
     void failedAllocation() {

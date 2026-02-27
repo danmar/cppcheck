@@ -3682,7 +3682,7 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     continue;
                 if (vartok->exprId() == 0)
                     continue;
-                if (Token::Match(tok, "<<|>>|/") && !astIsLHS(vartok))
+                if (Token::Match(tok, "<<|>>|/|-") && !astIsLHS(vartok))
                     continue;
                 if (Token::Match(tok, "<<|>>|^|+|-|%or%") && constant->intvalue != 0)
                     continue;
@@ -6494,7 +6494,7 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
             if (args.size() == 1 && args[0]->tokType() == Token::Type::eString)
                 return {makeContainerSizeValue(Token::getStrLength(args[0]), known)};
             if (args.size() == 1 && args[0]->variable() && args[0]->variable()->isArray() &&
-                args[0]->variable()->isConst() && args[0]->variable()->dimensions().size() == 1)
+                args[0]->variable()->isConst() && args[0]->variable()->dimensions().size() == 1 && args[0]->variable()->dimensions()[0].known)
                 return {makeContainerSizeValue(args[0]->variable()->dimensions()[0].num, known)};
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
@@ -7210,7 +7210,9 @@ struct ValueFlowPassRunner {
         std::size_t n = state.settings.vfOptions.maxIterations;
         while (n > 0 && values != getTotalValues()) {
             values = getTotalValues();
+            const std::string passnum = std::to_string(state.settings.vfOptions.maxIterations - n + 1);
             if (std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
+                ProgressReporter progressReporter(state.errorLogger, state.settings.reportProgress >= 0, state.tokenlist.getSourceFilePath(), std::string("ValueFlow::") + pass->name() + (' ' + passnum));
                 return run(pass);
             }))
                 return true;
@@ -7354,6 +7356,8 @@ void ValueFlow::setValues(TokenList& tokenlist,
                           const Settings& settings,
                           TimerResultsIntf* timerResults)
 {
+    ProgressReporter progressReporter(errorLogger, settings.reportProgress, tokenlist.getSourceFilePath(), "ValueFlow");
+
     for (Token* tok = tokenlist.front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
