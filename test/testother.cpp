@@ -2015,6 +2015,17 @@ private:
               "while (true);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n"
+              "    int y1 = 0;\n"
+              "    for (int i = 0; i < 3; ++i) {\n"
+              "        for(int j = 0; j < 3; ++j) {\n"
+              "                y1 = y1 + 1;\n"
+              "                dostuff(y1);\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
