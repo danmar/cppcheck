@@ -92,6 +92,7 @@ private:
         TEST_CASE(noConstructor13); // #9998
         TEST_CASE(noConstructor14); // #10770
         TEST_CASE(noConstructor15); // #5499
+        TEST_CASE(noConstructor16);
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
@@ -756,6 +757,13 @@ private:
               "    int i2;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'C::i2' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
+    }
+
+    void noConstructor16() {
+        check("struct S {\n"
+              "    int a = 0, b;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:1:10]: (warning) Member variable 'S::b' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
