@@ -760,10 +760,15 @@ private:
     }
 
     void noConstructor16() {
-        check("struct S {\n"
+        check("struct S {\n" // #14546
               "    int a = 0, b;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:1:10]: (warning) Member variable 'S::b' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
+
+        check("struct S {\n"
+              "    int a, b;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
