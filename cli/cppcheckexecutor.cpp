@@ -329,7 +329,7 @@ static std::vector<ErrorMessage> getUnmatchedSuppressions(const std::list<Suppre
 
         std::list<ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty()) {
-            callStack.emplace_back(s.fileName, s.lineNumber == -1 ? 0 : s.lineNumber, 0); // TODO: get rid of s.lineNumber == -1 hack
+            callStack.emplace_back(s.fileName, s.lineNumber == -1 ? 0 : s.lineNumber, s.column); // TODO: get rid of s.lineNumber == -1 hack
         }
         const std::string unmatchedSuppressionId = s.isPolyspace ? "unmatchedPolyspaceSuppression" : "unmatchedSuppression";
         errors.emplace_back(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, unmatchedSuppressionId, Certainty::normal);
