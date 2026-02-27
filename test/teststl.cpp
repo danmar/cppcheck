@@ -4713,6 +4713,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3:5]: (performance) Assigning the result of c_str() to a std::string is slow and redundant. [stlcstrAssignment]\n"
                       "[test.cpp:4:17]: (performance) Constructing a std::string from the result of c_str() is slow and redundant. [stlcstrConstructor]\n",
                       errout_str());
+
+        check("void f() {\n"
+              "    std::string s;\n"
+              "    auto a = + s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uselessCalls() {
