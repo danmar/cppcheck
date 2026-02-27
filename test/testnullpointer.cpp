@@ -997,11 +997,11 @@ private:
                       errout_str());
 
         check("int f(const int a[]) {\n" // #14544
-            "    int i = 0;\n"
-            "    if (!a)\n"
-            "        a = &i;\n"
-            "    return *a;\n"
-            "}\n");
+              "    int i = 0;\n"
+              "    if (!a)\n"
+              "        a = &i;\n"
+              "    return *a;\n"
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
