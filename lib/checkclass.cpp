@@ -116,6 +116,90 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
     mSymbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
 {}
 
+bool CheckClass::isInitialized(const CheckClass::Usage& usage, FunctionType funcType) const
+{
+    const Variable& var = *usage.var;
+
+    if (usage.assign || usage.init || var.isStatic())
+        return true;
+
+    if (!var.nameToken() || var.nameToken()->isAnonymous())
+        return true;
+
+    if (var.valueType() && var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
+        return true;
+
+    if (var.isConst() && funcType == FunctionType::eOperatorEqual) // We can't set const members in assignment operator
+        return true;
+
+    // Check if this is a class constructor
+    if (!var.isPointer() && !var.isPointerArray() && var.isClass() && funcType == FunctionType::eConstructor) {
+        // Unknown type so assume it is initialized
+        if (!var.type()) {
+            if (var.isStlType() && var.valueType() && var.valueType()->containerTypeToken) {
+                if (var.valueType()->type == ValueType::Type::ITERATOR)
+                {
+                    // needs initialization
+                }
+                else if (var.getTypeName() == "std::array") {
+                    const Token* ctt = var.valueType()->containerTypeToken;
+                    if (!ctt->isStandardType() &&
+                        (!ctt->type() || ctt->type()->needInitialization != Type::NeedInitialization::True) &&
+                        !mSettings->library.podtype(ctt->str())) // TODO: handle complex type expression
+                        return true;
+                }
+                else
+                    return true;
+            }
+            else
+                return true;
+        }
+
+        // Known type that doesn't need initialization or
+        // known type that has member variables of an unknown type
+        else if (var.type()->needInitialization != Type::NeedInitialization::True)
+            return true;
+    }
+
+    // Check if type can't be copied
+    if (!var.isPointer() && !var.isPointerArray() && var.typeScope()) {
+        if (funcType == FunctionType::eMoveConstructor) {
+            if (canNotMove(var.typeScope()))
+                return true;
+        }
+        else {
+            if (canNotCopy(var.typeScope()))
+                return true;
+        }
+    }
+    return false;
+}
+
+void CheckClass::handleUnionMembers(std::vector<Usage>& usageList)
+{
+    // Assign 1 union member => assign all union members
+    for (const Usage& usage : usageList) {
+        const Variable& var = *usage.var;
+        if (!usage.assign && !usage.init)
+            continue;
+        const Scope* varScope1 = var.nameToken()->scope();
+        while (varScope1->type == ScopeType::eStruct)
+            varScope1 = varScope1->nestedIn;
+        if (varScope1->type == ScopeType::eUnion) {
+            for (Usage& usage2 : usageList) {
+                const Variable& var2 = *usage2.var;
+                if (usage2.assign || usage2.init || var2.isStatic())
+                    continue;
+                const Scope* varScope2 = var2.nameToken()->scope();
+                while (varScope2->type == ScopeType::eStruct)
+                    varScope2 = varScope2->nestedIn;
+                if (varScope1 == varScope2)
+                    usage2.assign = true;
+            }
+        }
+    }
+}
+
 //---------------------------------------------------------------------------
 // ClassCheck: Check that all class constructors are ok.
 //---------------------------------------------------------------------------
@@ -145,6 +229,7 @@ void CheckClass::constructors()
         });
 
         // There are no constructors.
+        std::set<const Variable*> diagVars;
         if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
             // If there is a private variable, there should be a constructor..
             int needInit = 0, haveInit = 0;
@@ -163,8 +248,10 @@ void CheckClass::constructors()
                 if (haveInit == 0)
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                 else
-                    for (const Variable* uv : uninitVars)
+                    for (const Variable* uv : uninitVars) {
                         uninitVarError(uv->typeStartToken(), uv->scope()->className, uv->name());
+                        diagVars.emplace(uv);
+                    }
             }
         }
 
@@ -201,85 +288,15 @@ void CheckClass::constructors()
             std::list<const Function *> callstack;
             initializeVarList(func, callstack, scope, usageList);
 
-            // Assign 1 union member => assign all union members
-            for (const Usage &usage : usageList) {
-                const Variable& var = *usage.var;
-                if (!usage.assign && !usage.init)
-                    continue;
-                const Scope* varScope1 = var.nameToken()->scope();
-                while (varScope1->type == ScopeType::eStruct)
-                    varScope1 = varScope1->nestedIn;
-                if (varScope1->type == ScopeType::eUnion) {
-                    for (Usage &usage2 : usageList) {
-                        const Variable& var2 = *usage2.var;
-                        if (usage2.assign || usage2.init || var2.isStatic())
-                            continue;
-                        const Scope* varScope2 = var2.nameToken()->scope();
-                        while (varScope2->type == ScopeType::eStruct)
-                            varScope2 = varScope2->nestedIn;
-                        if (varScope1 == varScope2)
-                            usage2.assign = true;
-                    }
-                }
-            }
+            handleUnionMembers(usageList);
 
             // Check if any variables are uninitialized
             for (const Usage &usage : usageList) {
-                const Variable& var = *usage.var;
-
-                if (usage.assign || usage.init || var.isStatic())
+                if (isInitialized(usage, func.type))
                     continue;
-
-                if (!var.nameToken() || var.nameToken()->isAnonymous())
-                    continue;
-
-                if (var.valueType() && var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
-                    continue;
-
-                if (var.isConst() && func.isOperator()) // We can't set const members in assignment operator
-                    continue;
-
-                // Check if this is a class constructor
-                if (!var.isPointer() && !var.isPointerArray() && var.isClass() && func.type == FunctionType::eConstructor) {
-                    // Unknown type so assume it is initialized
-                    if (!var.type()) {
-                        if (var.isStlType() && var.valueType() && var.valueType()->containerTypeToken) {
-                            if (var.valueType()->type == ValueType::Type::ITERATOR)
-                            {
-                                // needs initialization
-                            }
-                            else if (var.getTypeName() == "std::array") {
-                                const Token* ctt = var.valueType()->containerTypeToken;
-                                if (!ctt->isStandardType() &&
-                                    (!ctt->type() || ctt->type()->needInitialization != Type::NeedInitialization::True) &&
-                                    !mSettings->library.podtype(ctt->str())) // TODO: handle complex type expression
-                                    continue;
-                            }
-                            else
-                                continue;
-                        }
-                        else
-                            continue;
-                    }
-
-                    // Known type that doesn't need initialization or
-                    // known type that has member variables of an unknown type
-                    else if (var.type()->needInitialization != Type::NeedInitialization::True)
-                        continue;
-                }
-
-                // Check if type can't be copied
-                if (!var.isPointer() && !var.isPointerArray() && var.typeScope()) {
-                    if (func.type == FunctionType::eMoveConstructor) {
-                        if (canNotMove(var.typeScope()))
-                            continue;
-                    } else {
-                        if (canNotCopy(var.typeScope()))
-                            continue;
-                    }
-                }
 
                 // Is there missing member copy in copy/move constructor or assignment operator?
+                const Variable& var = *usage.var;
                 bool missingCopy = false;
 
                 // Don't warn about unknown types in copy constructors since we
@@ -324,6 +341,39 @@ void CheckClass::constructors()
                     else
                         uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, false);
                 }
+            }
+        }
+        
+        if (scope->numConstructors == 0) {
+
+            // Mark all variables not used
+            clearAllVar(usageList);
+
+            // Variables with default initializers
+            bool hasAnyDefaultInit = false;
+            for (Usage& usage : usageList) {
+                const Variable& var = *usage.var;
+
+                // check for C++11 initializer
+                if (var.hasDefault()) {
+                    usage.init = true;
+                    hasAnyDefaultInit = true;
+                }
+            }
+            if (!hasAnyDefaultInit)
+                continue;
+
+            handleUnionMembers(usageList);
+
+            // Check if any variables are uninitialized
+            for (const Usage& usage : usageList) {
+                if (isInitialized(usage, FunctionType::eConstructor))
+                    continue;
+
+                // Is there missing member copy in copy/move constructor or assignment operator?
+                const Variable& var = *usage.var;
+                if (diagVars.find(&var) == diagVars.end())
+                    uninitVarError(scope->bodyStart, false, FunctionType::eConstructor, var.scope()->className, var.name(), false, false);
             }
         }
     }
