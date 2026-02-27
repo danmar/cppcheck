@@ -2499,7 +2499,7 @@ bool isMutableExpression(const Token* tok)
     if (const Variable* var = tok->variable()) {
         if (var->nameToken() == tok)
             return false;
-        if (!var->isPointer() && var->isConst())
+        if (var->isConst() && !var->isPointer() && (!var->isArray() || !var->isArgument()))
             return false;
     }
     return true;
