@@ -1974,7 +1974,7 @@ static bool isc_strCall(const Token* tok)
 
 static bool isc_strConcat(const Token* tok)
 {
-    if (!Token::simpleMatch(tok, "+"))
+    if (!Token::simpleMatch(tok, "+") || !tok->isBinaryOp())
         return false;
     const Token* cstr = nullptr;
     for (const Token* op : { tok->astOperand1(), tok->astOperand2() }) {
