@@ -269,10 +269,10 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         {
             auto it = filesResolved.begin();
             while (it != filesResolved.end()) {
-                const std::string& absname = Path::getAbsoluteFilePath(it->spath());
+                const std::string& absname = it->abspath();
                 // TODO: log if duplicated files were dropped
                 filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const FileWithDetails& entry) {
-                    return Path::getAbsoluteFilePath(entry.spath()) == absname;
+                    return entry.abspath() == absname;
                 }), filesResolved.end());
                 ++it;
             }

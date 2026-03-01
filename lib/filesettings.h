@@ -50,6 +50,7 @@ public:
     {
         mPath = std::move(path);
         mPathSimplified = Path::simplifyPath(mPath);
+        mPathAbsolute = Path::getAbsoluteFilePath(mPath);
     }
 
     const std::string& path() const
@@ -60,6 +61,11 @@ public:
     const std::string& spath() const
     {
         return mPathSimplified;
+    }
+
+    const std::string& abspath() const
+    {
+        return mPathAbsolute;
     }
 
     std::size_t size() const
@@ -89,6 +95,7 @@ public:
 private:
     std::string mPath;
     std::string mPathSimplified;
+    std::string mPathAbsolute;
     Standards::Language mLang = Standards::Language::None;
     std::size_t mSize;
     std::size_t mFsFileId{0};
