@@ -50,7 +50,7 @@ public:
     {
         mPath = std::move(path);
         mPathSimplified = Path::simplifyPath(mPath);
-        mPathAbsolute = Path::getAbsoluteFilePath(mPath);
+        mPathAbsolute.clear();
     }
 
     const std::string& path() const
@@ -65,6 +65,9 @@ public:
 
     const std::string& abspath() const
     {
+        // use delayed resolution as it will fail for files which do not exist
+        if (mPathAbsolute.empty())
+            mPathAbsolute = Path::getAbsoluteFilePath(mPath);
         return mPathAbsolute;
     }
 
@@ -95,7 +98,7 @@ public:
 private:
     std::string mPath;
     std::string mPathSimplified;
-    std::string mPathAbsolute;
+    mutable std::string mPathAbsolute;
     Standards::Language mLang = Standards::Language::None;
     std::size_t mSize;
     std::size_t mFsFileId{0};
