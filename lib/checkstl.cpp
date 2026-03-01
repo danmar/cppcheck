@@ -2039,8 +2039,8 @@ void CheckStl::string_c_str()
                         string_c_strAssignment(tok, tok->variable()->getTypeName());
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
-                const auto range = c_strFuncParam.equal_range(tok->function());
-                for (std::multimap<const Function*, StrArg>::const_iterator i = range.first; i != range.second; ++i) {
+                const auto range = utils::as_const(c_strFuncParam).equal_range(tok->function());
+                for (auto i = range.first; i != range.second; ++i) {
                     if (i->second.n == 0)
                         continue;
 
