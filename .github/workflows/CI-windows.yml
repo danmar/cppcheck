@@ -192,7 +192,7 @@ jobs:
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
           git apply --ignore-space-change ..\externals\pcre.patch || exit /b !errorlevel!
-          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTING=Off -DPCRE_BUILD_PCREGREP=Off -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
+          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
           nmake || exit /b !errorlevel!
           copy pcre.h ..\externals || exit /b !errorlevel!
           copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
