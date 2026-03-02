@@ -185,6 +185,7 @@ private:
         TEST_CASE(removeParentheses27);
         TEST_CASE(removeParentheses28);      // #12164 - don't remove parentheses in '(expr1) ? (expr2) : (expr3);'
         TEST_CASE(removeParantheses29);      // #13735
+        TEST_CASE(removeParentheses30);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -2190,6 +2191,19 @@ private:
                                   "return modf ( 12.3 , NULL ) ;\n"
                                   "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void removeParentheses30() {
+        static char code[] = "void f (Node *node) {\n"
+                             "    if (node->data && (node->provider)->free)\n"
+                             "        (node->provider)->free (node);\n"
+                             "}\n";
+        static const char exp[] = "void f ( Node * node ) {\n"
+                                  "if ( node . data && ( node . provider ) . free ) {\n"
+                                  "node . provider . free ( node ) ; }\n"
+                                  "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+        (void) errout_str();
     }
 
     void tokenize_double() {
