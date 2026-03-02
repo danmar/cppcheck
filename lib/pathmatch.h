@@ -324,7 +324,7 @@ public:
         return c == '/' || (syntax == Syntax::windows && c == '\\');
     }
 
-    /* Syntax helper, check if a chracter is a drive letter */
+    /* Syntax helper, check if a character is a drive letter */
     static bool isdrive(char c)
     {
         return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');

@@ -208,7 +208,7 @@ private:
     /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
-     * @param analyzerInformation the analyzer infomation
+     * @param analyzerInformation the analyzer information
      */
     void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig);
 
