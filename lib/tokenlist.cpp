@@ -873,7 +873,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 state.inArrayAssignment--;
                 tok = tok1->link()->next();
             }
-        } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
+        } else if ((!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) || Token::simpleMatch(prev, "?")) {
             state.op.push(tok);
             tok = tok->link()->next();
         } else {
