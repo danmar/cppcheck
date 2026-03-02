@@ -426,6 +426,7 @@ private:
         TEST_CASE(astrvaluedecl);
         TEST_CASE(astorkeyword);
         TEST_CASE(astenumdecl);
+        TEST_CASE(astcompound);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7420,6 +7421,11 @@ private:
     void astenumdecl() {
         ASSERT_EQUALS("A0U=", testAst("enum class myclass : unsigned char { A = 0U, };"));
         ASSERT_EQUALS("A0U=", testAst("enum myclass : unsigned char { A = 0U, };"));
+    }
+
+    void astcompound() {
+        ASSERT_EQUALS("sn0=={(tmp:?=", testAst("Str s = n == 0 ? (Str) { 0 } : tmp;")); // #14548
+        ASSERT_EQUALS("s(sstrlens(0:?,{(return", testAst("return (struct Str) { (unsigned char*)s, s ? strlen(s) : 0 };"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
