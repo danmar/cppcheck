@@ -48,7 +48,7 @@
 #include <unordered_map>
 #include <utility>
 
-#define INTEGER_SHIFT_LIMIT (sizeof(int) * 8 - 1) // The number of bits, where a left shift cannot be guaranteed to be within int range.
+#define INTEGER_SHIFT_LIMIT ((sizeof(int) * 8) - 1) // The number of bits, where a left shift cannot be guaranteed to be within int range.
 
 const Token* findExpression(const nonneg int exprid,
                             const Token* start,
