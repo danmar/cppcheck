@@ -1967,7 +1967,8 @@ static bool isc_strCall(const Token* tok)
     if (!Token::simpleMatch(dot, "."))
         return false;
     const Token* obj = dot->astOperand1();
-    if (!obj || !obj->valueType() || !obj->valueType()->container || !obj->valueType()->container->stdStringLike)
+    if (!obj || !obj->valueType() || !obj->valueType()->container ||
+        !obj->valueType()->container->stdStringLike || !obj->valueType()->container->startPatternHasStd)
         return false;
     return Token::Match(dot->astOperand2(), "c_str|data ( )");
 }
@@ -1986,7 +1987,8 @@ static bool isc_strConcat(const Token* tok)
     if (!cstr)
         return false;
     const Token* strTok = (cstr == tok->astOperand1()) ? tok->astOperand2() : tok->astOperand1();
-    return strTok->valueType() && strTok->valueType()->container && strTok->valueType()->container->stdStringLike;
+    return strTok->valueType() && strTok->valueType()->container &&
+           strTok->valueType()->container->stdStringLike && strTok->valueType()->container->startPatternHasStd;
 }
 
 static bool isc_strAssignment(const Token* tok)
@@ -1996,7 +1998,8 @@ static bool isc_strAssignment(const Token* tok)
     if (!isc_strCall(tok->astOperand2()))
         return false;
     const Token* strTok = tok->astOperand1();
-    return strTok && strTok->valueType() && strTok->valueType()->container && strTok->valueType()->container->stdStringLike;
+    return strTok && strTok->valueType() && strTok->valueType()->container &&
+           strTok->valueType()->container->stdStringLike && strTok->valueType()->container->startPatternHasStd;
 }
 
 static bool isc_strConstructor(const Token* tok)
@@ -2005,7 +2008,8 @@ static bool isc_strConstructor(const Token* tok)
         return false;
     if (!isc_strCall(tok->tokAt(1)->astOperand2()))
         return false;
-    return tok->valueType() && tok->valueType()->container && tok->valueType()->container->stdStringLike;
+    return tok->valueType() && tok->valueType()->container &&
+           tok->valueType()->container->stdStringLike && tok->valueType()->container->startPatternHasStd;
 }
 
 namespace {
