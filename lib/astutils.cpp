@@ -1003,7 +1003,7 @@ bool isOperationResultWithinIntRange(const Token* op, const Settings& settings, 
             return false;
 
         // Leftshift with negative values is undefined behavior.
-        if ((rightRange->first < 0) || rightRange->second < 0)
+        if ((rightRange->first < 0) || (rightRange->second < 0) || (leftRange->first < 0) || (leftRange->second < 0))
             return false;
 
         return checkAllRangeOperations(*leftRange, *rightRange, settings,
