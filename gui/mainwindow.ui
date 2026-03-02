@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Cppcheck</string>
+   <string notr="true">Cppcheck</string>
   </property>
   <property name="iconSize">
    <size>
@@ -685,10 +685,10 @@
      <normaloff>:/cppcheck-gui.png</normaloff>:/cppcheck-gui.png</iconset>
    </property>
    <property name="text">
-    <string>Cppcheck</string>
+    <string notr="true">Cppcheck</string>
    </property>
    <property name="toolTip">
-    <string>Show Cppcheck results</string>
+    <string>Show results</string>
    </property>
   </action>
   <action name="mActionShowClang">
@@ -993,7 +993,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Misra C</string>
+    <string notr="true">Misra C</string>
    </property>
   </action>
   <action name="mActionReportMisraCpp2008">
@@ -1001,7 +1001,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Misra C++ 2008</string>
+    <string notr="true">Misra C++ 2008</string>
    </property>
   </action>
   <action name="mActionReportCertC">
@@ -1009,7 +1009,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Cert C</string>
+    <string notr="true">Cert C</string>
    </property>
   </action>
   <action name="mActionReportCertCpp">
@@ -1017,7 +1017,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Cert C++</string>
+    <string notr="true">Cert C++</string>
    </property>
   </action>
   <action name="mActionReportMisraCpp2023">
@@ -1025,7 +1025,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Misra C++ 2023</string>
+    <string notr="true">Misra C++ 2023</string>
    </property>
   </action>
   <action name="mActionReportAutosar">
