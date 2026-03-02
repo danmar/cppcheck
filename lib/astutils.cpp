@@ -32,6 +32,7 @@
 #include "utils.h"
 #include "valueflow.h"
 #include "valueptr.h"
+#include "vf_common.h"
 #include "vfvalue.h"
 
 #include "checkclass.h"
@@ -929,50 +930,6 @@ const Token* getCondTokFromEnd(const Token* endBlock)
     return getCondTokFromEndImpl(endBlock);
 }
 
-static std::pair<MathLib::bigint, MathLib::bigint> getIntegralMinMaxValues(int bits, ValueType::Sign sign)
-{
-    using bigint = MathLib::bigint;
-    using biguint = MathLib::biguint;
-
-    if (bits <= 0)
-        return { bigint(0), bigint(0) };
-
-    // Unsigned: [0, 2^bits - 1]
-    if (sign == ValueType::Sign::UNSIGNED) {
-        // If bits exceed what MathLib can safely shift, saturate to max representable
-        if (bits >= MathLib::bigint_bits) {
-            biguint max_u = std::numeric_limits<biguint>::max();
-            return { bigint(0), bigint(max_u) };
-        }
-        biguint max_u = (biguint(1) << bits) - 1;
-        return { bigint(0), bigint(max_u) };
-    }
-
-    // Signed: [-(2^(bits-1)), 2^(bits-1)-1]
-    if (bits >= MathLib::bigint_bits) {
-        bigint min_s = std::numeric_limits<bigint>::min();
-        bigint max_s = std::numeric_limits<bigint>::max();
-        return { min_s, max_s };
-    }
-    bigint max_s = (bigint(1) << (bits - 1)) - 1;
-    bigint min_s = -(bigint(1) << (bits - 1));
-    return { min_s, max_s };
-}
-
-static bool getIntegralTypeRange(const ValueType* type, const Settings& settings, std::pair<MathLib::bigint, MathLib::bigint>& range)
-{
-    if (!type || !type->isIntegral())
-        return false;
-
-    const int bits = type->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer) * 8;
-    if (bits <= 0 || bits > 64)
-        return false;
-
-    range = getIntegralMinMaxValues(bits, type->sign);
-
-    return true;
-}
-
 bool getExpressionResultRange(const Token* expr, const Settings& settings, std::pair<MathLib::bigint, MathLib::bigint>& exprRange)
 {
     if (!expr)
@@ -1020,7 +977,7 @@ bool getExpressionResultRange(const Token* expr, const Settings& settings, std::
         exprToCheck = castFrom;
     }
 
-    return getIntegralTypeRange(exprToCheck->valueType(), settings, exprRange);
+    return ValueFlow::getMinMaxValues(exprToCheck->valueType(), settings.platform, exprRange.first, exprRange.second);
 }
 
 template<typename Op>
@@ -1043,6 +1000,10 @@ bool isOperationResultWithinIntRange(const Token* op, const Settings& settings, 
     if (op->str() == "<<") {
         // If the lefthand operand is 31 or higher the resulting shift will be a negative value or greater than int range.
         if ((rightRange->first >= INTEGER_SHIFT_LIMIT) || rightRange->second >= INTEGER_SHIFT_LIMIT)
+            return false;
+
+        // Leftshift with negative values is undefined behavior.
+        if ((rightRange->first < 0) || rightRange->second < 0)
             return false;
 
         return checkAllRangeOperations(*leftRange, *rightRange, settings,
