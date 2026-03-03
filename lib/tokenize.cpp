@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1043,7 +1043,7 @@ void Tokenizer::simplifyTypedef()
                 if (t != ts.nameToken())
                     existing_data_type += t->str() + " ";
             }
-            numberOfTypedefs[ts.name()].insert(existing_data_type);
+            numberOfTypedefs[ts.name()].emplace(std::move(existing_data_type));
             continue;
         }
     }
@@ -1167,11 +1167,10 @@ void Tokenizer::simplifyTypedefCpp()
     std::vector<Space> spaceInfo(1);
 
     const std::time_t maxTime = mSettings.typedefMaxTime > 0 ? std::time(nullptr) + mSettings.typedefMaxTime: 0;
-    const bool doProgress = (mSettings.reportProgress != -1) && !list.getFiles().empty();
+    ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, list.getSourceFilePath(), "Tokenize (typedef)");
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (doProgress)
-            mErrorLogger.reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
+        progressReporter.report(tok->progressValue());
 
         if (Settings::terminated())
             return;
@@ -2932,11 +2931,10 @@ bool Tokenizer::simplifyUsing()
     };
     std::list<Using> usingList;
 
-    const bool doProgress = (mSettings.reportProgress != -1) && !list.getFiles().empty();
+    ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, list.getSourceFilePath(), "Tokenize (using)");
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (doProgress)
-            mErrorLogger.reportProgress(list.getFiles()[0], "Tokenize (using)", tok->progressValue());
+        progressReporter.report(tok->progressValue());
 
         if (Settings::terminated())
             return substitute;
@@ -3790,7 +3788,7 @@ void Tokenizer::simplifyParenthesizedLibraryFunctions()
         if (!Token::simpleMatch(tok, ") ("))
             continue;
         Token *rpar = tok, *lpar = tok->link();
-        if (!lpar || (Token::Match(lpar->previous(), "%name%") && !lpar->previous()->isKeyword()))
+        if (!lpar || (Token::Match(lpar->previous(), "%name%") && !Token::Match(lpar->previous(), "return|delete|throw")))
             continue;
         const Token *ftok = rpar->previous();
         if (mSettings.library.isNotLibraryFunction(ftok))
@@ -7964,8 +7962,8 @@ void Tokenizer::elseif()
 
             if (Token::Match(tok2, "}|;")) {
                 if (tok2->next() && tok2->strAt(1) != "else") {
-                    tok->insertToken("{");
-                    tok2->insertToken("}");
+                    tok->insertToken("{")->isSimplifiedScope(true);
+                    tok2->insertToken("}")->isSimplifiedScope(true);
                     Token::createMutualLinks(tok->next(), tok2->next());
                     break;
                 }

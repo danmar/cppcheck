@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,9 @@
 class FileWithDetails
 {
 public:
+    /**
+     * @throws std::runtime_error thrown if given path is empty
+     */
     FileWithDetails(std::string path, Standards::Language lang, std::size_t size)
         : mLang(lang)
         , mSize(size)
@@ -47,6 +50,7 @@ public:
     {
         mPath = std::move(path);
         mPathSimplified = Path::simplifyPath(mPath);
+        mPathAbsolute.clear();
     }
 
     const std::string& path() const
@@ -57,6 +61,14 @@ public:
     const std::string& spath() const
     {
         return mPathSimplified;
+    }
+
+    const std::string& abspath() const
+    {
+        // use delayed resolution as it will fail for files which do not exist
+        if (mPathAbsolute.empty())
+            mPathAbsolute = Path::getAbsoluteFilePath(mPath);
+        return mPathAbsolute;
     }
 
     std::size_t size() const
@@ -86,6 +98,7 @@ public:
 private:
     std::string mPath;
     std::string mPathSimplified;
+    mutable std::string mPathAbsolute;
     Standards::Language mLang = Standards::Language::None;
     std::size_t mSize;
     std::size_t mFsFileId{0};

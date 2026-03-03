@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -706,10 +706,10 @@ void CheckBufferOverrun::bufferOverflowError(const Token *tok, const ValueFlow::
 
 void CheckBufferOverrun::arrayIndexThenCheck()
 {
-    if (!mSettings->severity.isEnabled(Severity::portability))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    logChecker("CheckBufferOverrun::arrayIndexThenCheck");
+    logChecker("CheckBufferOverrun::arrayIndexThenCheck"); // style
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {

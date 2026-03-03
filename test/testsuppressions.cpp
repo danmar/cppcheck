@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -465,7 +465,7 @@ private:
                                         "    a++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:2:0]: (error) File suppression should be at the top of the file [invalidSuppression]\n"
+        ASSERT_EQUALS("[test.cpp:2:5]: (error) File suppression should be at the top of the file [invalidSuppression]\n"
                       "[test.cpp:4:5]: (error) Uninitialized variable: a [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
@@ -474,7 +474,7 @@ private:
                                         "}\n"
                                         "// cppcheck-suppress-file uninitvar\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:5:0]: (error) File suppression should be at the top of the file [invalidSuppression]\n"
+        ASSERT_EQUALS("[test.cpp:5:1]: (error) File suppression should be at the top of the file [invalidSuppression]\n"
                       "[test.cpp:3:5]: (error) Uninitialized variable: a [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
@@ -542,7 +542,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         "uninitvar:test.cpp"));
-        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:0:0]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
         // suppress all for this file only
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -558,7 +558,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         "*:test.cpp"));
-        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: * [unmatchedSuppression]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:0:0]: (information) Unmatched suppression: * [unmatchedSuppression]\n", errout_str());
 
         // suppress uninitvar for this file and line
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -726,7 +726,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:2:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n"
+        ASSERT_EQUALS("[test.cpp:2:5]: (error) Suppress Begin: No matching end [invalidSuppression]\n"
                       "[test.cpp:4:5]: (error) Uninitialized variable: a [uninitvar]\n"
                       "[test.cpp:6:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
@@ -738,7 +738,7 @@ private:
                                         "    // cppcheck-suppress-end uninitvar\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:6:0]: (error) Suppress End: No matching begin [invalidSuppression]\n"
+        ASSERT_EQUALS("[test.cpp:6:5]: (error) Suppress End: No matching begin [invalidSuppression]\n"
                       "[test.cpp:3:5]: (error) Uninitialized variable: a [uninitvar]\n"
                       "[test.cpp:5:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
@@ -749,11 +749,11 @@ private:
                                         "void f() {}\n"
                                         "// cppcheck-suppress-end-unknown id4\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:1:0]: (error) unknown suppression type 'cppcheck-suppress:' [invalidSuppression]\n"
-                      "[test.cpp:2:0]: (error) unknown suppression type 'cppcheck-suppress-unknown' [invalidSuppression]\n"
-                      "[test.cpp:3:0]: (error) unknown suppression type 'cppcheck-suppress-begin-unknown' [invalidSuppression]\n"
-                      "[test.cpp:6:0]: (error) unknown suppression type 'cppcheck-suppress-end-unknown' [invalidSuppression]\n"
-                      "[test.cpp:4:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:1]: (error) unknown suppression type 'cppcheck-suppress:' [invalidSuppression]\n"
+                      "[test.cpp:2:1]: (error) unknown suppression type 'cppcheck-suppress-unknown' [invalidSuppression]\n"
+                      "[test.cpp:3:1]: (error) unknown suppression type 'cppcheck-suppress-begin-unknown' [invalidSuppression]\n"
+                      "[test.cpp:6:1]: (error) unknown suppression type 'cppcheck-suppress-end-unknown' [invalidSuppression]\n"
+                      "[test.cpp:4:1]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-file\n"
                                         "// cppcheck-suppress\n"
@@ -766,14 +766,14 @@ private:
                                         "void f() {}\n"
                                         "// cppcheck-suppress-end\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:1:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:2:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:3:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:4:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:6:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:7:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:10:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:8:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:2:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:3:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:4:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:6:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:7:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:10:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:8:1]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress:\n"
                                         "// cppcheck-suppress-unknown\n"
@@ -783,11 +783,11 @@ private:
                                         "// cppcheck-suppress-end-unknown\n",
                                         ""));
         // TODO: actually these are all invalid types
-        ASSERT_EQUALS("[test.cpp:1:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:2:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:3:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:4:0]: (error) suppression without error ID [invalidSuppression]\n"
-                      "[test.cpp:6:0]: (error) suppression without error ID [invalidSuppression]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:2:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:3:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:4:1]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:6:1]: (error) suppression without error ID [invalidSuppression]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"

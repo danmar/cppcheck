@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -464,6 +464,26 @@ private:
         ASSERT_EQUALS("[test.cpp:2:3]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
         check(code2, dinit(CheckOptions, $.settings = &settingsWin));
         ASSERT_EQUALS("[test.cpp:2:3]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
+
+        const char code3[] = "long f() {\n"
+                             "    int n = 1;\n"
+                             "    return n << 12;\n"
+                             "}\n";
+        check(code3, dinit(CheckOptions, $.settings = &settings));
+        ASSERT_EQUALS("", errout_str());
+
+        const char code4[] = "long f(int n) {\n"
+                             "    return n << 12;\n"
+                             "}\n";
+        check(code4, dinit(CheckOptions, $.settings = &settings));
+        ASSERT_EQUALS("[test.cpp:2:5]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
+
+        const char code5[] = "long f() {\n"
+                             "    unsigned int n = 1U << 20;\n"
+                             "    return n << 20;\n"
+                             "}\n";
+        check(code5, dinit(CheckOptions, $.settings = &settings));
+        ASSERT_EQUALS("[test.cpp:3:5]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
 
         // typedef
         check("size_t f(int x, int y) {\n"

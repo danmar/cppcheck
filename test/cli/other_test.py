@@ -169,9 +169,67 @@ def test_progress(tmpdir):
             "progress: Tokenize (typedef) 62%\n"
             "progress: Tokenize (typedef) 75%\n"
             "progress: Tokenize (typedef) 87%\n"
-            "progress: SymbolDatabase 0%\n"
-            "progress: SymbolDatabase 12%\n"
-            "progress: SymbolDatabase 87%\n"
+            "progress: Tokenize (typedef) 100%\n"
+            "progress: SymbolDatabase (find all scopes) 0%\n"
+            "progress: SymbolDatabase (find all scopes) 12%\n"
+            "progress: SymbolDatabase (find all scopes) 87%\n"
+            "progress: SymbolDatabase (find all scopes) 100%\n"
+            "progress: ValueFlow 0%\n"
+            "progress: ValueFlow::valueFlowImpossibleValues(tokenlist, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowImpossibleValues(tokenlist, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowSymbolicOperators(symboldatabase, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowSymbolicOperators(symboldatabase, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 0%\n"
+            "progress: ValueFlow::valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 100%\n"
+            "progress: ValueFlow::valueFlowSymbolicInfer(symboldatabase, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowSymbolicInfer(symboldatabase, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowArrayBool(tokenlist, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowArrayBool(tokenlist, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowArrayElement(tokenlist, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowArrayElement(tokenlist, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowRightShift(tokenlist, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowRightShift(tokenlist, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 0%\n"
+            "progress: ValueFlow::valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 100%\n"
+            "progress: ValueFlow::valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 0%\n"
+            "progress: ValueFlow::valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 100%\n"
+            "progress: ValueFlow::valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 0%\n"
+            "progress: ValueFlow::valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 100%\n"
+            "progress: ValueFlow::valueFlowInferCondition(tokenlist, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowInferCondition(tokenlist, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowFunctionReturn(tokenlist, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowFunctionReturn(tokenlist, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowLifetime(tokenlist, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowLifetime(tokenlist, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowUninit(tokenlist, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowUninit(tokenlist, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowSmartPointer(tokenlist, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowSmartPointer(tokenlist, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowIterators(tokenlist, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowIterators(tokenlist, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 0%\n"
+            "progress: ValueFlow::valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 100%\n"
+            "progress: ValueFlow::valueFlowIteratorInfer(tokenlist, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowIteratorInfer(tokenlist, settings) 1 100%\n"
+            "progress: ValueFlow::valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 0%\n"
+            "progress: ValueFlow::valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions) 1 100%\n"
+            "progress: ValueFlow::valueFlowSafeFunctions(tokenlist, symboldatabase, errorLogger, settings) 1 0%\n"
+            "progress: ValueFlow::valueFlowSafeFunctions(tokenlist, symboldatabase, errorLogger, settings) 1 100%\n"
+            "progress: ValueFlow 100%\n"
+            "progress: Run checkers 0%\n"
+            "progress: Run checkers 100%\n"
             )
     assert stderr == ""
 
@@ -2315,8 +2373,6 @@ def test_inline_suppr_builddir(tmp_path):
     __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
 
 
-# TODO: the suppressions are generated outside of the scope which captures the analysis information
-@pytest.mark.xfail(strict=True)
 def test_inline_suppr_builddir_cached(tmp_path):
     build_dir = tmp_path / 'b1'
     os.mkdir(build_dir)
@@ -2330,8 +2386,6 @@ def test_inline_suppr_builddir_j(tmp_path):
     __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
 
 
-# TODO: the suppressions are generated outside of the scope which captures the analysis information
-@pytest.mark.xfail(strict=True)
 def test_inline_suppr_builddir_j_cached(tmp_path):
     build_dir = tmp_path / 'b1'
     os.mkdir(build_dir)
@@ -3313,11 +3367,10 @@ def test_suppress_unmatched_wildcard(tmp_path):  # #13660
     exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
-    # TODO: invalid locations - see #13659
     assert stderr.splitlines() == [
-        'test*.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
-        'test*.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
-        'tes?.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]'
+        'test*.c:0:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'test*.c:0:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
+        'tes?.c:0:0: information: Unmatched suppression: id2 [unmatchedSuppression]'
     ]
 
 
@@ -3342,12 +3395,11 @@ def test_suppress_unmatched_wildcard_unchecked(tmp_path):
     exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
-    # TODO: invalid locations - see #13659
     assert stderr.splitlines() == [
-        'test*.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
-        'tes?.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
-        '*:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
-        'test*.c:-1:0: information: Unmatched suppression: * [unmatchedSuppression]'
+        'test*.c:0:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'tes?.c:0:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        '*:0:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
+        'test*.c:0:0: information: Unmatched suppression: * [unmatchedSuppression]'
     ]
 
 
@@ -3801,12 +3853,12 @@ error2:lib\\test.c
     ret, stdout, stderr = cppcheck(args)
     assert stdout == ''
     assert stderr.splitlines() == [
-        f'{lib_file}:-1:0: information: Unmatched suppression: error [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
-        f'{lib_file}:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
+        f'{lib_file}:0:0: information: Unmatched suppression: error [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
+        f'{lib_file}:0:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
     ]
     assert ret == 0, stdout
 
@@ -4118,16 +4170,17 @@ def test_analyzerinfo(tmp_path):
         assert stdout.splitlines() == stdout_exp
         assert stderr.splitlines() == stderr_exp
 
+    test_file_s = str(test_file).replace('\\', '/')
     test_a1_file_s = str(test_a1_file).replace('\\', '/')
 
     # no cached results
     run_and_assert_cppcheck([
-        "no cached result '{}' found".format(test_a1_file_s)
+        "no cached result '{}' for '{}' found".format(test_a1_file_s, test_file_s)
     ])
 
     # cached results
     run_and_assert_cppcheck([
-        "skipping analysis - loaded 1 cached finding(s) from '{}'".format(test_a1_file_s)
+        "skipping analysis - loaded 1 cached finding(s) from '{}' for '{}'".format(test_a1_file_s, test_file_s)
     ])
 
     # modified file
@@ -4135,7 +4188,7 @@ def test_analyzerinfo(tmp_path):
         f.write('\n#define DEF')
 
     run_and_assert_cppcheck([
-        "discarding cached result - hash mismatch" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - hash mismatch".format(test_a1_file_s, test_file_s)
     ])
 
     # invalid XML
@@ -4143,7 +4196,7 @@ def test_analyzerinfo(tmp_path):
         f.write('.')
 
     run_and_assert_cppcheck([
-        "discarding cached result - failed to load '{}' (XML_ERROR_PARSING_TEXT)".format(test_a1_file_s)
+        "discarding cached result - failed to load '{}' for '{}' (XML_ERROR_PARSING_TEXT)".format(test_a1_file_s, test_file_s)
     ])
 
     # missing root node
@@ -4151,7 +4204,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - no root node found" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - no root node found".format(test_a1_file_s, test_file_s)
     ])
 
     # mismatched root node
@@ -4159,7 +4212,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?><root/>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - unexpected root node" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - unexpected root node".format(test_a1_file_s, test_file_s)
     ])
 
     # missing 'hash' attribute
@@ -4167,7 +4220,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?><analyzerinfo/>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - no 'hash' attribute found" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - no 'hash' attribute found".format(test_a1_file_s, test_file_s)
     ])
 
     # invalid 'hash' attribute
@@ -4175,7 +4228,7 @@ def test_analyzerinfo(tmp_path):
         f.write('<?xml version="1.0"?><analyzerinfo hash="hash"/>')
 
     run_and_assert_cppcheck([
-        "discarding cached result - hash mismatch" # TODO: add filename
+        "discarding cached result from '{}' for '{}' - hash mismatch".format(test_a1_file_s, test_file_s)
     ])
 
     # TODO:

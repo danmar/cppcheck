@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1161,7 +1161,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
                         if (!hasValidConfig && currCfg == *configurations.rbegin()) {
                             // If there is no valid configuration then report error..
-                            preprocessor.error(tokensP.file(o->location), o->location.line, o->location.col, o->msg, o->type);
+                            preprocessor.error(o->location, o->msg, o->type);
                         }
                         skipCfg = true;
                     }
@@ -1316,6 +1316,8 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig)
 {
+    const ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, tokenizer.list.getSourceFilePath(), "Run checkers");
+
     CheckUnusedFunctions unusedFunctionsChecker;
 
     // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
@@ -1513,6 +1515,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     for (const AddonInfo &addonInfo : mSettings.addonInfos) {
         if (isCtuInfo && addonInfo.name != "misra" && !addonInfo.ctu)
             continue;
+
+        ProgressReporter progressReporter(mErrorLogger, mSettings.reportProgress, files.front(), "addon:" + addonInfo.name + (isCtuInfo ? " (ctu)" : ""));
 
         std::vector<picojson::value> results;
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 {
     // What we may have...
     //     * var = (char *)malloc(10);
+    //     * var = static_cast<char *>(malloc(10));
     //     * var = new char[10];
     //     * var = strdup("hello");
     //     * var = strndup("hello", 3);
@@ -63,6 +64,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         tok2 = tok2->link();
         tok2 = tok2 ? tok2->next() : nullptr;
     }
+    if (tok2 && tok2->isCpp() && tok2->isKeyword() && endsWith(tok2->str(), "_cast"))
+        tok2 = tok2->astParent()->next();
     if (!tok2)
         return No;
     if (tok2->str() == "::")
@@ -1098,7 +1101,10 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         if (allocType == No)
             continue;
 
-        if (tok != tok->next()->astOperand1() && !isNew)
+        const Token* ftok = tok->next()->astOperand1();
+        while (Token::simpleMatch(ftok, "::"))
+            ftok = ftok->astOperand2() ? ftok->astOperand2() : ftok->astOperand1();
+        if (tok != ftok && !isNew)
             continue;
 
         if (isReopenStandardStream(tok))

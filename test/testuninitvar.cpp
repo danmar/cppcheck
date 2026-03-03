@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,6 +97,7 @@ private:
         TEST_CASE(uninitvar_memberfunction);
         TEST_CASE(uninitvar_nonmember); // crash in ycmd test
         TEST_CASE(uninitvarDesignatedInitializers);
+        TEST_CASE(uninitvarMemberPointer);
 
         TEST_CASE(isVariableUsageDeref); // *p
         TEST_CASE(isVariableUsageDerefValueflow); // *p
@@ -6663,6 +6664,26 @@ private:
                         "    return ret;\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("int f() {\n" // #12944
+                        "    int i;\n"
+                        "    auto x = [&]() { return i; };\n"
+                        "    i = 5;\n"
+                        "    return x();\n"
+                        "}\n"
+                        "int g() {\n"
+                        "    int i;\n"
+                        "    {\n"
+                        "        auto x = [&]() { return i; };\n"
+                        "        i = 5;\n"
+                        "        return x();\n"
+                        "    }\n"
+                        "}\n"
+                        "int h() {\n"
+                        "    int j;\n"
+                        "    return [&]() { return j; }();\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:17:27]: (error) Uninitialized variable: j [uninitvar]\n", errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -7803,6 +7824,16 @@ private:
                        "  return f(&(struct a){.b = 0, .c = 0});\n"
                        "}");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void uninitvarMemberPointer() {
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "  struct S {};\n"
+                       "  int S::* mp;\n"
+                       "  if (mp) {}\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5:7]: (error) Uninitialized variable: mp [legacyUninitvar]\n", errout_str());
     }
 
     void isVariableUsageDeref() {

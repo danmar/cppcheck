@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,6 +121,9 @@ private:
         TEST_CASE(varScope41);      // #11845
         TEST_CASE(varScope42);
         TEST_CASE(varScope43);
+        TEST_CASE(varScope44);
+        TEST_CASE(varScope45);
+        TEST_CASE(varScope46);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(intToPointerCast);
@@ -1945,6 +1948,86 @@ private:
         ASSERT_EQUALS("[test.cpp:3:12]: (style) The scope of the variable 'x' can be reduced. [variableScope]\n", errout_str());
     }
 
+    void varScope44() { // #14496
+        check("char* f() {\n"
+              "    char* p = nullptr;\n"
+              "    {\n"
+              "        p = strdup(\"abc\");\n"
+              "        if (p) {\n"
+              "            return p;\n"
+              "        }\n"
+              "    }\n"
+              "    return nullptr;\n"
+              "}\n"
+              "char* g() {\n"
+              "    char* q = NULL;\n"
+              "    {\n"
+              "        q = strdup(\"abc\");\n"
+              "        if (q) {\n"
+              "            return q;\n"
+              "        }\n"
+              "    }\n"
+              "    return nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:11]: (style) The scope of the variable 'p' can be reduced. [variableScope]\n"
+                      "[test.cpp:12:11]: (style) The scope of the variable 'q' can be reduced. [variableScope]\n",
+                      errout_str());
+    }
+
+    void varScope45() {
+        check("void g(int x, int y) {\n" // #14497
+              "    int a = x, b = y;\n"
+              "    if (a) {}\n"
+              "    else {\n"
+              "        if (b) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:16]: (style) The scope of the variable 'b' can be reduced. [variableScope]\n", errout_str());
+    }
+
+    void varScope46() {
+        check("void f() {\n" // #7091
+              "    int y1;\n"
+              "    for (int i = 0; i < 3; ++i) {\n"
+              "        for(int j = 0; j < 3; ++j) {\n"
+              "                y1 = 2 * 1;\n"
+              "                y1 += 1;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:9]: (style) The scope of the variable 'y1' can be reduced. [variableScope]\n",
+                      errout_str());
+
+        check("bool f() {\n"
+              "bool b = false;\n"
+              "do {\n"
+              "    switch (g()) {\n"
+              "        case 0:\n"
+              "            b = true;\n"
+              "            break;\n"
+              "        case 1:\n"
+              "            return b;\n"
+              "            break;\n"
+              "        default:\n"
+              "            break;\n"
+              "    }\n"
+              "}\n"
+              "while (true);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n"
+              "    int y1 = 0;\n"
+              "    for (int i = 0; i < 3; ++i) {\n"
+              "        for(int j = 0; j < 3; ++j) {\n"
+              "                y1 = y1 + 1;\n"
+              "                dostuff(y1);\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkOldStylePointerCast_(const char* file, int line, const char (&code)[size], Standards::cppstd_t std = Standards::CPPLatest) {
@@ -2663,7 +2746,9 @@ private:
         check("void f(std::string str) {\n"
               "    std::string s2 = str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1:20]: (performance) Function parameter 'str' should be passed by const reference. [passedByValue]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:17]: (performance, inconclusive) Use const reference for 's2' to avoid unnecessary data copying. [redundantCopyLocalConst]\n"
+                      "[test.cpp:1:20]: (performance) Function parameter 'str' should be passed by const reference. [passedByValue]\n",
+                      errout_str());
 
         check("void f(std::string str) {\n"
               "    std::string& s2 = str;\n"
@@ -4637,6 +4722,33 @@ private:
         ASSERT_EQUALS("[test.cpp:1:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:4:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
+
+        check("using fp_t = int (*)(int*);\n" // #14510
+              "fp_t g_fp;\n"
+              "struct S { fp_t m_fp; };\n"
+              "void g(fp_t);\n"
+              "S f(S* s) {\n"
+              "    g_fp = [](int* p) { return *p; };\n"
+              "    s->m_fp = [](int* p) { return *p; };\n"
+              "    g([](int* p) { return *p; });\n"
+              "    auto x = [](int* p) { return *p; };\n"
+              "    g(x);\n"
+              "    return { [](int* p) { return *p; } };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n"
+              "    int i = 0;\n"
+              "    auto x = [&]() { int* p = &i; if (*p) {} };\n"
+              "    x();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:27]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n", errout_str());
+
+        check("int f() {\n"
+              "    int i = 0;\n"
+              "    return [](int* p) { return *p; }(&i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:20]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n", errout_str());
     }
 
     void constArray() {
@@ -9845,6 +9957,58 @@ private:
               "    if (s.empty()) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6:16]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying. [redundantCopyLocalConst]\n", errout_str());
+
+        check("void f1(const std::string& s) {\n"
+              "    std::string s1 = s;\n"
+              "    (void)s1;\n"
+              "}\n"
+              "void f2() {\n"
+              "    const std::string s;\n"
+              "    std::string s1 = s;\n"
+              "    (void)s1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n"
+                      "[test.cpp:7:17]: (performance, inconclusive) Use const reference for 's1' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
+                      errout_str());
+
+        check("struct S {\n"
+              "    std::string m;\n"
+              "    int f(const std::string& s);\n"
+              "};\n"
+              "int S::f(const std::string& s) {\n"
+              "    std::string c = s;\n"
+              "    m.clear();\n"
+              "    return c.size();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n"
+              "    std::string m;\n"
+              "    int f(std::string s);\n"
+              "};\n"
+              "int S::f(std::string s) {\n"
+              "    s += m;\n"
+              "    std::string c = s;\n"
+              "    m.clear();\n"
+              "    return c.size();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7:17]: (performance, inconclusive) Use const reference for 'c' to avoid unnecessary data copying. [redundantCopyLocalConst]\n",
+                      errout_str());
+
+        check("int f(const char* c) {\n" // #14530
+              "    std::string s = c;\n"
+              "    return s.rfind('.');\n"
+              "}\n"
+              "struct M {\n"
+              "    M(const std::array<double, 9>& a);\n"
+              "    double m[3][3];\n"
+              "    double trace() const;\n"
+              "};\n"
+              "double g(const std::array<double, 9>& a) {\n"
+              "    M m = a;\n"
+              "    return m.trace();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkNegativeShift() {
@@ -10429,7 +10593,7 @@ private:
 
         // Member variable pointers
         check("void podMemPtrs() {\n"
-              "    int POD::*memptr;\n"
+              "    const int POD::*memptr;\n"
               "    memptr = &POD::a;\n"
               "    memptr = &POD::b;\n"
               "    if (memptr)\n"
@@ -10513,6 +10677,21 @@ private:
               "}");
         ASSERT_EQUALS(
             "[test.cpp:2:10]: (style) Variable 'a' can be declared as pointer to const [constVariablePointer]\n",
+            errout_str());
+
+        check("std::string f() {\n" // #14534
+              "    std::string s = \"abc\";\n"
+              "    s = \"def\";\n"
+              "    return s;\n"
+              "}\n"
+              "const char* g() {\n"
+              "    const char* p = \"abc\";\n"
+              "    p = \"def\";\n"
+              "    return p;\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:2:19] -> [test.cpp:3:7]: (style) Redundant initialization for 's'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+            "[test.cpp:7:19] -> [test.cpp:8:7]: (style) Redundant initialization for 'p'. The initialized value is overwritten before it is read. [redundantInitialization]\n",
             errout_str());
     }
 

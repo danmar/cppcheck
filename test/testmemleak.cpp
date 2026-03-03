@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1674,6 +1674,7 @@ private:
         TEST_CASE(assign3);
         TEST_CASE(assign4); // #11019
         TEST_CASE(assign5);
+        TEST_CASE(assign6);
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -1953,6 +1954,15 @@ private:
               "    return s;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void assign6() {
+        check("struct S { S* p; };\n" // #14524
+              "void f() {\n"
+              "    S s;\n"
+              "    s.p = static_cast<S*>(malloc(sizeof(S)));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5:1]: (error) Memory leak: s.p [memleak]\n", errout_str());
     }
 
     void failedAllocation() {
@@ -2752,6 +2762,18 @@ private:
               "    if (std::freopen(NULL, \"w+b\", fp2) == NULL) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n" // #14172
+              "    if (malloc(4) == nullptr) {}\n"
+              "    if (::malloc(4) == nullptr) {}\n"
+              "    if (std::malloc(4) == nullptr) {}\n"
+              "    if (::std::malloc(4) == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:9]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:3:11]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:4:14]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:5:16]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n",
+                      errout_str());
     }
 
     void smartPointerFunctionParam() {

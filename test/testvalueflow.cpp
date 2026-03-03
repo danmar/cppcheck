@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7406,6 +7406,12 @@ private:
                "    return a[0];\n"
                "}";
         ASSERT(!isKnownContainerSizeValue(tokenValues(code, "a ["), 6).empty());
+
+        code = "void f(const char a[]) {\n" // #14518
+               "    std::string s(a);\n"
+               "    if (s.empty()) {}\n"
+               "}";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "s ."), 0).empty());
     }
 
     void valueFlowContainerElement()
@@ -8904,6 +8910,18 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int n) {\n"
+               "    int x = 0 - n;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, "n", ValueFlow::Value::ValueType::SYMBOLIC));
+
+        code = "void f(int n) {\n"
+               "    int x = n - 0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "n", ValueFlow::Value::ValueType::SYMBOLIC));
     }
 
     void valueFlowSymbolicStrlen()

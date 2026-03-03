@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -281,6 +281,9 @@ bool strToInt(const std::string& str, T &num, std::string* err = nullptr)
     return true;
 }
 
+/**
+ * @throws std::runtime_error thrown if conversion failed
+ */
 template<typename T>
 T strToInt(const std::string& str)
 {

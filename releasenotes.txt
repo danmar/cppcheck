@@ -1,5 +1,5 @@
 
-Release Notes for Cppcheck 2.20
+Release Notes for Cppcheck 2.21
 
 Major bug fixes & crashes:
 -
@@ -14,12 +14,10 @@ GUI:
 -
 
 Changed interface:
-- removed CMake option "DISABLE_CRTDBG_MAP_ALLOC"
 -
 
 Infrastructure & dependencies:
 -
 
 Other:
-- The built-in "win*" and "unix*" platforms will now default to signed char type instead of unknown signedness. If you require unsigned chars please specify "--funsigned-char"
 -

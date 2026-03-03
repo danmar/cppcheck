@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -415,7 +415,7 @@ void CheckOther::warningDangerousTypeCast()
     // Only valid on C++ code
     if (!mTokenizer->isCPP())
         return;
-    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("cstyleCast"))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("dangerousTypeCast"))
         return;
 
     logChecker("CheckOther::warningDangerousTypeCast"); // warning,c++
@@ -631,7 +631,7 @@ void CheckOther::checkRedundantAssignment()
                                   [&](const Token *rhs) {
                         if (Token::simpleMatch(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
-                        if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
+                        if (Token::Match(rhs, "%num%|%name%") && !rhs->varId())
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, ":: %name%") && rhs->hasKnownIntValue())
                             return ChildrenToVisit::none;
@@ -1163,6 +1163,8 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings& 
         return false;
     if (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean())
         return true;
+    if (isNullOperand(tok))
+        return true;
     bool needsCheck = tok->varId() > 0;
     if (!needsCheck) {
         if (tok->isArithmeticalOp())
@@ -1290,7 +1292,7 @@ void CheckOther::checkVariableScope()
                 tok = tok->link();
 
                 // parse else if blocks..
-            } else if (Token::simpleMatch(tok, "else { if (") && Token::simpleMatch(tok->linkAt(3), ") {")) {
+            } else if (Token::simpleMatch(tok, "else { if (") && tok->next()->isSimplifiedScope() && Token::simpleMatch(tok->linkAt(3), ") {")) {
                 tok = tok->next();
             } else if (tok->varId() == var->declarationId() || tok->str() == "goto") {
                 reduce = false;
@@ -1327,6 +1329,15 @@ static bool mayDependOn(const ValueType *other, const ValueType *original)
 
     // other may be reassigned to original
     return otherPtr > originalPtr;
+}
+
+static bool isOnlyUsedInCurrentScope(const Variable* var, const Token *tok, const Scope* scope)
+{
+    if (tok->scope() == scope)
+        return true;
+    if (tok->scope()->type == ScopeType::eSwitch)
+        return false;
+    return !Token::findmatch(tok->scope()->bodyEnd, "%varid%", scope->bodyEnd, var->declarationId());
 }
 
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
@@ -1368,7 +1379,8 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok == forHeadEnd)
             forHeadEnd = nullptr;
 
-        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
+        if (loopVariable && noContinue && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId()) &&
+            isOnlyUsedInCurrentScope(var, tok, scope)) { // Assigned in outer scope.
             loopVariable = false;
             std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
             if (range.first)
@@ -1866,6 +1878,8 @@ void CheckOther::checkConstPointer()
         if (!var)
             continue;
         if (!var->isLocal() && !var->isArgument())
+            continue;
+        if (var->isArgument() && var->scope() && var->scope()->type == ScopeType::eLambda && !Token::simpleMatch(var->scope()->bodyEnd, "} ("))
             continue;
         const Token* const nameTok = var->nameToken();
         if (tok == nameTok && var->isLocal() && !astIsRangeBasedForDecl(nameTok)) {
@@ -3288,10 +3302,67 @@ static bool constructorTakesReference(const Scope * const classScope)
     });
 }
 
+static bool isLargeObject(const Variable* var, const Settings& settings)
+{
+    if (!var || var->isGlobal() || !var->valueType())
+        return false;
+    ValueType vt = *var->valueType();
+    vt.reference = Reference::None;
+    return vt.getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * settings.platform.sizeof_pointer;
+}
+
 //---------------------------------------------------------------------------
 // This check rule works for checking the "const A a = getA()" usage when getA() returns "const A &" or "A &".
 // In most scenarios, "const A & a = getA()" will be more efficient.
 //---------------------------------------------------------------------------
+static bool checkFunctionReturnsRef(const Token* tok, const Settings& settings)
+{
+    if (!Token::Match(tok->previous(), "%name% ("))
+        return false;
+    if (!Token::Match(tok->link(), ") )|}| ;")) // bailout for usage like "const A a = getA()+3"
+        return false;
+    const Token* dot = tok->astOperand1();
+    if (Token::simpleMatch(dot, ".")) {
+        const Token* varTok = dot->astOperand1();
+        const int indirect = varTok->valueType() ? varTok->valueType()->pointer : 0;
+        if (isVariableChanged(tok, tok->scope()->bodyEnd, indirect, varTok->varId(), /*globalvar*/ true, settings))
+            return false;
+        if (isTemporary(dot, &settings.library, /*unknown*/ true))
+            return false;
+    }
+    if (exprDependsOnThis(tok->previous()))
+        return false;
+    const Function* func = tok->previous()->function();
+    if (func && func->tokenDef->strAt(-1) == "&") {
+        const Scope* fScope = func->functionScope;
+        if (fScope && fScope->bodyEnd && Token::Match(fScope->bodyEnd->tokAt(-3), "return %var% ;")) {
+            const Token* varTok = fScope->bodyEnd->tokAt(-2);
+            if (isLargeObject(varTok->variable(), settings))
+                return true;
+        }
+    }
+    return false;
+}
+
+static bool checkVariableAssignment(const Token* tok, const ValueType* vtLhs, const Settings& settings)
+{
+    if (!Token::Match(tok, "%var% ;"))
+        return false;
+    const Variable* var = tok->variable();
+    if (!var || !isLargeObject(var, settings))
+        return false;
+    if (!vtLhs || !vtLhs->isTypeEqual(var->valueType()))
+        return false;
+    if (findVariableChanged(tok->tokAt(2), tok->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(), /*globalvar*/ false, settings))
+        return false;
+    if (var->isLocal() || (var->isArgument() && !var->isReference()))
+        return true;
+    const Scope* scope = tok->scope();
+    while (scope && scope->type != ScopeType::eFunction)
+        scope = scope->nestedIn;
+    return scope && scope->function && (!scope->functionOf || scope->function->isConst() || scope->function->isStatic());
+}
+
 void CheckOther::checkRedundantCopy()
 {
     if (!mSettings->severity.isEnabled(Severity::performance) || mTokenizer->isC() || !mSettings->certainty.isEnabled(Certainty::inconclusive))
@@ -3324,35 +3395,9 @@ void CheckOther::checkRedundantCopy()
         const Token* tok = startTok->next()->astOperand2();
         if (!tok)
             continue;
-        if (!Token::Match(tok->previous(), "%name% ("))
+        if (!checkFunctionReturnsRef(tok, *mSettings) && !checkVariableAssignment(tok, var->valueType(), *mSettings))
             continue;
-        if (!Token::Match(tok->link(), ") )|}| ;")) // bailout for usage like "const A a = getA()+3"
-            continue;
-
-        const Token* dot = tok->astOperand1();
-        if (Token::simpleMatch(dot, ".")) {
-            const Token* varTok = dot->astOperand1();
-            const int indirect = varTok->valueType() ? varTok->valueType()->pointer : 0;
-            if (isVariableChanged(tok, tok->scope()->bodyEnd, indirect, varTok->varId(), /*globalvar*/ true, *mSettings))
-                continue;
-            if (isTemporary(dot, &mSettings->library, /*unknown*/ true))
-                continue;
-        }
-        if (exprDependsOnThis(tok->previous()))
-            continue;
-
-        const Function* func = tok->previous()->function();
-        if (func && func->tokenDef->strAt(-1) == "&") {
-            const Scope* fScope = func->functionScope;
-            if (fScope && fScope->bodyEnd && Token::Match(fScope->bodyEnd->tokAt(-3), "return %var% ;")) {
-                const Token* varTok = fScope->bodyEnd->tokAt(-2);
-                if (varTok->variable() && !varTok->variable()->isGlobal() &&
-                    (!varTok->variable()->type() || !varTok->variable()->type()->classScope ||
-                     (varTok->variable()->valueType() &&
-                      varTok->variable()->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * mSettings->platform.sizeof_pointer)))
-                    redundantCopyError(startTok, startTok->str());
-            }
-        }
+        redundantCopyError(startTok, startTok->str());
     }
 }
 
