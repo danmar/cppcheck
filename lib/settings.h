@@ -477,7 +477,7 @@ public:
         /** @brief the maximum iterations to execute */
         std::size_t maxIterations = 4;
 
-        /** @brief maximum numer if-branches */
+        /** @brief maximum number if-branches */
         int maxIfCount = -1;
 
         /** @brief maximum number of sets of arguments to pass to subfuncions */

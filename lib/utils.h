@@ -403,10 +403,10 @@ static inline T* empty_if_null(T* p)
 }
 
 /**
- * Split string by given sperator.
+ * Split string by given separator.
  * @param str The string to split
- * @param sep The seperator
- * @return The list of seperate strings (including empty ones). The whole input string if no seperator found.
+ * @param sep The separator
+ * @return The list of separate strings (including empty ones). The whole input string if no separator found.
  */
 CPPCHECKLIB std::vector<std::string> splitString(const std::string& str, char sep);
 

@@ -33,7 +33,7 @@
 #include <QRegion>
 #include <QTransform>
 
-// TODO: this is actually avilable via Core5Compat but I could not get it to work with pkg-config
+// TODO: this is actually available via Core5Compat but I could not get it to work with pkg-config
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #include <QLinkedList>
 #endif

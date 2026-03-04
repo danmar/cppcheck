@@ -170,7 +170,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         // TODO: mention "information" and "debug" as source for indications of bailouts
         // TODO: still rephrase this - this message does not provides confidence in the results
         // TODO: document what a bailout is and why it is done - mention it in the upcoming security/tuning guide
-        // TODO: make bailouts a seperate group - need to differentiate between user bailouts (missing data like configuration/includes) and internal bailouts (e.g. limitations of ValueFlow)
+        // TODO: make bailouts a separate group - need to differentiate between user bailouts (missing data like configuration/includes) and internal bailouts (e.g. limitations of ValueFlow)
         fout << "Note: There might still have been non-critical bailouts which might lead to false negatives." << std::endl;
     }
 
