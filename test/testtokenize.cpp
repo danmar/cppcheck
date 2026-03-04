@@ -427,6 +427,7 @@ private:
         TEST_CASE(astorkeyword);
         TEST_CASE(astenumdecl);
         TEST_CASE(astcompound);
+        TEST_CASE(astfuncdecl);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -6415,8 +6416,13 @@ private:
         Z3
     };
 
+    enum class ListSimplification : std::uint8_t {
+        Partial,
+        Full
+    };
+
     template<size_t size>
-    std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple) {
+    std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple, ListSimplification ls = ListSimplification::Partial) {
         // tokenize given code..
         TokenList tokenlist{settings0, Standards::Language::CPP};
         tokenlist.appendFileIfNew("test.cpp");
@@ -6424,13 +6430,17 @@ private:
             return "ERROR";
 
         TokenizerTest tokenizer(std::move(tokenlist), *this);
-        tokenizer.combineStringAndCharLiterals();
-        tokenizer.combineOperators();
-        tokenizer.simplifySpaceshipOperator();
-        tokenizer.createLinks();
-        tokenizer.createLinks2();
-        tokenizer.simplifyCAlternativeTokens();
-        tokenizer.list.front()->assignIndexes();
+        if (ls == ListSimplification::Partial) {
+            tokenizer.combineStringAndCharLiterals();
+            tokenizer.combineOperators();
+            tokenizer.simplifySpaceshipOperator();
+            tokenizer.createLinks();
+            tokenizer.createLinks2();
+            tokenizer.simplifyCAlternativeTokens();
+            tokenizer.list.front()->assignIndexes();
+        } else { // Full
+            tokenizer.simplifyTokens1("");
+        }
 
         // set varid..
         for (Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
@@ -7426,6 +7436,11 @@ private:
     void astcompound() {
         ASSERT_EQUALS("sn0=={(tmp:?=", testAst("Str s = n == 0 ? (Str) { 0 } : tmp;")); // #14548
         ASSERT_EQUALS("s(sstrlens(0:?,{(return", testAst("return (struct Str) { (unsigned char*)s, s ? strlen(s) : 0 };"));
+    }
+
+    void astfuncdecl() {
+        ASSERT_EQUALS("", testAst("bool operator==(const S& a, const S& b);", AstStyle::Simple, ListSimplification::Full));
+        ASSERT_EQUALS("", testAst("::int32_t f();"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
