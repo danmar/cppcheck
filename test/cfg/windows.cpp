@@ -84,15 +84,16 @@ BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
     return retVal;
 }
 
-const char* constVariable_MAKEINTRESSOURCE() {
-    return MAKEINTRESSOURCE(5 - 1);
-}
-
+/// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
 std::string constVariable_GetModuleFileName(void) {
     char path[42];
     if (GetModuleFileNameA(NULL, path, sizeof(path))==0)
         return std::string();
     return std::string{path};
+}
+
+const char* constVariable_MAKEINTRESOURCE() { // #14564
+    return MAKEINTRESOURCE(5 - 1);
 }
 
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
