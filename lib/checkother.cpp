@@ -1337,7 +1337,7 @@ static bool isOnlyUsedInCurrentScope(const Variable* var, const Token *tok, cons
         return true;
     if (tok->scope()->type == ScopeType::eSwitch)
         return false;
-    return !Token::findmatch(tok->scope()->bodyEnd, "%varid%", scope->bodyEnd, var->declarationId());
+    return !Token::findmatch(tok->scope()->bodyEnd, "%varid%", var->scope()->bodyEnd, var->declarationId());
 }
 
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
