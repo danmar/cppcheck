@@ -34,6 +34,8 @@ if(HAVE_RULES)
     if(NOT PCRE_LIBRARY OR NOT PCRE_INCLUDE)
         message(FATAL_ERROR "pcre dependency for RULES has not been found")
     endif()
+else()
+    set(PCRE_LIBRARY "")
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -70,6 +72,9 @@ if(NOT USE_BUNDLED_TINYXML2)
 endif()
 
 find_package(Threads REQUIRED)
+if(NOT DEFINED CMAKE_THREAD_LIBS_INIT)
+    set(CMAKE_THREAD_LIBS_INIT "")
+endif()
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
     # avoid legacy warning about Boost lookup in CMake
@@ -90,7 +95,7 @@ if(USE_BOOST)
         endif()
         set(Boost_FOUND ON)
         set(Boost_INCLUDE_DIRS "${BOOST_INCLUDEDIR}")
-        # TODO: set Boost_VERSION_STRING
+        set(Boost_VERSION_STRING "")  # TODO: set proper value
     elseif(USE_BOOST STREQUAL "Auto")
         find_package(Boost)
     else()
