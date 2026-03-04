@@ -92,7 +92,7 @@ std::string constVariable_GetModuleFileName(void) {
     return std::string{path};
 }
 
-const char* constVariable_MAKEINTRESOURCE() { // #14564
+const TCHAR* constVariable_MAKEINTRESOURCE() { // #14564
     return MAKEINTRESOURCE(5 - 1);
 }
 
