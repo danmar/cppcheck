@@ -84,7 +84,10 @@ BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
     return retVal;
 }
 
-/// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+const char* constVariable_MAKEINTRESSOURCE() {
+    return MAKEINTRESSOURCE(5 - 1);
+}
+
 std::string constVariable_GetModuleFileName(void) {
     char path[42];
     if (GetModuleFileNameA(NULL, path, sizeof(path))==0)
