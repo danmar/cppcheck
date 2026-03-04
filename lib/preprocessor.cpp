@@ -462,6 +462,7 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             if (!sameline(iftok,cond->next) || !cond->next->name)
                 break;
             if (cond->next->str() == "defined") {
+                cond = cond->next;
                 isNotDefinedMacro = true;
                 continue;
             }
