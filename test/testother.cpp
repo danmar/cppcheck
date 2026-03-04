@@ -2026,6 +2026,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(int& r) {\n" // #14566
+              "    int i = 0;\n"
+              "    while (g()) {\n"
+              "        {\n"
+              "            if (g()) {\n"
+              "                i = 0;"
+              "                std::swap(i, r);\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"
+              "    use(i);"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
