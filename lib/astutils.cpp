@@ -1084,7 +1084,7 @@ bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
         r = findAstNode(expr, [&](const Token* childTok) {
             if (childTok->exprId() == 0)
                 return false;
-            if (ref.token != tok && expr->exprId() == childTok->exprId()) {
+            if (ref.token != tok && expr->exprId() == childTok->exprId() && ref.token->isUnaryOp("*") && expr->exprId() == ref.token->astOperand1()->exprId()) {
                 if (indirect)
                     *indirect = 0;
                 return true;
