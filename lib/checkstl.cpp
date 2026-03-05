@@ -1959,7 +1959,7 @@ static bool isLocal(const Token *tok)
     return var && !var->isStatic() && var->isLocal();
 }
 
-static bool isc_strCall(const Token* tok)
+static bool isc_strCall(const Token* tok, const Library::Container* container)
 {
     if (!Token::simpleMatch(tok, "("))
         return false;
@@ -1967,49 +1967,43 @@ static bool isc_strCall(const Token* tok)
     if (!Token::simpleMatch(dot, "."))
         return false;
     const Token* obj = dot->astOperand1();
-    if (!obj || !obj->valueType() || !obj->valueType()->container ||
-        !obj->valueType()->container->stdStringLike || !obj->valueType()->container->startPatternHasStd)
+    if (!obj || !obj->valueType())
+        return false;
+    const Library::Container* objContainer = obj->valueType()->container;
+    if (!objContainer || !container || !objContainer->stdStringLike || (objContainer != container && !container->view))
         return false;
     return Token::Match(dot->astOperand2(), "c_str|data ( )");
 }
 
 static bool isc_strConcat(const Token* tok)
 {
-    if (!Token::simpleMatch(tok, "+") || !tok->isBinaryOp())
+    if (!tok->isBinaryOp() || !Token::simpleMatch(tok, "+"))
         return false;
-    const Token* cstr = nullptr;
     for (const Token* op : { tok->astOperand1(), tok->astOperand2() }) {
-        if (isc_strCall(op)) {
-            cstr = op;
-            break;
-        }
+        const Token* sibling = op->astSibling();
+        if (!sibling->valueType())
+            continue;
+        if (isc_strCall(op, sibling->valueType()->container))
+            return true;
     }
-    if (!cstr)
-        return false;
-    const Token* strTok = (cstr == tok->astOperand1()) ? tok->astOperand2() : tok->astOperand1();
-    return strTok->valueType() && strTok->valueType()->container &&
-           strTok->valueType()->container->stdStringLike && strTok->valueType()->container->startPatternHasStd;
+    return false;
 }
 
 static bool isc_strAssignment(const Token* tok)
 {
     if (!Token::simpleMatch(tok, "="))
         return false;
-    if (!isc_strCall(tok->astOperand2()))
-        return false;
     const Token* strTok = tok->astOperand1();
-    return strTok && strTok->valueType() && strTok->valueType()->container &&
-           strTok->valueType()->container->stdStringLike && strTok->valueType()->container->startPatternHasStd;
+    if (!strTok || !strTok->valueType())
+        return false;
+    return isc_strCall(tok->astOperand2(), strTok->valueType()->container);        
 }
 
 static bool isc_strConstructor(const Token* tok)
 {
-    if (!Token::Match(tok, "%var% (|{"))
+    if (!tok->valueType() || !Token::Match(tok, "%var% (|{"))
         return false;
-    if (!isc_strCall(tok->tokAt(1)->astOperand2()))
-        return false;
-    return tok->valueType() && tok->valueType()->container &&
-           tok->valueType()->container->stdStringLike && tok->valueType()->container->startPatternHasStd;
+    return isc_strCall(tok->tokAt(1)->astOperand2(), tok->valueType()->container);
 }
 
 namespace {
