@@ -167,7 +167,7 @@ void LibraryDialog::saveCfg()
 void LibraryDialog::saveCfgAs()
 {
     const QString filter(tr("Library files (*.cfg)"));
-    const QString path = Path::getPathFromFilename(mFileName.toStdString()).c_str();
+    const QString path = QString::fromStdString(Path::getPathFromFilename(mFileName.toStdString()));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                                                         tr("Save the library as"),
                                                         path,
