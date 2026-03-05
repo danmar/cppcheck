@@ -4101,7 +4101,7 @@ static bool intersects(const C1& c1, const C2& c2)
     return false;
 }
 
-static void valueFlowAfterAssign(TokenList &tokenlist,
+static void valueFlowAfterAssign(const TokenList &tokenlist,
                                  const SymbolDatabase& symboldatabase,
                                  ErrorLogger &errorLogger,
                                  const Settings &settings,
