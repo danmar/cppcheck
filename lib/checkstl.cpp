@@ -1996,7 +1996,7 @@ static bool isc_strAssignment(const Token* tok)
     const Token* strTok = tok->astOperand1();
     if (!strTok || !strTok->valueType())
         return false;
-    return isc_strCall(tok->astOperand2(), strTok->valueType()->container);        
+    return isc_strCall(tok->astOperand2(), strTok->valueType()->container);
 }
 
 static bool isc_strConstructor(const Token* tok)
