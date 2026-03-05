@@ -4749,6 +4749,18 @@ private:
               "    return [](int* p) { return *p; }(&i);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:20]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n", errout_str());
+
+        check("struct S {\n" // #14571
+              "    char* c;\n"
+              "};\n"
+              "struct T {\n"
+              "    S s;\n"
+              "};\n"
+              "void f(std::string* p, T& t) {\n"
+              "    S& r = t.s;\n"
+              "    strcpy(r.c, p->c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7:21]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n", errout_str());
     }
 
     void constArray() {
