@@ -45,7 +45,7 @@ public:
         const auto pos = report.rfind("\n\n");
         ASSERT(pos != std::string::npos);
 
-        const char expected[] = 
+        const char expected[] =
             "test checkers\n"
             "-------------\n"
             "No   abcdefghijklmnopqrstuvwxyz::abcdefghijklmnopqrstuvwxyz    require:123\n";
