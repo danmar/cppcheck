@@ -209,13 +209,20 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         fout << title << std::endl;
         fout << std::string(title.size(), '-') << std::endl;
 
+        maxCheckerSize = 0;
+        for (const auto& checkReq: addonInfo.checkers) {
+            const std::string& checker = checkReq.first;
+            if (maxCheckerSize < checker.size())
+                maxCheckerSize = checker.size();
+        }
+
         for (const auto& checkReq: addonInfo.checkers) {
             const std::string& checker = checkReq.first;
             const bool active = mActiveCheckers.count(checkReq.first) > 0;
             const std::string& req = checkReq.second;
             fout << (active ? "Yes  " : "No   ") << checker;
             if (!active && !req.empty())
-                fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
+                fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" << req;
             fout << std::endl;
         }
     }
