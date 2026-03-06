@@ -76,6 +76,7 @@ private:
         TEST_CASE(uninitvar12); // #10218 - stream read
         TEST_CASE(uninitvar13); // #9772
         TEST_CASE(uninitvar14);
+        TEST_CASE(uninitvar15); // #13685
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -3645,6 +3646,17 @@ private:
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
         (checkuninitvar.valueFlowUninit)();
+    }
+
+    void uninitvar15() { // #13685
+        const char code[] = "int f() {\n"
+                            "    int x;\n"
+                            "    if (!({ int *p = &x; *p = 1; 1; }))\n"
+                            "        return 0;\n"
+                            "    return x;\n"
+                            "}";
+        valueFlowUninit(code, false);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void valueFlowUninit2_value()

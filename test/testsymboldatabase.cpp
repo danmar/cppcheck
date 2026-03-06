@@ -441,6 +441,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes8); // #12761
         TEST_CASE(createSymbolDatabaseFindAllScopes9);
         TEST_CASE(createSymbolDatabaseFindAllScopes10);
+        TEST_CASE(createSymbolDatabaseFindAllScopes11);
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
@@ -6108,6 +6109,24 @@ private:
             const Token* const fp = Token::findsimplematch(tokenizer.tokens(), "fp");
             ASSERT(fp && fp->variable());
         }
+    }
+
+    void createSymbolDatabaseFindAllScopes11() // #13685
+    {
+        GET_SYMBOL_DB("int f() {\n"
+                      "    int x;\n"
+                      "    if (!({ int *p = &x; *p = 1; 1; }))\n"
+                      "        return 0;\n"
+                      "    return x;\n"
+                      "}\n");
+        ASSERT(db && db->scopeList.size() == 4);
+
+        auto it = db->scopeList.begin();
+        std::advance(it, 3);
+        const Scope& compoundScope = *it;
+        ASSERT_EQUALS_ENUM(ScopeType::eUnconditional, compoundScope.type);
+        ASSERT_EQUALS_ENUM(ScopeType::eFunction, compoundScope.nestedIn->type);
+        ASSERT_EQUALS("f", compoundScope.nestedIn->className);
     }
 
     void createSymbolDatabaseIncompleteVars()
