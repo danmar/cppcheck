@@ -5171,7 +5171,7 @@ struct S_constVariablePointer_wstring { // #14575
     const std::wstring& get() const { return m; }
 };
 
-S* g_constVariablePointer_wstring();
+S_constVariablePointer_wstring* g_constVariablePointer_wstring();
 
 void h_constVariablePointer_wstring(const wchar_t*);
 
