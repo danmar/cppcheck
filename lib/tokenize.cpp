@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1043,7 +1043,7 @@ void Tokenizer::simplifyTypedef()
                 if (t != ts.nameToken())
                     existing_data_type += t->str() + " ";
             }
-            numberOfTypedefs[ts.name()].insert(existing_data_type);
+            numberOfTypedefs[ts.name()].emplace(std::move(existing_data_type));
             continue;
         }
     }
@@ -3788,7 +3788,7 @@ void Tokenizer::simplifyParenthesizedLibraryFunctions()
         if (!Token::simpleMatch(tok, ") ("))
             continue;
         Token *rpar = tok, *lpar = tok->link();
-        if (!lpar || (Token::Match(lpar->previous(), "%name%") && !lpar->previous()->isKeyword()))
+        if (!lpar || (Token::Match(lpar->previous(), "%name%") && !Token::Match(lpar->previous(), "return|delete|throw")))
             continue;
         const Token *ftok = rpar->previous();
         if (mSettings.library.isNotLibraryFunction(ftok))
