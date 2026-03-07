@@ -34,7 +34,7 @@ public:
         TEST_CASE(addonInfoCheckers);
     }
 
-    void addonInfoCheckers() {
+    void addonInfoCheckers() const {
         AddonInfo a;
         a.name = "test";
         a.checkers["abcdefghijklmnopqrstuvwxyz::abcdefghijklmnopqrstuvwxyz"] = "123";
