@@ -284,6 +284,8 @@ private:
         TEST_CASE(cppMaybeUnusedAfter2);
         TEST_CASE(cppMaybeUnusedStructuredBinding);
 
+        TEST_CASE(simplifyAlignedStorage);
+
         TEST_CASE(splitTemplateRightAngleBrackets);
 
         TEST_CASE(cpp03template1);
@@ -4332,6 +4334,20 @@ private:
         ASSERT(var2 && var2->isAttributeMaybeUnused());
     }
 
+    void simplifyAlignedStorage() {
+        const char code[] = "std::aligned_storage<sizeof(long), alignof(long)>::type buffer;";
+        const char expected[] = "std :: aligned_storage < sizeof ( long ) , alignof ( long ) > :: type buffer ;";
+
+        SimpleTokenizer tokenizer(settings2, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *buffer = Token::findsimplematch(tokenizer.tokens(), "buffer");
+        ASSERT(buffer);
+        ASSERT(buffer->hasAttributeAlignas());
+        ASSERT_EQUALS("alignof ( long )", buffer->getAttributeAlignas()[0]);
+    }
 
     void splitTemplateRightAngleBrackets() {
         {
