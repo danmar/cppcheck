@@ -40,7 +40,8 @@ public:
         a.checkers["abcdefghijklmnopqrstuvwxyz::abcdefghijklmnopqrstuvwxyz"] = "123";
         Settings s;
         s.addonInfos.emplace_back(a);
-        CheckersReport r(s, {});
+        std::set<std::string> activeCheckers;
+        CheckersReport r(s, activeCheckers);
         const std::string report = r.getReport("");
         const auto pos = report.rfind("\n\n");
         ASSERT(pos != std::string::npos);
