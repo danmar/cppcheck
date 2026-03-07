@@ -114,7 +114,7 @@ private:
     template<size_t size>
     std::string tok_(const char* file, int line, const char (&code)[size], const TokOptions& options = make_default_obj()) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(options.debugwarnings)
-            .platform(options.type).cpp(options.cppstd).build();
+                                  .platform(options.type).cpp(options.cppstd).build();
 
         if (options.preprocess) {
             SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
