@@ -23,6 +23,7 @@
 #include "filesettings.h"
 #include "resultsview.h"
 #include "settings.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <string>
@@ -161,7 +162,7 @@ void ThreadHandler::createThreads(const int count)
 
 void ThreadHandler::removeThreads()
 {
-    for (CheckThread* thread : mThreads) {
+    for (CheckThread* thread : utils::as_const(mThreads)) {
         if (thread->isRunning()) {
             thread->stop();
             thread->wait();
@@ -216,7 +217,7 @@ void ThreadHandler::stop()
     mCheckStartTime = QDateTime();
     mAnalyseWholeProgram = false;
     mCtuInfo.clear();
-    for (CheckThread* thread : mThreads) {
+    for (CheckThread* thread : utils::as_const(mThreads)) {
         thread->stop();
     }
 }
