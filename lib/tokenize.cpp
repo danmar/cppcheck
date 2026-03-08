@@ -2998,6 +2998,9 @@ bool Tokenizer::simplifyUsing()
         if (!usingEnd)
             continue;
 
+        for (Token *typeTok = start; typeTok != usingEnd; typeTok = typeTok->next())
+            typeTok->isSimplifiedTypedef(true);
+
         // Move struct defined in using out of using.
         // using T = struct t { }; => struct t { }; using T = struct t;
         // fixme: this doesn't handle attributes
