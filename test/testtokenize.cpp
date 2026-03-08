@@ -7147,6 +7147,7 @@ private:
         ASSERT_EQUALS("crequires{ac::||= a{b{||",
                       testAst("template <class a, class b> concept c = requires { a{} || b{}; } || a::c;"));
         ASSERT_EQUALS("ifrequires{(", testAst("if (requires { true; }) {}")); // #13308
+        ASSERT_EQUALS("Crequires({requires({||= sizeofT(4== sizeofT(8==", testAst("concept C = requires() { sizeof(T) == 4; } || requires() { sizeof(T) == 8; };"));
     }
 
     void astcast() {
