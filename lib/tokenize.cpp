@@ -2890,7 +2890,7 @@ static const Token* skipConstVolatileBackwards(const Token* tok) {
 
 bool Tokenizer::simplifyUsing()
 {
-    if (!isCPP() || mSettings.standards.cpp < Standards::CPP11)
+    if (!isCPP())
         return false;
 
     // simplify using N::x; to using x = N::x;
