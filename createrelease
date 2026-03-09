@@ -12,6 +12,10 @@
 # create jira issue "CI: update cppcheck binary"
 # cd ~/cppchecksolutions/addon/tools && python3 ci-update-cppcheck.py
 #
+# update mappings..
+# cd ~/cppchecksolutions/addon/coverage
+# CPPCHECK_REPO=~/cppchecksolutions/cppcheck python3 coverage.py --code
+#
 # check every isPremiumEnabled call: TODO write helper script
 # - every id should be in --errorlist
 #   git grep 'isPremiumEnabled[(]"' | sed 's/.*isPremiumEnabled[(]"//' | sed 's/".*//' | sort | uniq > ids1.txt
@@ -104,6 +108,12 @@
 # compile new democlient:
 # ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net create
 # ./build-cppcheck.sh
+#
+# create a ticket with data from http://cppcheck1.osuosl.org:8000/time_gt.html for performance tracking
+# (example: https://trac.cppcheck.net/ticket/13715)
+# - type: defect
+# - component: Performance
+# - summary: [meta] performance regressions in 2.x
 #
 # run daca with new release
 # 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and SERVER_VERSION

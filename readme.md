@@ -52,7 +52,7 @@ The minimum required Python version is 3.7.
 
 ### CMake
 
-The minimum required version is CMake 3.13.
+The minimum required version is CMake 3.22.
 
 Example, compiling Cppcheck with cmake:
 
@@ -71,7 +71,7 @@ For release builds it is recommended that you use:
 -DUSE_MATCHCOMPILER=ON
 
 For building the tests use the flag.
--DBUILD_TESTS=ON
+-DBUILD_TESTING=ON
 
 Using cmake you can generate project files for Visual Studio,XCode,etc.
 

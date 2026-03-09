@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -415,7 +415,7 @@ void CheckOther::warningDangerousTypeCast()
     // Only valid on C++ code
     if (!mTokenizer->isCPP())
         return;
-    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("cstyleCast"))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("dangerousTypeCast"))
         return;
 
     logChecker("CheckOther::warningDangerousTypeCast"); // warning,c++
@@ -631,7 +631,7 @@ void CheckOther::checkRedundantAssignment()
                                   [&](const Token *rhs) {
                         if (Token::simpleMatch(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
-                        if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
+                        if (Token::Match(rhs, "%num%|%name%") && !rhs->varId())
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, ":: %name%") && rhs->hasKnownIntValue())
                             return ChildrenToVisit::none;
@@ -1331,6 +1331,15 @@ static bool mayDependOn(const ValueType *other, const ValueType *original)
     return otherPtr > originalPtr;
 }
 
+static bool isOnlyUsedInCurrentScope(const Variable* var, const Token *tok, const Scope* scope)
+{
+    if (tok->scope() == scope)
+        return true;
+    if (tok->scope()->type == ScopeType::eSwitch)
+        return false;
+    return !Token::findmatch(tok->scope()->bodyEnd, "%varid%", scope->bodyEnd, var->declarationId());
+}
+
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
 {
     const Scope* scope = tok->next()->scope();
@@ -1370,7 +1379,8 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok == forHeadEnd)
             forHeadEnd = nullptr;
 
-        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
+        if (loopVariable && noContinue && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId()) &&
+            isOnlyUsedInCurrentScope(var, tok, scope)) { // Assigned in outer scope.
             loopVariable = false;
             std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
             if (range.first)
@@ -1869,7 +1879,7 @@ void CheckOther::checkConstPointer()
             continue;
         if (!var->isLocal() && !var->isArgument())
             continue;
-        if (var->isArgument() && var->scope() && var->scope()->type == ScopeType::eLambda)
+        if (var->isArgument() && var->scope() && var->scope()->type == ScopeType::eLambda && !Token::simpleMatch(var->scope()->bodyEnd, "} ("))
             continue;
         const Token* const nameTok = var->nameToken();
         if (tok == nameTok && var->isLocal() && !astIsRangeBasedForDecl(nameTok)) {
@@ -3294,9 +3304,11 @@ static bool constructorTakesReference(const Scope * const classScope)
 
 static bool isLargeObject(const Variable* var, const Settings& settings)
 {
-    return var && !var->isGlobal() &&
-           (!var->type() || !var->type()->classScope ||
-            (var->valueType() && var->valueType()->getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * settings.platform.sizeof_pointer));
+    if (!var || var->isGlobal() || !var->valueType())
+        return false;
+    ValueType vt = *var->valueType();
+    vt.reference = Reference::None;
+    return vt.getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer) > 2 * settings.platform.sizeof_pointer;
 }
 
 //---------------------------------------------------------------------------
@@ -3332,12 +3344,14 @@ static bool checkFunctionReturnsRef(const Token* tok, const Settings& settings)
     return false;
 }
 
-static bool checkVariableAssignment(const Token* tok, const Settings& settings)
+static bool checkVariableAssignment(const Token* tok, const ValueType* vtLhs, const Settings& settings)
 {
     if (!Token::Match(tok, "%var% ;"))
         return false;
     const Variable* var = tok->variable();
     if (!var || !isLargeObject(var, settings))
+        return false;
+    if (!vtLhs || !vtLhs->isTypeEqual(var->valueType()))
         return false;
     if (findVariableChanged(tok->tokAt(2), tok->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(), /*globalvar*/ false, settings))
         return false;
@@ -3381,7 +3395,7 @@ void CheckOther::checkRedundantCopy()
         const Token* tok = startTok->next()->astOperand2();
         if (!tok)
             continue;
-        if (!checkFunctionReturnsRef(tok, *mSettings) && !checkVariableAssignment(tok, *mSettings))
+        if (!checkFunctionReturnsRef(tok, *mSettings) && !checkVariableAssignment(tok, var->valueType(), *mSettings))
             continue;
         redundantCopyError(startTok, startTok->str());
     }
