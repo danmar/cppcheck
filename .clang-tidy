@@ -23,14 +23,12 @@ Checks: >
         google-explicit-constructor,
         -bugprone-assignment-in-if-condition,
         -bugprone-branch-clone,
-        -bugprone-command-processor,
         -bugprone-easily-swappable-parameters,
         -bugprone-empty-catch,
         -bugprone-macro-parentheses,
         -bugprone-narrowing-conversions,
         -bugprone-signed-char-misuse,
         -bugprone-switch-missing-default-case,
-        -bugprone-throwing-static-initialization,
         -bugprone-unchecked-optional-access,
         -clang-analyzer-*,
         -concurrency-mt-unsafe,
@@ -39,6 +37,7 @@ Checks: >
         -misc-non-private-member-variables-in-classes,
         -misc-throw-by-value-catch-by-reference,
         -misc-use-anonymous-namespace,
+        -misc-use-internal-linkage,
         -modernize-avoid-c-arrays,
         -modernize-deprecated-ios-base-aliases,
         -misc-include-cleaner,
@@ -70,7 +69,7 @@ Checks: >
         -readability-implicit-bool-conversion,
         -readability-isolate-declaration,
         -readability-magic-numbers,
-        -readability-redundant-parentheses,
+        -readability-math-missing-parentheses,
         -readability-suspicious-call-argument,
         -readability-uppercase-literal-suffix,
         -readability-use-concise-preprocessor-directives,
@@ -85,5 +84,3 @@ CheckOptions:
     value:           '0'
   - key:             modernize-use-trailing-return-type.TransformFunctions
     value:           false
-  - key:             misc-override-with-different-visibility.DisallowedVisibilityChange
-    value:           widening
