@@ -79,7 +79,7 @@ jobs:
       - name: Clang-Tidy
         if: ${{ github.event.schedule == '' && github.event_name != 'workflow_dispatch' }}
         run: |
-          cmake --build cmake.output --target run-clang-tidy
+          cmake --build cmake.output --target run-clang-tidy 2> /dev/null
 
       - name: Clang Static Analyzer
         if: ${{ github.event.schedule != '' || github.event_name == 'workflow_dispatch' }}
