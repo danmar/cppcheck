@@ -66,6 +66,10 @@ if(NO_WINDOWS_SEH)
     add_definitions(-DNO_WINDOWS_SEH)
 endif()
 
+if(NOT MSVC)
+    add_definitions(-DHAVE_EXECINFO_H=${HAVE_EXECINFO_H})
+endif()
+
 if(FILESDIR_DEF)
     file(TO_CMAKE_PATH "${FILESDIR_DEF}" _filesdir)
     add_definitions(-DFILESDIR="${_filesdir}")
