@@ -292,11 +292,11 @@ void LibraryDialog::filterFunctions(const QString& filter)
     QList<QListWidgetItem *> allItems = mUi->functions->findItems(QString(), Qt::MatchContains);
 
     if (filter.isEmpty()) {
-        for (QListWidgetItem *item : allItems) {
+        for (QListWidgetItem *item : utils::as_const(allItems)) {
             item->setHidden(false);
         }
     } else {
-        for (QListWidgetItem *item : allItems) {
+        for (QListWidgetItem *item : utils::as_const(allItems)) {
             item->setHidden(!item->text().startsWith(filter));
         }
     }

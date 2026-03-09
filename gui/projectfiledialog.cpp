@@ -194,7 +194,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     }
     libs.sort();
     mUI->mLibraries->clear();
-    for (const QString &lib : libs) {
+    for (const QString &lib : utils::as_const(libs)) {
         auto* item = new QListWidgetItem(lib, mUI->mLibraries);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         item->setCheckState(Qt::Unchecked); // AND initialize check state
