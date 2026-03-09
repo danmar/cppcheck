@@ -597,7 +597,6 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         enableProjectActions(false);
     }
 
-    mUI->mResults->clear(true);
     mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mThread->clearFiles();
 
