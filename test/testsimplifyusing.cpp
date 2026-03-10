@@ -930,7 +930,7 @@ private:
 
     void simplifyUsing39() {
         const char code[] = "using std::wstring;\n" // #14578
-                            "std::wstring ws;";
+                            "wstring ws;";
         const char expected[] = "std :: wstring ws ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
