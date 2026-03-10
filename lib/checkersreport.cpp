@@ -212,8 +212,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         maxCheckerSize = 0;
         for (const auto& checkReq: addonInfo.checkers) {
             const std::string& checker = checkReq.first;
-            if (maxCheckerSize < checker.size())
-                maxCheckerSize = checker.size();
+            maxCheckerSize = std::max(checker.size(), maxCheckerSize);
         }
 
         for (const auto& checkReq: addonInfo.checkers) {
