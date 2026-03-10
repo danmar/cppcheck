@@ -304,7 +304,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
     if (tok->isName() || tok->str() == ".") {
         while (tok && tok->str() == ".")
             tok = tok->astOperand2();
-        const auto it = utils::as_const(variableValue).find(tok ? tok->varId() : ~0U);
+        const auto it = tok ? variableValue.find(tok->varId()) : variableValue.end();
         if (it != variableValue.end()) {
             *alwaysTrue = (it->second != 0LL);
             *alwaysFalse = (it->second == 0LL);
@@ -330,7 +330,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
         while (vartok && vartok->str() == ".")
             vartok = vartok->astOperand2();
 
-        const auto it = utils::as_const(variableValue).find(vartok ? vartok->varId() : ~0U);
+        const auto it = vartok ? variableValue.find(vartok->varId()) : variableValue.end();
         if (it == variableValue.end())
             return;
 
