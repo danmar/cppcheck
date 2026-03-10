@@ -1979,7 +1979,7 @@ static bool isc_strConcat(const Token* tok)
 {
     if (!tok->isBinaryOp() || !Token::simpleMatch(tok, "+"))
         return false;
-    for (const Token* op : { tok->astOperand1(), tok->astOperand2() }) {
+    for (const Token* op : { tok->astOperand1(), tok->astOperand2() }) { // NOLINT(readability-use-anyofallof)
         const Token* sibling = op->astSibling();
         if (!sibling->valueType())
             continue;
