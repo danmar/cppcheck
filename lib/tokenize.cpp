@@ -135,7 +135,7 @@ Tokenizer::~Tokenizer()
 
 nonneg int Tokenizer::sizeOfType(const std::string& type) const
 {
-    const auto it = utils::as_const(mTypeSize).find(type);
+    const auto it = mTypeSize.find(type);
     if (it == mTypeSize.end()) {
         const Library::PodType* podtype = mSettings.library.podtype(type);
         if (!podtype)
@@ -154,7 +154,7 @@ nonneg int Tokenizer::sizeOfType(const Token *type) const
     if (type->tokType() == Token::eString)
         return Token::getStrLength(type) + 1U;
 
-    const auto it = utils::as_const(mTypeSize).find(type->str());
+    const auto it = mTypeSize.find(type->str());
     if (it == mTypeSize.end()) {
         const Library::PodType* podtype = mSettings.library.podtype(type->str());
         if (!podtype)
@@ -4629,7 +4629,7 @@ void Tokenizer::setVarIdClassFunction(const std::string &classname,
         if (Token::Match(tok2, "%name% ::"))
             continue;
 
-        const auto it = utils::as_const(varlist).find(tok2->str());
+        const auto it = varlist.find(tok2->str());
         if (it != varlist.end()) {
             tok2->varId(it->second);
             setVarIdStructMembers(tok2, structMembers, varId_);
@@ -7799,7 +7799,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         if (!tok->isName())
             continue;
 
-        const auto cOpIt = utils::as_const(cAlternativeTokens).find(tok->str());
+        const auto cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
             alt.push_back(tok);
 
@@ -7841,7 +7841,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         return false;
 
     for (Token *tok: alt) {
-        const auto cOpIt = utils::as_const(cAlternativeTokens).find(tok->str());
+        const auto cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end())
             tok->str(cOpIt->second);
         else if (tok->str() == "not")
@@ -10442,7 +10442,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
         if (tok->strAt(1) != "(")
             continue;
 
-        const auto match = utils::as_const(apis).find(tok->str());
+        const auto match = apis.find(tok->str());
         if (match!=apis.end()) {
             tok->str(ansi ? match->second.mbcs : match->second.unicode);
             tok->originalName(match->first);
