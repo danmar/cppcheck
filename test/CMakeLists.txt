@@ -1,4 +1,4 @@
-if (BUILD_TESTS)
+if (BUILD_TESTING)
     add_subdirectory(signal)
     add_subdirectory(seh)
 

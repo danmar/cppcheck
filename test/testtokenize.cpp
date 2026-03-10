@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -185,6 +185,7 @@ private:
         TEST_CASE(removeParentheses27);
         TEST_CASE(removeParentheses28);      // #12164 - don't remove parentheses in '(expr1) ? (expr2) : (expr3);'
         TEST_CASE(removeParantheses29);      // #13735
+        TEST_CASE(removeParentheses30);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -425,6 +426,8 @@ private:
         TEST_CASE(astrvaluedecl);
         TEST_CASE(astorkeyword);
         TEST_CASE(astenumdecl);
+        TEST_CASE(astcompound);
+        TEST_CASE(astfuncdecl);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -2190,6 +2193,19 @@ private:
                                   "return modf ( 12.3 , NULL ) ;\n"
                                   "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void removeParentheses30() {
+        static char code[] = "void f (Node *node) {\n"
+                             "    if (node->data && (node->provider)->free)\n"
+                             "        (node->provider)->free (node);\n"
+                             "}\n";
+        static const char exp[] = "void f ( Node * node ) {\n"
+                                  "if ( node . data && ( node . provider ) . free ) {\n"
+                                  "node . provider . free ( node ) ; }\n"
+                                  "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+        (void) errout_str();
     }
 
     void tokenize_double() {
@@ -6400,8 +6416,13 @@ private:
         Z3
     };
 
+    enum class ListSimplification : std::uint8_t {
+        Partial,
+        Full
+    };
+
     template<size_t size>
-    std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple) {
+    std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple, ListSimplification ls = ListSimplification::Partial) {
         // tokenize given code..
         TokenList tokenlist{settings0, Standards::Language::CPP};
         tokenlist.appendFileIfNew("test.cpp");
@@ -6409,13 +6430,17 @@ private:
             return "ERROR";
 
         TokenizerTest tokenizer(std::move(tokenlist), *this);
-        tokenizer.combineStringAndCharLiterals();
-        tokenizer.combineOperators();
-        tokenizer.simplifySpaceshipOperator();
-        tokenizer.createLinks();
-        tokenizer.createLinks2();
-        tokenizer.simplifyCAlternativeTokens();
-        tokenizer.list.front()->assignIndexes();
+        if (ls == ListSimplification::Partial) {
+            tokenizer.combineStringAndCharLiterals();
+            tokenizer.combineOperators();
+            tokenizer.simplifySpaceshipOperator();
+            tokenizer.createLinks();
+            tokenizer.createLinks2();
+            tokenizer.simplifyCAlternativeTokens();
+            tokenizer.list.front()->assignIndexes();
+        } else { // Full
+            tokenizer.simplifyTokens1("");
+        }
 
         // set varid..
         for (Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
@@ -7406,6 +7431,16 @@ private:
     void astenumdecl() {
         ASSERT_EQUALS("A0U=", testAst("enum class myclass : unsigned char { A = 0U, };"));
         ASSERT_EQUALS("A0U=", testAst("enum myclass : unsigned char { A = 0U, };"));
+    }
+
+    void astcompound() {
+        ASSERT_EQUALS("sn0=={(tmp:?=", testAst("Str s = n == 0 ? (Str) { 0 } : tmp;")); // #14548
+        ASSERT_EQUALS("s(sstrlens(0:?,{(return", testAst("return (struct Str) { (unsigned char*)s, s ? strlen(s) : 0 };"));
+    }
+
+    void astfuncdecl() {
+        ASSERT_EQUALS("", testAst("bool operator==(const S& a, const S& b);", AstStyle::Simple, ListSimplification::Full));
+        ASSERT_EQUALS("", testAst("::int32_t f();"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
