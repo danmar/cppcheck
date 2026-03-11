@@ -3269,6 +3269,8 @@ void CheckClass::checkOverride()
                 continue;
             if (func.tokenDef->isExpandedMacro())
                 continue;
+            if (func.templateDef)
+                continue;
             const Function *baseFunc = func.getOverriddenFunction();
             if (baseFunc)
                 overrideError(baseFunc, &func);
