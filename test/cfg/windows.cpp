@@ -1223,3 +1223,13 @@ void SEH_unusedLabel() { // #13233
     __finally {
     }
 }
+
+HWND constParameterPointer_CreateWindow(void* param) { // #14560
+    return CreateWindow(L"MessageWnd", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, param);
+}
+
+void constParameterPointer_SetupDiGetDeviceInstanceId(HDEVINFO info, SP_DEVINFO_DATA *data) {
+    const DWORD buffer_size = 256;
+    char buffer[buffer_size];
+    SetupDiGetDeviceInstanceId(info, data, buffer, buffer_size, NULL);
+}
