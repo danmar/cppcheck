@@ -403,14 +403,18 @@ static inline T* empty_if_null(T* p)
 }
 
 /**
- * Split string by given sperator.
+ * Split string by given separator.
  * @param str The string to split
- * @param sep The seperator
- * @return The list of seperate strings (including empty ones). The whole input string if no seperator found.
+ * @param sep The separator
+ * @return The list of separate strings (including empty ones). The whole input string if no separator found.
  */
 CPPCHECKLIB std::vector<std::string> splitString(const std::string& str, char sep);
 
 namespace utils {
+    /**
+     * Drop-in replacement for C++17's std::as_const
+     * @param t  The function forms the lvalue reference to const type of this argument.
+     */
     template<class T>
     constexpr typename std::add_const<T>::type & as_const(T& t) noexcept
     {
