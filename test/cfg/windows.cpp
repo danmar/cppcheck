@@ -11,6 +11,7 @@
 
 #include <Windows.h>
 #include <WinCon.h>
+#include <SetupAPI.h>
 #include <cstdio>
 #include <direct.h>
 #include <evntrace.h>
