@@ -1231,6 +1231,6 @@ HWND constParameterPointer_CreateWindow(void* param) { // #14560
 
 void constParameterPointer_SetupDiGetDeviceInstanceId(HDEVINFO info, SP_DEVINFO_DATA *data) {
     const DWORD buffer_size = 256;
-    char buffer[buffer_size];
+    TCHAR buffer[buffer_size];
     SetupDiGetDeviceInstanceId(info, data, buffer, buffer_size, NULL);
 }
