@@ -635,6 +635,12 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (!tok->scope() || !tok->scope()->isExecutable())
             continue;
 
+        // skip uninstantiated templates
+        if (tok == tok->scope()->bodyStart && tok->scope()->function && tok->scope()->function->templateDef) {
+            tok = tok->link();
+            continue;
+        }
+
         if (tok->str() == "new")
             insideNew = true;
         else if (tok->str() == ";")
