@@ -4234,3 +4234,41 @@ def test_analyzerinfo(tmp_path):
     # TODO:
     # - invalid error
     # - internalError
+
+
+def test_ctu_function_call_path_slash(tmp_path):  # #14591
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""void g(T* p)
+{
+    *p = 0;
+}
+
+void f(T* p)
+{
+    p = nullptr;
+    g(p);
+}
+""")
+
+    build_dir = tmp_path / 'b1'
+    os.makedirs(build_dir)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(build_dir),
+        str(test_file)
+    ]
+
+    exitcode, _, _ = cppcheck(args)
+    assert exitcode == 0
+
+    test_a1_file = build_dir / 'test.a1'
+    analyzerinfo = ElementTree.fromstring(test_a1_file.read_text())
+    function_call_paths = analyzerinfo.findall('FileInfo/function-call/path')
+    assert len(function_call_paths) == 1
+    file = function_call_paths[0].attrib['file']
+    assert file
+    assert not '\\' in file  # the path was incorrectly converted to native

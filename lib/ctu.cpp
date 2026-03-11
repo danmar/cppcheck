@@ -112,7 +112,7 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
         out << ">\n";
         for (const ErrorMessage::FileLocation &loc : callValuePath)
             out << "  <path"
-                << " " << ATTR_LOC_FILENAME << "=\"" << ErrorLogger::toxml(loc.getfile()) << "\""
+                << " " << ATTR_LOC_FILENAME << "=\"" << ErrorLogger::toxml(loc.getfile(false)) << "\""
                 << " " << ATTR_LOC_LINENR << "=\"" << loc.line << "\""
                 << " " << ATTR_LOC_COLUMN << "=\"" << loc.column << "\""
                 << " " << ATTR_INFO << "=\"" << ErrorLogger::toxml(loc.getinfo()) << "\"/>\n";
