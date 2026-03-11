@@ -30,7 +30,7 @@ jobs:
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -85,7 +85,7 @@ jobs:
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -97,7 +97,7 @@ jobs:
       # TODO: move latest compiler to separate step
       # TODO: bail out on warnings with latest GCC
       - name: Set up GCC
-        uses: egor-tensin/setup-gcc@v1
+        uses: egor-tensin/setup-gcc@v2
         if: false  # matrix.os == 'ubuntu-22.04'
         with:
           version: 13
@@ -215,7 +215,7 @@ jobs:
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -264,7 +264,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -298,7 +298,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -332,7 +332,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -360,7 +360,7 @@ jobs:
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -416,7 +416,7 @@ jobs:
       CMAKE_VERSION_FULL: 3.22.6
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -458,7 +458,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -696,7 +696,7 @@ jobs:
     runs-on: ubuntu-22.04 # run on the latest image only
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
