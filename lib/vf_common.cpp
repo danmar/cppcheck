@@ -323,7 +323,7 @@ namespace ValueFlow
             if (!tok->isTemplateArg())
                 value.setKnown();
             setTokenValue(tok->next(), std::move(value), settings);
-        } else if (Token::simpleMatch(tok, "= { } ;")) {
+        } else if (Token::simpleMatch(tok, "= { }")) {
             const Token* lhs = tok->astOperand1();
             if (lhs && lhs->valueType() && (lhs->valueType()->isIntegral() || lhs->valueType()->pointer > 0)) {
                 Value value(0);
