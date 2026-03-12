@@ -6451,6 +6451,11 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+
+        code = "void f() {\n"
+               "    if (int* x = {}) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, testKnownValueOfTok(code, "=", 0));
     }
 
     static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,
