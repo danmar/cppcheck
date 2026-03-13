@@ -334,12 +334,12 @@ CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation,
 /** Get a classification string from the given guideline and reporttype */
 CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
 
-/** Get a guidline string froM the given error id, reporttype, mapping and severity */
+/** Get a guideline string froM the given error id, reporttype, mapping and severity */
 CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType,
                                      const std::map<std::string, std::string> &guidelineMapping,
                                      Severity severity);
 
-/** Get a map from cppcheck error ids to guidlines matching the given report type */
+/** Get a map from cppcheck error ids to guidelines matching the given report type */
 CPPCHECKLIB std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
 
 /// @}

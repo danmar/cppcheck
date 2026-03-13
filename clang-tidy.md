@@ -187,7 +187,7 @@ We are currently using our own `naming.json` to enforce naming schemes. Also dis
 
 `portability-simd-intrinsics`<br/>
 
-We are not using SIMD instructions and it suggests to use `std::experiemental::` features which might not be commonly available. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+We are not using SIMD instructions and it suggests to use `std::experimental::` features which might not be commonly available. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
 
 `modernize-macro-to-enum`<br/>
 

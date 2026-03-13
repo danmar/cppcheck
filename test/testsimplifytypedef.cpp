@@ -4507,7 +4507,7 @@ private:
         // Search for the simplified short token and check its original Name, start from front to get the variable in the struct
         token = Token::findsimplematch(tokenizer.list.front(), "short", tokenizer.list.back());
         ASSERT_EQUALS("int16_t", token->originalName());
-        // Search for the simplified * token -> function pointer gets "(*" tokens infront of it
+        // Search for the simplified * token -> function pointer gets "(*" tokens in front of it
         token = Token::findsimplematch(endOfTypeDef, "*", tokenizer.list.back());
         ASSERT_EQUALS("rFunctionPointer_fp", token->originalName());
     }

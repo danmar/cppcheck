@@ -145,7 +145,7 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
             continue;
         }
 
-        /* No more path seperators to try from */
+        /* No more path separators to try from */
         return false;
     }
 }
