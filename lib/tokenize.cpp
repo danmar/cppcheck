@@ -4231,10 +4231,13 @@ void Tokenizer::simplifyTemplates()
 namespace {
     /** Class used in Tokenizer::setVarIdPass1 */
     class VariableMap {
+    public:
+        struct VarInfo { nonneg int id{}; bool assigned{}; };
+        using MapType = std::unordered_map<std::string, VarInfo>;
     private:
-        std::unordered_map<std::string, nonneg int> mVariableId;
-        std::unordered_map<std::string, nonneg int> mVariableId_global;
-        std::stack<std::vector<std::pair<std::string, nonneg int>>> mScopeInfo;
+        MapType mVariableId;
+        MapType mVariableId_global;
+        std::stack<std::vector<MapType::value_type>> mScopeInfo;
         mutable nonneg int mVarId{};
     public:
         VariableMap() = default;
@@ -4245,7 +4248,10 @@ namespace {
             return mVariableId.find(varname) != mVariableId.end();
         }
 
-        const std::unordered_map<std::string, nonneg int>& map(bool global) const {
+        const MapType& map(bool global) const {
+            return global ? mVariableId_global : mVariableId;
+        }
+        MapType& map(bool global) {
             return global ? mVariableId_global : mVariableId;
         }
         nonneg int& getVarId() {
@@ -4265,8 +4271,8 @@ bool VariableMap::leaveScope()
     if (mScopeInfo.empty())
         return false;
 
-    for (const std::pair<std::string, nonneg int>& outerVariable : mScopeInfo.top()) {
-        if (outerVariable.second != 0)
+    for (const MapType::value_type& outerVariable : mScopeInfo.top()) {
+        if (outerVariable.second.id != 0)
             mVariableId[outerVariable.first] = outerVariable.second;
         else
             mVariableId.erase(outerVariable.first);
@@ -4278,21 +4284,22 @@ bool VariableMap::leaveScope()
 void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
 {
     if (mScopeInfo.empty()) {
-        mVariableId[varname] = ++mVarId;
+        mVariableId[varname].id = ++mVarId;
         if (globalNamespace)
             mVariableId_global[varname] = mVariableId[varname];
         return;
     }
     const auto it = mVariableId.find(varname);
     if (it == mVariableId.end()) {
-        mScopeInfo.top().emplace_back(varname, 0);
-        mVariableId[varname] = ++mVarId;
+        mScopeInfo.top().emplace_back(varname, VarInfo{});
+        mVariableId[varname].id = ++mVarId;
         if (globalNamespace)
             mVariableId_global[varname] = mVariableId[varname];
         return;
     }
     mScopeInfo.top().emplace_back(varname, it->second);
-    it->second = ++mVarId;
+    it->second.id = ++mVarId;
+    it->second.assigned = false;
 }
 
 /**
@@ -4509,14 +4516,14 @@ static void setVarIdStructMembers(Token *&tok1,
 
 static void addTemplateVarIdUsage(const std::string &tokstr,
                                   const std::map<std::string, std::set<std::string>>& templateVarUsage,
-                                  const std::unordered_map<std::string, nonneg int>& variableMap,
+                                  const VariableMap::MapType& variableMap,
                                   std::set<nonneg int>& templateVarIdUsage) {
     const auto v = templateVarUsage.find(tokstr);
     if (v != templateVarUsage.end()) {
         for (const std::string& varname: v->second) {
             const auto it = variableMap.find(varname);
             if (it != variableMap.end())
-                templateVarIdUsage.insert(it->second);
+                templateVarIdUsage.insert(it->second.id);
         }
     }
 }
@@ -4573,7 +4580,7 @@ static bool setVarIdClassDeclaration(Token* const startToken,
         } else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %name% [({]")) {
             const auto it = variableMap.map(false).find(tok->str());
             if (it != variableMap.map(false).end()) {
-                tok->varId(it->second);
+                tok->varId(it->second.id);
             }
         } else if (tok->isName() && tok->varId() <= scopeStartVarId) {
             if (indentlevel > 0 || initList) {
@@ -4591,7 +4598,7 @@ static bool setVarIdClassDeclaration(Token* const startToken,
                 if (!inEnum) {
                     const auto it = variableMap.map(false).find(tok->str());
                     if (it != variableMap.map(false).end()) {
-                        tok->varId(it->second);
+                        tok->varId(it->second.id);
                         setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
                     } else if (tok->str().back() == '>') {
                         addTemplateVarIdUsage(tok->str(), templateVarUsage, variableMap.map(false), templateVarIdUsage);
@@ -4887,7 +4894,7 @@ void Tokenizer::setVarIdPass1()
                 if (declTypeTok) {
                     for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
                         if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
-                            declTok->varId(variableMap.map(false).find(declTok->str())->second);
+                            declTok->varId(variableMap.map(false).find(declTok->str())->second.id);
                     }
                 }
 
@@ -4967,7 +4974,7 @@ void Tokenizer::setVarIdPass1()
                                                    Token::Match(tok->tokAt(-1), ":: %name%"))) {
                                 const auto it = variableMap.map(false).find(tok->str());
                                 if (it != variableMap.map(false).end())
-                                    tok->varId(it->second);
+                                    tok->varId(it->second.id);
                             }
                             tok = tok->next();
                         }
@@ -5042,8 +5049,11 @@ void Tokenizer::setVarIdPass1()
                 !Token::simpleMatch(tok->next(), ": ;") && !(tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "{|, ."))) {
                 const auto it = variableMap.map(globalNamespace).find(tok->str());
                 if (it != variableMap.map(globalNamespace).end()) {
-                    tok->varId(it->second);
-                    setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
+                    if (!it->second.assigned || !Token::Match(tok->previous(), "%type% %name% (") || tok->previous()->isKeyword()) {
+                        it->second.assigned = true;
+                        tok->varId(it->second.id);
+                        setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
+                    }
                 }
             }
         } else if (Token::Match(tok, "::|. %name%") && Token::Match(tok->previous(), ")|]|>|%name%")) {
