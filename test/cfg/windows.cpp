@@ -93,6 +93,10 @@ std::string constVariable_GetModuleFileName(void) {
     return std::string{path};
 }
 
+const TCHAR* constVariable_MAKEINTRESOURCE() { // #14564
+    return MAKEINTRESOURCE(5 - 1);
+}
+
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
 {
     // cppcheck-suppress stringCompare
