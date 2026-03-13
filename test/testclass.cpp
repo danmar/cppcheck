@@ -734,6 +734,13 @@ private:
                                   "    void Two() = delete;\n"
                                   "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkDuplInheritedMembers("struct B { void f(); };\n" // #14583
+                                  "struct D : B {\n"
+                                  "    template <typename>\n"
+                                  "    void f();\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkCopyConstructor(...) checkCopyConstructor_( __FILE__, __LINE__, __VA_ARGS__)
