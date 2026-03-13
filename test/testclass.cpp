@@ -8842,6 +8842,16 @@ private:
                       "};\n");
         ASSERT_EQUALS("[test.cpp:2:14] -> [test.cpp:5:6]: (style) The destructor '~D' overrides a destructor in a base class but is not marked with a 'override' specifier. [missingOverride]\n",
                       errout_str());
+
+        checkOverride("struct B {\n" // #14581
+                      "    virtual void f();\n"
+                      "};\n"
+                      "struct D : B {\n"
+                      "    void f() override;\n"
+                      "    template <typename T>\n"
+                      "    void f();\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void overrideCVRefQualifiers() {
