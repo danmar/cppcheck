@@ -2826,7 +2826,7 @@ private:
               "        if (p == e) {}\n"
               "        if (p) {}\n"
               "    }\n"
-               "}\n");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2:12] -> [test.cpp:4:13]: (warning) Identical inner 'if' condition is always true. [identicalInnerCondition]\n", errout_str());
     }
 
