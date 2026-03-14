@@ -39,6 +39,8 @@ public:
     bool dry_run() const;
     /** Exclude provided lists of tests. */
     bool exclude_tests() const;
+    /** Print the runtime of the tests. */
+    bool show_time() const;
     /** Which test should be run. Empty string means 'all tests' */
     const std::set<std::string>& which_test() const;
 
@@ -55,6 +57,7 @@ private:
     const bool mSummary;
     const bool mDryRun;
     const bool mExcludeTests;
+    const bool mShowTime;
     std::string mExe;
 };
 

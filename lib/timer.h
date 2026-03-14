@@ -87,7 +87,8 @@ public:
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
 
-    void stop();
+    void restart();
+    double stop();
 
     template<class TFunc>
     static void run(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults, const TFunc& f) {

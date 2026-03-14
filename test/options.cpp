@@ -23,6 +23,7 @@ options::options(int argc, const char* const argv[])
     ,mSummary(mWhichTests.count("-n") == 0)
     ,mDryRun(mWhichTests.count("-d") != 0)
     ,mExcludeTests(mWhichTests.count("-x") != 0)
+    ,mShowTime(mWhichTests.count("-t") != 0)
     ,mExe(argv[0])
 {
     for (auto it = mWhichTests.cbegin(); it != mWhichTests.cend();) {
@@ -70,4 +71,9 @@ const std::string& options::exe() const
 bool options::exclude_tests() const
 {
     return mExcludeTests;
+}
+
+bool options::show_time() const
+{
+    return mShowTime;
 }
