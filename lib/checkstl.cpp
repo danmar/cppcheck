@@ -2012,7 +2012,7 @@ static bool isc_strConstructor(const Token* tok)
         }
         if (callTok->astOperand1()->str() == "(")
             callTok = callTok->astOperand1();
-        else if (tok->astOperand2()->str() == "(")
+        else if (callTok->astOperand2()->str() == "(")
             callTok = callTok->astOperand2();
         break;
     }
