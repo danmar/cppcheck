@@ -2418,7 +2418,8 @@ namespace {
             while (scope && scope->parent) {
                 if (scope->name.empty())
                     break;
-                fullName = scope->name + " :: " + fullName;
+                fullName.insert(0, " :: ");
+                fullName.insert(0, scope->name);
                 scope = scope->parent;
             }
         }
