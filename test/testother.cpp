@@ -11309,6 +11309,12 @@ private:
         check("void a(char *p, ...);\n"
               "void b() { a(NULL, 2); }");
         ASSERT_EQUALS("", errout_str());
+
+        checkP("extern const int sentinel;\n"
+               "void a(int, ...);\n"
+               "#define b(x, ...) a((x), __VA_ARGS__, &sentinel)\n"
+               "void c() { b(1, NULL); }");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkCastIntToCharAndBack() { // #160
