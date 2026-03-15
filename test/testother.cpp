@@ -4763,6 +4763,12 @@ private:
               "    return [](int* p) { return *p; }(&i);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:20]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n", errout_str());
+
+        check("using IntPtr = int *;\n"
+              "int* foo(IntPtr bar) {\n"
+              "  return bar = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constArray() {
