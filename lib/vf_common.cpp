@@ -230,9 +230,7 @@ namespace ValueFlow
                     setTokenValue(tok->tokAt(4), std::move(value), settings);
                 }
             } else if (Token::Match(tok2, "%var% )")) {
-                const Variable *var = tok2->variable();
-                // only look for single token types (no pointers or references yet)
-                if (var && var->typeStartToken() == var->typeEndToken()) {
+                if (const Variable *var = tok2->variable()) {
                     // find the size of the type
                     size_t size = 0;
                     if (var->isEnumType()) {
