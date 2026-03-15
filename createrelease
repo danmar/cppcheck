@@ -150,9 +150,9 @@ rm -f cppcheck.cfg
 # TODO manual, update version on webpage
 
 # frs
-git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasename.tar.gz
-git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
-git archive --format=zip -9 --prefix=$releasename/ $tag > upload/$releasename.zip
+git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/frs/$releasename.tar.gz
+git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/frs/$releasename.tar.bz2
+git archive --format=zip -9 --prefix=$releasename/ $tag > upload/frs/$releasename.zip
 cp releasenotes.txt upload/frs/README.md
 # TODO msi
 
