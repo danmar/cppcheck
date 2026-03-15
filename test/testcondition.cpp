@@ -2820,6 +2820,14 @@ private:
                "    }\n"
                "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(const int* p, const int* e) {\n" // #14595
+              "    for (; p;) {\n"
+              "        if (p == e) {}\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:12] -> [test.cpp:4:13]: (warning) Identical inner 'if' condition is always true. [identicalInnerCondition]\n", errout_str());
     }
 
     void identicalConditionAfterEarlyExit() {
@@ -4675,7 +4683,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5:18]: (style) Condition 'S::s' is always true [knownConditionTrueFalse]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:5:18]: (warning) Identical inner 'if' condition is always true. [identicalInnerCondition]\n", errout_str());
 
         check("void f() {\n" // #10811
               "    int i = 0;\n"
@@ -4836,7 +4844,7 @@ private:
               "    if (!b) {}\n"
               "    if (a) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6:9] -> [test.cpp:9:9]: (style) Condition 'a' is always false [knownConditionTrueFalse]\n",
+        ASSERT_EQUALS("[test.cpp:6:9] -> [test.cpp:9:9]: (warning) Identical condition 'a', second condition is always false [identicalConditionAfterEarlyExit]\n",
                       errout_str());
     }
 

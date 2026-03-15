@@ -619,6 +619,8 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
         return false;
     if (ftok->function() && ftok->function()->isConst())
         return false;
+    if (ftok->isControlFlowKeyword())
+        return false;
     return true;
 }
 
