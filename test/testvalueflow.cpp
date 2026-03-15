@@ -1749,7 +1749,7 @@ private:
                "}";
         values = tokenValues(code, "( a");
         ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(16, values.back().intvalue);
+        ASSERT_EQUALS(2 * settings.platform.sizeof_pointer, values.back().intvalue);
         ASSERT_EQUALS_ENUM(ValueFlow::Value::ValueKind::Known, values.back().valueKind);
     }
 
