@@ -3374,6 +3374,42 @@ def test_suppress_unmatched_wildcard(tmp_path):  # #13660
     ]
 
 
+def test_suppress_unmatched_wildcard_cached(tmp_path):  # #14585
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    build_dir = tmp_path / 'b1'
+    os.makedirs(build_dir)
+
+    # need to run in the temporary folder because the path of the suppression has to match
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '--suppress=nullPointer:test*.c',
+        'test.c'
+    ]
+
+    stderr_exp = []
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == stderr_exp
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == stderr_exp
+
+
 def test_suppress_unmatched_wildcard_unchecked(tmp_path):
     # make sure that unmatched wildcards suppressions are reported if files matching the expressions were processesd
     # but isSuppressed() has never been called (i.e. no findings in file at all)
