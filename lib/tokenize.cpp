@@ -2418,7 +2418,8 @@ namespace {
             while (scope && scope->parent) {
                 if (scope->name.empty())
                     break;
-                fullName = scope->name + " :: " + fullName;
+                fullName.insert(0, " :: ");
+                fullName.insert(0, scope->name);
                 scope = scope->parent;
             }
         }
@@ -9761,10 +9762,19 @@ void Tokenizer::simplifyCPPAttribute()
             Token* atok = nullptr;
             if (Token::Match(tok->previous(), "%name%"))
                 atok = tok->previous();
-            else {
+            else if (Token::simpleMatch(tok->previous(), "]")) {
+                atok = tok;
+                while (atok && Token::simpleMatch(atok->previous(), "]")) {
+                    atok = atok->linkAt(-1);
+                    atok = atok ? atok->previous() : nullptr;
+                }
+                if (!Token::Match(atok, "%name%"))
+                    atok = nullptr;
+            } else {
                 atok = tok;
                 while (isCPPAttribute(atok) || isAlignAttribute(atok))
                     atok = skipCPPOrAlignAttribute(atok)->next();
+                atok = atok ? getVariableTokenAfterAttributes(atok) : atok;
             }
             if (atok) {
                 std::string a;

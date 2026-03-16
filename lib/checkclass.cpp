@@ -3127,6 +3127,8 @@ static std::vector<DuplMemberFuncInfo> getDuplInheritedMemberFunctionsRecursive(
                 continue;
             if (classFuncIt.tokenDef->isExpandedMacro())
                 continue;
+            if (classFuncIt.templateDef)
+                continue;
             for (const Function& parentClassFuncIt : parentClassIt.type->classScope->functionList) {
                 if (classFuncIt.name() == parentClassFuncIt.name() &&
                     (parentClassFuncIt.access != AccessControl::Private || !skipPrivate) &&
@@ -3268,6 +3270,8 @@ void CheckClass::checkOverride()
             if (func.hasOverrideSpecifier() || func.hasFinalSpecifier())
                 continue;
             if (func.tokenDef->isExpandedMacro())
+                continue;
+            if (func.templateDef)
                 continue;
             const Function *baseFunc = func.getOverriddenFunction();
             if (baseFunc)

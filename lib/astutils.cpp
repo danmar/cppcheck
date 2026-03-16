@@ -1084,7 +1084,7 @@ bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
         r = findAstNode(expr, [&](const Token* childTok) {
             if (childTok->exprId() == 0)
                 return false;
-            if (ref.token != tok && expr->exprId() == childTok->exprId()) {
+            if (ref.token != tok && expr->exprId() == childTok->exprId() && ref.token->isUnaryOp("*") && expr->exprId() == ref.token->astOperand1()->exprId()) {
                 if (indirect)
                     *indirect = 0;
                 return true;
@@ -2636,7 +2636,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
     while ((tok2->astParent() && tok2->astParent()->isUnaryOp("*")) ||
            (Token::simpleMatch(tok2->astParent(), ".") && !Token::Match(tok2->astParent()->astParent(), "[(,]")) ||
            (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->") ||
-           (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1())) {
+           (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1()) ||
+           (Token::simpleMatch(tok2->astParent(), "(") && tok2->astParent()->isCast())) {
         if (tok2->astParent() && (tok2->astParent()->isUnaryOp("*") || (astIsLHS(tok2) && tok2->astParent()->originalName() == "->" && !hasOverloadedMemberAccess(tok2))))
             derefs++;
         if (derefs > indirect)

@@ -177,6 +177,8 @@ private:
         // TODO: only convert if necessary
         const auto errorMessage = SuppressionList::ErrorMessage::fromErrorMessage(msg, macroNames);
 
+        bool suppressed = false;
+
         if (mSuppressions.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
             // Safety: Report critical errors to ErrorLogger
             if (mSettings.safety && ErrorLogger::isCriticalErrorId(msg.id)) {
@@ -193,7 +195,7 @@ private:
                     mErrorLogger.reportErr(msg);
                 }
             }
-            return;
+            suppressed = true;
         }
 
         // TODO: there should be no need for the verbose and default messages here
@@ -209,6 +211,9 @@ private:
 
         if (mAnalyzerInformation)
             mAnalyzerInformation->reportErr(msg);
+
+        if (suppressed)
+            return;
 
         if (!mSuppressions.nofail.isSuppressed(errorMessage) && !mSuppressions.nomsg.isSuppressed(errorMessage)) {
             mExitCode = 1;

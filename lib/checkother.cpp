@@ -3557,7 +3557,7 @@ void CheckOther::checkVarFuncNullUB()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             // Is NULL passed to a function?
-            if (Token::Match(tok,"[(,] NULL [,)]")) {
+            if (Token::Match(tok,"[(,] NULL )")) {
                 // Locate function name in this function call.
                 const Token *ftok = tok;
                 int argnr = 1;
