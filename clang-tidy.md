@@ -167,6 +167,10 @@ Reports false positives - see https://github.com/llvm/llvm-project/issues/164125
 
 The suggestions are too intrusive.
 
+`modernize-avoid-c-style-cast`<br/>
+
+Currently flags functional casts - see https://github.com/llvm/llvm-project/issues/186784.
+
 ### Disabled for performance reasons
 
 `portability-std-allocator-const`<br/>

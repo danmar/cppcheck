@@ -43,6 +43,7 @@ Checks: >
         -modernize-deprecated-ios-base-aliases,
         -misc-include-cleaner,
         -misc-unused-using-decls,
+        -modernize-avoid-c-style-cast,
         -modernize-loop-convert,
         -modernize-macro-to-enum,
         -modernize-raw-string-literal,
