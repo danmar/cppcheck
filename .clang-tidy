@@ -89,3 +89,5 @@ CheckOptions:
     value:           false
   - key:             misc-override-with-different-visibility.DisallowedVisibilityChange
     value:           widening
+  - key:             misc-use-internal-linkage.AnalyzeTypes
+    value:           false

@@ -171,6 +171,10 @@ The suggestions are too intrusive.
 
 Currently flags functional casts - see https://github.com/llvm/llvm-project/issues/186784.
 
+`misc-use-internal-linkage.AnalyzeTypes`<br/>
+
+Adding anonymous namespaces requires identation which is too instrusive right now. Would require changes to our fomatting configuration.
+
 ### Disabled for performance reasons
 
 `portability-std-allocator-const`<br/>
