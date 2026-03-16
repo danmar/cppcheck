@@ -284,6 +284,9 @@ private:
         TEST_CASE(cppMaybeUnusedAfter2);
         TEST_CASE(cppMaybeUnusedStructuredBinding);
 
+        TEST_CASE(attributeAlignasBefore);
+        TEST_CASE(attributeAlignasAfter);
+
         TEST_CASE(splitTemplateRightAngleBrackets);
 
         TEST_CASE(cpp03template1);
@@ -4332,6 +4335,35 @@ private:
         ASSERT(var2 && var2->isAttributeMaybeUnused());
     }
 
+    void attributeAlignasBefore() {
+        const char code[] = "alignas(long) unsigned char buffer[sizeof(long)];";
+        const char expected[] = "char buffer [ sizeof ( long ) ] ;";
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "buffer");
+        ASSERT(var);
+        ASSERT(var->hasAttributeAlignas());
+        ASSERT(var->getAttributeAlignas().size() == 1);
+        ASSERT_EQUALS(var->getAttributeAlignas()[0], "long");
+    }
+
+    void attributeAlignasAfter() {
+        const char code[] = "unsigned char buffer[sizeof(long)] alignas(long);";
+        const char expected[] = "char buffer [ sizeof ( long ) ] ;";
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "buffer");
+        ASSERT(var);
+        ASSERT(var->hasAttributeAlignas());
+        ASSERT(var->getAttributeAlignas().size() == 1);
+        ASSERT_EQUALS(var->getAttributeAlignas()[0], "long");
+    }
 
     void splitTemplateRightAngleBrackets() {
         {
