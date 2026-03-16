@@ -77,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
+    // NOLINTNEXTLINE(bugprone-random-generator-seed) - the random numbers are not used in a security context so this should be sufficient
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     QDir workFolder(WORK_FOLDER);
     if (!workFolder.exists()) {

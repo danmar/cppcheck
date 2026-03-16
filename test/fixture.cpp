@@ -461,7 +461,7 @@ void TestFixture::reportErr(const ErrorMessage &msg)
         if (mNewTemplate) {
             errormessage += " [";
             errormessage += msg.id;
-            errormessage += "]";
+            errormessage += ']';
         }
     }
     mErrout << errormessage << std::endl;

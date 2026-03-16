@@ -1183,7 +1183,7 @@ Token* Token::insertToken(const std::string& tokenStr, bool prepend)
                         std::string nameSpace;
                         while (tok1 && tok1->str() != ";") {
                             if (!nameSpace.empty())
-                                nameSpace += " ";
+                                nameSpace += ' ';
                             nameSpace += tok1->str();
                             tok1 = tok1->next();
                         }
@@ -1798,7 +1798,7 @@ void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std:
             });
             outs += "  ";
             outs += tok->str();
-            outs += " ";
+            outs += ' ';
             if (same) {
                 switch (valueKind) {
                 case ValueFlow::Value::ValueKind::Impossible:
@@ -1853,7 +1853,7 @@ void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std:
                 case ValueFlow::Value::ValueType::BUFFER_SIZE:
                     outs += "buffer-size=\"";
                     outs += MathLib::toString(value.intvalue);
-                    outs += "\"";
+                    outs += '"';
                     break;
                 case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     outs += "container-size=\"";
@@ -1876,10 +1876,10 @@ void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std:
                     outs += '\"';
                     outs += " lifetime-scope=\"";
                     outs += ValueFlow::Value::toString(value.lifetimeScope);
-                    outs += "\"";
+                    outs += '"';
                     outs += " lifetime-kind=\"";
                     outs += ValueFlow::Value::toString(value.lifetimeKind);
-                    outs += "\"";
+                    outs += '"';
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
                     outs += "symbolic=\"";
@@ -1892,7 +1892,7 @@ void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std:
                 }
                 outs += " bound=\"";
                 outs += ValueFlow::Value::toString(value.bound);
-                outs += "\"";
+                outs += '"';
                 if (value.condition) {
                     outs += " condition-line=\"";
                     outs += std::to_string(value.condition->linenr());
@@ -1909,13 +1909,13 @@ void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std:
 
                 outs += " path=\"";
                 outs += MathLib::toString(value.path);
-                outs += "\"";
+                outs += '"';
 
                 outs += "/>\n";
             }
             else {
                 if (&value != &values->front())
-                    outs += ",";
+                    outs += ',';
                 outs += value.toString();
             }
         }

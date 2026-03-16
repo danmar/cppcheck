@@ -2926,7 +2926,7 @@ std::string Function::fullName() const
         if (!s->className.empty())
             ret = s->className + "::" + ret;
     }
-    ret += "(";
+    ret += '(';
     for (const Variable &a : argumentList)
         ret += (a.index() == 0 ? "" : ",") + a.name();
     return ret + ")";
@@ -2989,7 +2989,7 @@ static bool usingNamespace(const Scope *scope, const Token *first, const Token *
                     std::string nsName;
                     while (start && start->str() != ";") {
                         if (!nsName.empty())
-                            nsName += " ";
+                            nsName += ' ';
                         nsName += start->str();
                         start = start->next();
                     }
@@ -4431,14 +4431,14 @@ void SymbolDatabase::printXml(std::ostream &out) const
         outs += "    <scope";
         outs += " id=\"";
         outs += id_string(&*scope);
-        outs += "\"";
+        outs += '"';
         outs += " type=\"";
         outs += scopeTypeToString(scope->type);
-        outs += "\"";
+        outs += '"';
         if (!scope->className.empty()) {
             outs += " className=\"";
             outs += ErrorLogger::toxml(scope->className);
-            outs += "\"";
+            outs += '"';
         }
         if (scope->bodyStart) {
             outs += " bodyStart=\"";
@@ -4453,17 +4453,17 @@ void SymbolDatabase::printXml(std::ostream &out) const
         if (scope->nestedIn) {
             outs += " nestedIn=\"";
             outs += id_string(scope->nestedIn);
-            outs += "\"";
+            outs += '"';
         }
         if (scope->function) {
             outs += " function=\"";
             outs += id_string(scope->function);
-            outs += "\"";
+            outs += '"';
         }
         if (scope->definedType) {
             outs += " definedType=\"";
             outs += id_string(scope->definedType);
-            outs += "\"";
+            outs += '"';
         }
         if (scope->functionList.empty() && scope->varlist.empty())
             outs += "/>\n";
@@ -4493,7 +4493,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                     if (function->access == AccessControl::Public || function->access == AccessControl::Protected || function->access == AccessControl::Private) {
                         outs += " access=\"";
                         outs += accessControlToString(function->access);
-                        outs +="\"";
+                        outs += '"';
                     }
                     if (function->isOperator())
                         outs += " isOperator=\"true\"";
@@ -4514,7 +4514,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                     if (const Function* overriddenFunction = function->getOverriddenFunction()) {
                         outs += " overriddenFunction=\"";
                         outs += id_string(overriddenFunction);
-                        outs += "\"";
+                        outs += '"';
                     }
                     if (function->isAttributeConst())
                         outs += " isAttributeConst=\"true\"";
@@ -4559,7 +4559,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
             outs += id_string(&type);
             outs += "\" classScope=\"";
             outs += id_string(type.classScope);
-            outs += "\"";
+            outs += '"';
             if (type.derivedFrom.empty()) {
                 outs += "/>\n";
                 continue;
@@ -4569,16 +4569,16 @@ void SymbolDatabase::printXml(std::ostream &out) const
                 outs += "      <derivedFrom";
                 outs += " access=\"";
                 outs += accessControlToString(baseInfo.access);
-                outs += "\"";
+                outs += '"';
                 outs += " type=\"";
                 outs += id_string(baseInfo.type);
-                outs += "\"";
+                outs += '"';
                 outs += " isVirtual=\"";
                 outs += bool_to_string(baseInfo.isVirtual);
-                outs += "\"";
+                outs += '"';
                 outs += " nameTok=\"";
                 outs += id_string(baseInfo.nameTok);
-                outs += "\"";
+                outs += '"';
                 outs += "/>\n";
             }
             outs += "    </type>\n";
@@ -5954,7 +5954,7 @@ static std::string getTypeString(const Token *typeToken)
                 if (typeToken->str() == "<") {
                     for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
                         ret += tok->str();
-                    ret += ">";
+                    ret += '>';
                     typeToken = typeToken->link()->next();
                 }
             }
@@ -8339,7 +8339,7 @@ std::string ValueType::dump() const
         ret += "valueType-type=\"container\"";
         ret += " valueType-containerId=\"";
         ret += id_string(container);
-        ret += "\"";
+        ret += '"';
         break;
     }
     case ITERATOR:

@@ -133,6 +133,7 @@ Does not improve the readability.
 `misc-unconventional-assign-operator`<br/>
 `bugprone-throwing-static-initialization`<br/>
 `bugprone-command-processor`<br/>
+`misc-multiple-inheritance`<br/>
 
 To be evaluated (need to remove exclusion).
 
@@ -156,12 +157,25 @@ To be evaluated (need to enable explicitly).
 These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
 
 `portability-avoid-pragma-once`<br/>
+`readability-trailing-comma`<br/>
 
-We are not interested in this.
+We are not interested in these.
 
 `readability-redundant-parentheses`<br/>
 
 Reports false positives - see https://github.com/llvm/llvm-project/issues/164125.
+
+`readability-inconsistent-ifelse-braces`<br/>
+
+The suggestions are too intrusive.
+
+`modernize-avoid-c-style-cast`<br/>
+
+Currently flags functional casts - see https://github.com/llvm/llvm-project/issues/186784.
+
+`misc-use-internal-linkage.AnalyzeTypes`<br/>
+
+Adding anonymous namespaces requires identation which is too instrusive right now. Would require changes to our fomatting configuration.
 
 ### Disabled for performance reasons
 
