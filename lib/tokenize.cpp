@@ -1030,7 +1030,7 @@ bool Tokenizer::isFunctionPointer(const Token* tok) {
 
 static bool matchCurrentType(const std::string& typeStr, const std::map<int, std::string>& types)
 {
-    auto it = std::find_if(types.begin(), types.end(), [&](const auto& element) {
+    auto it = std::find_if(types.begin(), types.end(), [&](const std::pair<int, std::string>& element) {
         return typeStr == element.second;
     });
     return it != types.end();
