@@ -28,7 +28,7 @@ class TestCheckersReport : public TestFixture {
 public:
     TestCheckersReport() : TestFixture("TestCheckersReport") {}
 
-
+private:
     void run() final {
         // AddonInfo::checkers
         TEST_CASE(addonInfoCheckers);
