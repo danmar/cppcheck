@@ -603,7 +603,8 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
     case Library::ArgumentChecks::MinSize::Type::STRLEN:
         if (settings.library.isargformatstr(ftok, minsize.arg)) {
             return getMinFormatStringOutputLength(args, minsize.arg) < bufferSize;
-        } else if (arg) {
+        }
+        if (arg) {
             const Token *strtoken = arg->getValueTokenMaxStrLength();
             if (strtoken)
                 return Token::getStrLength(strtoken) < bufferSize;
