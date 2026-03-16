@@ -25,6 +25,9 @@ if(RUN_CLANG_TIDY_NAMES)
         endif()
         message(STATUS "NPROC=${NPROC}")
 
+        # TODO: introduced in run-clang-tidy-22
+        set(CLANG_TIDY_CONFIG "-enable-check-profile")
+
         # most of these are disabled because they are too noisy in our code
         # clang-analyzer-core.CallAndMessage
         # clang-analyzer-core.NonNullParamChecker
