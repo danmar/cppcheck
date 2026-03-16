@@ -163,6 +163,10 @@ We are not interested in this.
 
 Reports false positives - see https://github.com/llvm/llvm-project/issues/164125.
 
+`readability-inconsistent-ifelse-braces`<br/>
+
+The suggestions are too intrusive.
+
 ### Disabled for performance reasons
 
 `portability-std-allocator-const`<br/>

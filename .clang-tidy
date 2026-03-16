@@ -68,6 +68,7 @@ Checks: >
         -readability-identifier-length,
         -readability-identifier-naming,
         -readability-implicit-bool-conversion,
+        -readability-inconsistent-ifelse-braces,
         -readability-isolate-declaration,
         -readability-magic-numbers,
         -readability-redundant-parentheses,
