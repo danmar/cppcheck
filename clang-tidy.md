@@ -133,6 +133,7 @@ Does not improve the readability.
 `misc-unconventional-assign-operator`<br/>
 `bugprone-throwing-static-initialization`<br/>
 `bugprone-command-processor`<br/>
+`misc-multiple-inheritance`<br/>
 
 To be evaluated (need to remove exclusion).
 

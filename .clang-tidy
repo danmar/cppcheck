@@ -42,6 +42,7 @@ Checks: >
         -modernize-avoid-c-arrays,
         -modernize-deprecated-ios-base-aliases,
         -misc-include-cleaner,
+        -misc-multiple-inheritance,
         -misc-unused-using-decls,
         -modernize-avoid-c-style-cast,
         -modernize-loop-convert,
