@@ -1869,7 +1869,7 @@ void Tokenizer::simplifyTypedefCpp()
                             // remove qualification if present
                             for (std::size_t i = classLevel; i < spaceInfo.size(); ++i) {
                                 if (!removed.empty())
-                                    removed += " ";
+                                    removed += ' ';
                                 removed += (tok2->str() + " " + tok2->strAt(1));
                                 tok2->deleteThis();
                                 tok2->deleteThis();
@@ -2541,7 +2541,7 @@ namespace {
                 std::string nameSpace;
                 while (tok1 && tok1->str() != ";") {
                     if (!nameSpace.empty())
-                        nameSpace += " ";
+                        nameSpace += ' ';
                     nameSpace += tok1->str();
                     tok1 = tok1->next();
                 }
@@ -4145,7 +4145,7 @@ void Tokenizer::calculateScopes()
                      namespaceNameToken && namespaceNameToken->str() != ";";
                      namespaceNameToken = namespaceNameToken->next()) {
                     usingNamespaceName += namespaceNameToken->str();
-                    usingNamespaceName += " ";
+                    usingNamespaceName += ' ';
                 }
                 if (!usingNamespaceName.empty())
                     usingNamespaceName.pop_back();
@@ -6113,7 +6113,7 @@ void Tokenizer::dump(std::ostream &out) const
         outs += std::to_string(tok->linenr());
         outs += "\" column=\"";
         outs += std::to_string(tok->column());
-        outs += "\"";
+        outs += '"';
 
         outs += " str=\"";
         outs += ErrorLogger::toxml(tok->str());
@@ -6291,7 +6291,7 @@ void Tokenizer::dump(std::ostream &out) const
             outs += "\" ";
             outs += "std-string-like=\"";
             outs += bool_to_string(c->stdStringLike);
-            outs += "\"";
+            outs += '"';
             if (c->functions.empty()) {
                 outs += "/>\n";
                 continue;
@@ -6341,37 +6341,37 @@ std::string Tokenizer::dumpTypedefInfo() const
 
         outs += " name=\"";
         outs += typedefInfo.name;
-        outs += "\"";
+        outs += '"';
 
         outs += " file=\"";
         outs += ErrorLogger::toxml(typedefInfo.filename);
-        outs += "\"";
+        outs += '"';
 
         outs += " line=\"";
         outs += std::to_string(typedefInfo.lineNumber);
-        outs += "\"";
+        outs += '"';
 
         outs += " column=\"";
         outs += std::to_string(typedefInfo.column);
-        outs += "\"";
+        outs += '"';
         if (typedefInfo.tagLine > -1 && typedefInfo.tagColumn > -1) {
             outs += " tagline=\"";
             outs += std::to_string(typedefInfo.tagLine);
-            outs += "\"";
+            outs += '"';
 
             outs += " tagcolumn=\"";
             outs += std::to_string(typedefInfo.tagColumn);
-            outs += "\"";
+            outs += '"';
         }
         outs += " used=\"";
         outs += std::to_string(typedefInfo.used?1:0);
-        outs += "\"";
+        outs += '"';
 
         outs += " isFunctionPointer=\"";
         outs += std::to_string(typedefInfo.isFunctionPointer);
-        outs += "\"";
+        outs += '"';
         if (toks)
-            outs += ">";
+            outs += '>';
         else
             outs += "/>";
         outs += '\n';
@@ -10631,7 +10631,7 @@ void Tokenizer::simplifyOperatorName()
                     op += par->str();
                     par = par->next();
                 }
-                op += ")";
+                op += ')';
                 par = par->next();
                 if (Token::simpleMatch(par, "...")) {
                     op.clear();
