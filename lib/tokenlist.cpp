@@ -1055,7 +1055,10 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             else
                 compileUnaryOp(tok, state, compileExpression);
             tok = tok2->link()->next();
-        } else if (Token::simpleMatch(tok->previous(), "requires {")) {
+        } else if (Token::simpleMatch(tok->previous(), "requires {")
+                   || (Token::simpleMatch(tok->previous(), ")")
+                       && tok->linkAt(-1)
+                       && Token::simpleMatch(tok->linkAt(-1)->previous(), "requires ("))) {
             tok->astOperand1(state.op.top());
             state.op.pop();
             state.op.push(tok);
