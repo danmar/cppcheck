@@ -25,6 +25,12 @@ if(RUN_CLANG_TIDY_NAMES)
         endif()
         message(STATUS "NPROC=${NPROC}")
 
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 22)
+            set(CLANG_TIDY_CONFIG "-enable-check-profile")
+        else()
+            set(CLANG_TIDY_CONFIG "")
+        endif()
+
         # most of these are disabled because they are too noisy in our code
         # clang-analyzer-core.CallAndMessage
         # clang-analyzer-core.NonNullParamChecker
