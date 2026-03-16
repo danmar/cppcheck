@@ -101,7 +101,7 @@ namespace ValueFlow
             return value;
 
         const MathLib::biguint unsignedMaxValue = std::numeric_limits<MathLib::biguint>::max() >> ((sizeof(unsignedMaxValue) - value_size) * 8);
-        const MathLib::biguint signBit = 1ULL << (value_size * 8 - 1);
+        const MathLib::biguint signBit = 1ULL << ((value_size * 8) - 1);
         value &= unsignedMaxValue;
         if (dst_sign == ValueType::Sign::SIGNED && (value & signBit))
             value |= ~unsignedMaxValue;
