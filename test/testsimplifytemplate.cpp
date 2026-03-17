@@ -4685,7 +4685,7 @@ private:
                             "    void f();\n"
                             "    using X = decltype(&S<T>::f);\n"
                             "private:\n"
-                            "        X x;\n"
+                            "    X x;\n"
                             "};\n"
                             "S<int> s;\n";
         const char exp[] = "struct S<int> ; "
