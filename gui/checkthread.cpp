@@ -170,7 +170,7 @@ void CheckThread::run()
         const Details details{ mThreadIndex, QString::fromStdString(fname), QTime::currentTime(), };
         emit startCheck(details);
 
-        cppcheck.check(*file);
+        cppcheck.check(*fileSettings);
         runAddonsAndTools(mSettings, fileSettings, QString::fromStdString(fname));
 
         emit finishCheck(details);
