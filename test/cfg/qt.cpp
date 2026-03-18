@@ -58,13 +58,14 @@ int ignoredReturnValue_QSize_width(const QSize &s)
 
 void ignoredReturnValue_QDir(const QString& dirname)
 {
-    // cppcheck-suppress ignoredReturnValue
-    QDir::exists(dirname);
-
-    // cppcheck-suppress ignoredReturnValue
-    QDir::mkdir(dirname);
-
     QDir dir(dirname);
+
+    // cppcheck-suppress ignoredReturnValue
+    dir.exists("abc");
+
+    // cppcheck-suppress ignoredReturnErrorCode
+    dir.mkdir("abc");
+
     // cppcheck-suppress ignoredReturnValue
     dir.count();
 
