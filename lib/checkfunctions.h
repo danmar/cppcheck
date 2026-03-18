@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
-#include "library.h"
-#include "settings.h"
-#include "tokenize.h"
 
-#include <map>
 #include <string>
 
 class Token;
 class ErrorLogger;
+class Tokenizer;
+class Settings;
 
 namespace ValueFlow {
     class Value;
@@ -58,23 +55,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckFunctions checkFunctions(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        checkFunctions.checkIgnoredReturnValue();
-        checkFunctions.checkMissingReturn();  // Missing "return" in exit path
-
-        // --check-library : functions with nonmatching configuration
-        checkFunctions.checkLibraryMatchFunctions();
-
-        checkFunctions.checkProhibitedFunctions();
-        checkFunctions.invalidFunctionUsage();
-        checkFunctions.checkMathFunctions();
-        checkFunctions.memsetZeroBytes();
-        checkFunctions.memsetInvalid2ndParam();
-        checkFunctions.returnLocalStdMove();
-        checkFunctions.useStandardLibrary();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** Check for functions that should not be used */
     void checkProhibitedFunctions();
@@ -117,7 +98,7 @@ private:
     void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void ignoredReturnErrorCode(const Token* tok, const std::string& function);
-    void mathfunctionCallWarning(const Token *tok, const nonneg int numParam = 1);
+    void mathfunctionCallWarning(const Token *tok, nonneg int numParam = 1);
     void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
     void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);
@@ -126,26 +107,7 @@ private:
     void copyElisionError(const Token *tok);
     void useStandardLibraryError(const Token *tok, const std::string& expected);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckFunctions c(nullptr, settings, errorLogger);
-
-        for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
-            c.reportError(nullptr, Severity::style, i->first+"Called", i->second.message);
-        }
-
-        c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr,"1:4");
-        c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
-        c.invalidFunctionArgStrError(nullptr, "func_name", 1);
-        c.ignoredReturnValueError(nullptr, "malloc");
-        c.mathfunctionCallWarning(nullptr);
-        c.mathfunctionCallWarning(nullptr, "1 - erf(x)", "erfc(x)");
-        c.memsetZeroBytesError(nullptr);
-        c.memsetFloatError(nullptr,  "varname");
-        c.memsetValueOutOfRangeError(nullptr,  "varname");
-        c.missingReturnError(nullptr);
-        c.copyElisionError(nullptr);
-        c.useStandardLibraryError(nullptr, "memcpy");
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Check function usage";

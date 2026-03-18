@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,19 @@
 #include "platform.h"
 #include "utils.h"
 
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+
+class Settings;
+struct Suppressions;
+namespace tinyxml2 {
+    class XMLDocument;
+}
 
 /// @addtogroup Core
 /// @{
@@ -44,14 +51,12 @@ namespace cppcheck {
     };
 }
 
-class Settings;
-
 /**
  * @brief Importing project settings.
  */
 class CPPCHECKLIB WARN_UNUSED ImportProject {
 public:
-    enum class Type {
+    enum class Type : std::uint8_t {
         NONE,
         UNKNOWN,
         MISSING,
@@ -63,17 +68,18 @@ public:
         CPPCHECK_GUI
     };
 
-    static void fsParseCommand(FileSettings& fs, const std::string& command);
+protected:
     static void fsSetDefines(FileSettings& fs, std::string defs);
     static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
+public:
     std::list<FileSettings> fileSettings;
-    Type projectType{Type::NONE};
+    std::vector<std::string> errors;
 
     ImportProject() = default;
     virtual ~ImportProject() = default;
     ImportProject(const ImportProject&) = default;
-    ImportProject& operator=(const ImportProject&) = default;
+    ImportProject& operator=(const ImportProject&) & = default;
 
     void selectOneVsConfig(Platform::Type platform);
     void selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations);
@@ -82,7 +88,6 @@ public:
 
     // Cppcheck GUI output
     struct {
-        std::string analyzeAllVsConfigs;
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
         std::list<std::string> excludedPaths;
@@ -91,22 +96,32 @@ public:
         std::string platform;
     } guiProject;
 
-    void ignorePaths(const std::vector<std::string> &ipaths);
+    void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
-    Type import(const std::string &filename, Settings *settings=nullptr);
+    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
 protected:
     bool importCompileCommands(std::istream &istr);
-    bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
-    virtual bool sourceFileExists(const std::string &file);
+    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
+    static std::string collectArgs(const std::string &cmd, std::vector<std::string> &args);
+
+    struct SharedItemsProject {
+        bool successful = false;
+        std::string pathToProjectFile;
+        std::vector<std::string> includePaths;
+        std::vector<std::string> sourceFiles;
+    };
+
+    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+
 private:
-    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
-    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
-    bool importBcb6Prj(const std::string &projectFilename);
-
-    static void printError(const std::string &message);
-
+    static void parseArgs(FileSettings &fs, const std::vector<std::string> &args);
     void setRelativePaths(const std::string &filename);
+
+    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
+    SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importBcb6Prj(const std::string &projectFilename);
 
     std::string mPath;
     std::set<std::string> mAllVSConfigs;
@@ -158,11 +173,14 @@ namespace CppcheckXml {
     static constexpr char WarningElementName[] = "warning";
     static constexpr char HashAttributeName[] = "hash";
     static constexpr char CheckLevelExhaustiveElementName[] = "check-level-exhaustive";
+    static constexpr char CheckLevelNormalElementName[] = "check-level-normal";
+    static constexpr char CheckLevelReducedElementName[] = "check-level-reduced";
     static constexpr char CheckHeadersElementName[] = "check-headers";
     static constexpr char CheckUnusedTemplatesElementName[] = "check-unused-templates";
     static constexpr char MaxCtuDepthElementName[] = "max-ctu-depth";
     static constexpr char MaxTemplateRecursionElementName[] = "max-template-recursion";
     static constexpr char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+    static constexpr char InlineSuppression[] = "inline-suppression";
     static constexpr char ClangTidy[] = "clang-tidy";
     static constexpr char Name[] = "name";
     static constexpr char VSConfigurationElementName[] = "vs-configurations";
@@ -172,6 +190,7 @@ namespace CppcheckXml {
     static constexpr char CodingStandardsElementName[] = "coding-standards";
     static constexpr char CodingStandardElementName[] = "coding-standard";
     static constexpr char CertIntPrecisionElementName[] = "cert-c-int-precision";
+    static constexpr char LicenseFileElementName[] = "license-file";
     static constexpr char ProjectNameElementName[] = "project-name";
 }
 

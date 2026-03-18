@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include "platform.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestCharVar : public TestFixture {
 public:
     TestCharVar() : TestFixture("TestCharVar") {}
@@ -31,13 +33,15 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).platform(Platform::Type::Unspecified).build();
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
         TEST_CASE(bitop);
     }
 
-#define check(code) check_(code, __FILE__, __LINE__)
-    void check_(const char code[], const char* file, int line) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -62,7 +66,7 @@ private:
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (portability) 'char' type used as array index.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (portability) 'char' type used as array index. [unknownSignCharArrayIndex]\n", errout_str());
 
         check("int buf[256];\n"
               "void foo()\n"
@@ -86,7 +90,7 @@ private:
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (portability) 'char' type used as array index.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (portability) 'char' type used as array index. [unknownSignCharArrayIndex]\n", errout_str());
 
         check("int buf[256];\n"
               "void foo(signed char ch)\n"
@@ -107,7 +111,7 @@ private:
               "    char ch = 0x80;"
               "    buf[ch] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) 'char' type used as array index.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:24]: (portability) 'char' type used as array index. [unknownSignCharArrayIndex]\n", errout_str());
 
         check("void foo(char* buf)\n"
               "{\n"
@@ -164,7 +168,7 @@ private:
               "    signed char ch = -1;\n"
               "    *result = a | ch;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:17]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results. [charBitOp]\n", errout_str());
 
         check("void foo(int *result) {\n"
               "    unsigned char ch = -1;\n"
@@ -183,7 +187,7 @@ private:
               "    signed char ch = -1;\n"
               "    *result = 0x03 | ch;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:20]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results. [charBitOp]\n", errout_str());
 
         check("void foo(int *result) {\n"
               "    signed char ch = -1;\n"

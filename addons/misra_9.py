@@ -1,5 +1,3 @@
-import cppcheckdata
-
 # Holds information about an array, struct or union's element definition.
 class ElementDef:
     def __init__(self, elementType, name, valueType, dimensions = None):
@@ -140,8 +138,7 @@ class ElementDef:
     def getEffectiveLevel(self):
         if self.parent and self.parent.elementType == "array":
             return self.parent.getEffectiveLevel() + 1
-        else:
-            return 0
+        return 0
 
     def setInitialized(self, designated=False, positional=False):
         if designated:
@@ -203,11 +200,10 @@ class ElementDef:
                   self.isOnlyDesignated()) and
                  all([not (child.isDesignated or child.isPositional) or child.isMisra93Compliant() for child in self.children]))
             return result
-        elif self.elementType == 'record':
+        if self.elementType == 'record':
             result = all([child.isMisra93Compliant() for child in self.children])
             return result
-        else:
-            return True
+        return True
 
     def isMisra94Compliant(self):
         return self.numInits <= 1 and all([child.isMisra94Compliant() for child in self.children])
@@ -380,22 +376,22 @@ class InitializerParser:
 
                 self.token = self.token.astParent.astOperand2
                 break
-            else:
-                self.token = self.token.astParent
-                if self.token.str == '{':
-                    if self.root:
-                        self.ed = self.root.getLastValueElement()
-                        self.ed.markAsCurrent()
 
-                        # Cleanup if root is dummy node representing excess levels in initializer
-                        if self.root.name == '<-':
-                            self.root.children[0].parent = self.root.parent
+            self.token = self.token.astParent
+            if self.token.str == '{':
+                if self.root:
+                    self.ed = self.root.getLastValueElement()
+                    self.ed.markAsCurrent()
 
-                        self.root = self.root.parent
+                    # Cleanup if root is dummy node representing excess levels in initializer
+                    if self.root.name == '<-':
+                        self.root.children[0].parent = self.root.parent
 
-                if self.token.astParent is None:
-                    self.token = None
-                    break
+                    self.root = self.root.parent
+
+            if self.token.astParent is None:
+                self.token = None
+                break
 
 def misra_9_x(self, data, rule, rawTokens = None):
 
@@ -521,7 +517,7 @@ def createRecordChildrenDefs(ed, var):
                     child = getElementDef(variable.nameToken)
                     ed1.addChild(child)
                 child_dict[scopes.bodyStart] = ed1
-    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: "%s %s %s" % (k.file, k.linenr, k.column))
+    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: (k.file, k.linenr, k.column))
     for _key in sorted_keys:
         ed.addChild(child_dict[_key])
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 #include "codeeditor.h"
 
 #include "codeeditorstyle.h"
+#include "utils.h"
 
 #include <QChar>
 #include <QColor>
-#include <QCryptographicHash>
 #include <QFont>
 #include <QFontMetrics>
 #include <QKeySequence>
@@ -31,7 +31,6 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QRect>
-#include <QRectF>
 #include <QRegularExpressionMatchIterator>
 #include <QShortcut>
 #include <QTextBlock>
@@ -135,7 +134,7 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "volatile"
                     << "wchar_t"
                     << "while";
-    for (const QString &pattern : keywordPatterns) {
+    for (const QString &pattern : utils::as_const(keywordPatterns)) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
         rule.format = mKeywordFormat;
         rule.ruleRole = RuleRole::Keyword;
@@ -218,7 +217,7 @@ void Highlighter::setStyle(const CodeEditorStyle &newStyle)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    for (const HighlightingRule &rule : mHighlightingRulesWithSymbols) {
+    for (const HighlightingRule &rule : utils::as_const(mHighlightingRulesWithSymbols)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -248,7 +247,7 @@ void Highlighter::highlightBlock(const QString &text)
     }
 }
 
-void Highlighter::applyFormat(HighlightingRule &rule)
+void Highlighter::applyFormat(HighlightingRule &rule) const
 {
     switch (rule.ruleRole) {
     case RuleRole::Keyword:
@@ -286,13 +285,8 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
     auto *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
     auto *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
-#else
-    const auto *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
-    const auto *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
-#endif
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -369,11 +363,7 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
-    const int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
-#else
-    const int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
-#endif
+    const int space = 3 + (fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits);
     return space;
 }
 
@@ -427,8 +417,8 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent *event)
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
-    int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
-    int bottom = top + (int) blockBoundingRect(block).height();
+    int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int bottom = top + static_cast<int>(blockBoundingRect(block).height());
 
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
@@ -440,7 +430,7 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent *event)
 
         block = block.next();
         top = bottom;
-        bottom = top + (int) blockBoundingRect(block).height();
+        bottom = top + static_cast<int>(blockBoundingRect(block).height());
         ++blockNumber;
     }
 }

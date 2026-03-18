@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include <QComboBox>
 #include <QFile>
 #include <QFileDialog>
-#include <QFlags>
 #include <QIODevice>
 #include <QLineEdit>
 #include <QList>
@@ -87,7 +86,7 @@ CppcheckLibraryData::Function *LibraryDialog::currentFunction()
     QList<QListWidgetItem *> selitems = mUi->functions->selectedItems();
     if (selitems.count() != 1)
         return nullptr;
-    return static_cast<FunctionListItem *>(selitems.first())->function;
+    return dynamic_cast<FunctionListItem *>(selitems.first())->function;
 }
 
 void LibraryDialog::openCfg()
@@ -168,7 +167,7 @@ void LibraryDialog::saveCfg()
 void LibraryDialog::saveCfgAs()
 {
     const QString filter(tr("Library files (*.cfg)"));
-    const QString path = Path::getPathFromFilename(mFileName.toStdString()).c_str();
+    const QString path = QString::fromStdString(Path::getPathFromFilename(mFileName.toStdString()));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                                                         tr("Save the library as"),
                                                         path,
@@ -293,11 +292,11 @@ void LibraryDialog::filterFunctions(const QString& filter)
     QList<QListWidgetItem *> allItems = mUi->functions->findItems(QString(), Qt::MatchContains);
 
     if (filter.isEmpty()) {
-        for (QListWidgetItem *item : allItems) {
+        for (QListWidgetItem *item : utils::as_const(allItems)) {
             item->setHidden(false);
         }
     } else {
-        for (QListWidgetItem *item : allItems) {
+        for (QListWidgetItem *item : utils::as_const(allItems)) {
             item->setHidden(!item->text().startsWith(filter));
         }
     }
@@ -313,7 +312,7 @@ void LibraryDialog::changeFunction()
         return;
 
     function->comments   = mUi->comments->toPlainText();
-    function->noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)mUi->noreturn->currentIndex();
+    function->noreturn   = static_cast<CppcheckLibraryData::Function::TrueFalseUnknown>(mUi->noreturn->currentIndex());
     function->useretval  = mUi->useretval->isChecked();
     function->leakignore = mUi->leakignore->isChecked();
 
@@ -351,7 +350,7 @@ QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
     s += "\n    not uninit: " +  QString(bool_to_string(arg.notuninit));
     s += "\n    format string: " +  QString(bool_to_string(arg.formatstr));
     s += "\n    strz: " +  QString(bool_to_string(arg.strz));
-    s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
+    s += "\n    valid: " + (arg.valid.isEmpty() ? "any" : arg.valid);
     for (const CppcheckLibraryData::Function::Arg::MinSize &minsize : arg.minsizes) {
         s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;
     }

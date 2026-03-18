@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ int Platforms::getCount() const
 
 PlatformData& Platforms::get(Platform::Type platform)
 {
-    QList<PlatformData>::iterator iter = mPlatforms.begin();
+    auto iter = mPlatforms.begin();
     while (iter != mPlatforms.end()) {
         if (iter->mType == platform) {
             return *iter;

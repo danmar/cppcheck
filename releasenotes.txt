@@ -1,9 +1,13 @@
-Release Notes for Cppcheck 2.15
+
+Release Notes for Cppcheck 2.21
+
+Major bug fixes & crashes:
+-
 
 New checks:
 -
 
-Improved checking:
+C/C++ support:
 -
 
 GUI:
@@ -12,7 +16,7 @@ GUI:
 Changed interface:
 -
 
-Deprecations:
+Infrastructure & dependencies:
 -
 
 Other:

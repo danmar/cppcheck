@@ -58,13 +58,16 @@
 #include <QTextStream>
 #include <QTreeView>
 #include <QtCore>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 class QWidget;
 
-const QString WORK_FOLDER(QDir::homePath() + "/triage");
-const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
+static const QString WORK_FOLDER(QDir::homePath() + "/triage");
+static const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
 
-constexpr int MAX_ERRORS = 100;
+static constexpr int MAX_ERRORS = 100;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -74,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
+    // NOLINTNEXTLINE(bugprone-random-generator-seed) - the random numbers are not used in a security context so this should be sufficient
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     QDir workFolder(WORK_FOLDER);
     if (!workFolder.exists()) {
@@ -109,7 +113,7 @@ void MainWindow::loadFile()
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    (void)file.open(QIODevice::ReadOnly | QIODevice::Text); // TODO: check result
     QTextStream textStream(&file);
     load(textStream);
 }

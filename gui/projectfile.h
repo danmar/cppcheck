@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "suppressions.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <utility>
 
@@ -53,7 +54,8 @@ public:
         if (this == mActiveProject) mActiveProject = nullptr;
     }
 
-    enum class CheckLevel {
+    enum class CheckLevel : std::uint8_t {
+        reduced,
         normal,
         exhaustive
     };
@@ -105,6 +107,14 @@ public:
 
     void setCheckUnusedTemplates(bool b) {
         mCheckUnusedTemplates = b;
+    }
+
+    bool getInlineSuppression() const {
+        return mInlineSuppression;
+    }
+
+    void setInlineSuppression(bool b) {
+        mInlineSuppression = b;
     }
 
     /**
@@ -215,6 +225,7 @@ public:
     QStringList getAddonsAndTools() const;
 
     bool getClangAnalyzer() const {
+        // TODO
         return false; //mClangAnalyzer;
     }
 
@@ -342,7 +353,9 @@ public:
 
     /** CheckLevel: normal/exhaustive */
     void setCheckLevel(CheckLevel checkLevel);
-    bool isCheckLevelExhaustive() const;
+    CheckLevel getCheckLevel() const {
+        return mCheckLevel;
+    }
 
     /**
      * @brief Set tags.
@@ -387,6 +400,13 @@ public:
         return mCertIntPrecision;
     }
 
+    /** Cppcheck Premium: License file */
+    void setLicenseFile(const QString& licenseFile) {
+        mPremiumLicenseFile = licenseFile;
+    }
+    const QString& getLicenseFile() const {
+        return mPremiumLicenseFile;
+    }
 
     /**
      * @brief Write project file (to disk).
@@ -425,6 +445,10 @@ public:
 
     /** Use Clang parser */
     bool clangParser;
+
+    /** Get paths where we should glob for certain files (dir="cfg"/"platforms"/etc */
+    QStringList getSearchPaths(const QString& dir) const;
+    static QStringList getSearchPaths(const QString& projectPath, const QString& appPath, const QString& datadir, const QString& dir);
 
 protected:
 
@@ -558,6 +582,11 @@ private:
     bool mCheckUnusedTemplates;
 
     /**
+     * @brief Enable inline suppression.
+     */
+    bool mInlineSuppression;
+
+    /**
      * @brief List of include directories used to search include files.
      */
     QStringList mIncludeDirs;
@@ -611,6 +640,9 @@ private:
      * @brief List of coding standards, checked by Cppcheck Premium.
      */
     QStringList mCodingStandards;
+
+    /** @brief Cppcheck Premium: license file */
+    QString mPremiumLicenseFile;
 
     /** @brief Project name, used when generating compliance report */
     QString mProjectName;

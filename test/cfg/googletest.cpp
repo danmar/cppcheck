@@ -2,7 +2,7 @@
 // Test library configuration for googletest.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=googletest --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/googletest.cpp
+// $ cppcheck --check-library --library=googletest --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/googletest.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -29,6 +29,16 @@ namespace ExampleNamespace {
     MATCHER(ExampleMatcherTest, "")
     {
         return (arg == TOLERANCE);
+    }
+
+    // syntaxError when TYPED_TEST is not known
+    TYPED_TEST (ExampleTypedTest, cppcheck_test)
+    {
+    }
+
+    // syntaxError when TYPED_TEST_P is not known
+    TYPED_TEST_P (ExampleTypedTestP, cppcheck)
+    {
     }
 }
 

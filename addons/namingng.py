@@ -36,7 +36,6 @@ import cppcheckdata
 import sys
 import os
 import re
-import argparse
 import json
 
 # Auxiliary class
@@ -146,6 +145,11 @@ def loadConfig(configfile):
     if have_error:
         sys.exit(1)
 
+    # pylint: disable-next=no-member - TODO: fix this
+    if config.include_guard:
+        # pylint: disable-next=no-member - TODO: fix this
+        config.include_guard_header_re = config.include_guard.get('RE_HEADERFILE',"[^/].*\\.h\\Z")
+
     return config
 
 
@@ -200,14 +204,15 @@ def check_include_guards(conf,cfg,unguarded_include_files):
     # - test whether include guards are in place
     max_linenr = conf.include_guard.get('max_linenr', 5)
 
-    def report(directive,msg,errorId,column=0):
-        reportNamingError(directive,msg,errorId,column=column)
+    def report(directive,msg,errorId,severity='style',column=0):
+        reportNamingError(directive,msg,errorId,severity=severity,column=column)
 
     def report_pending_ifndef(directive,column):
         report(directive,'include guard #ifndef is not followed by #define','includeGuardIncomplete',column=column)
 
     last_fn = None
     pending_ifndef = None
+    guard_column = None
     phase = 0
     for directive in cfg.directives:
         if last_fn != directive.file:
@@ -219,7 +224,7 @@ def check_include_guards(conf,cfg,unguarded_include_files):
         if phase == -1:
             # ignore (the remainder of) this file
             continue
-        if not re.match(include_guard_header_re,directive.file):
+        if not re.match(conf.include_guard_header_re,directive.file):
             phase = -1
             continue
 
@@ -237,7 +242,7 @@ def check_include_guards(conf,cfg,unguarded_include_files):
                 phase = -1
                 continue
             guard_name,guard_column = check_include_guard_name(conf,directive)
-            if guard_name == None:
+            if guard_name is None:
                 phase = -1
                 continue
             pending_ifndef = directive
@@ -263,20 +268,16 @@ def check_include_guards(conf,cfg,unguarded_include_files):
     if pending_ifndef:
         report_pending_ifndef(pending_ifndef,guard_column)
 
-def process(dumpfiles, configfile):
+def process(dumpfiles, configfile, cli, debugprint):
     conf = loadConfig(configfile)
-
-    if conf.include_guard:
-        global include_guard_header_re
-        include_guard_header_re = conf.include_guard.get('RE_HEADERFILE',"[^/].*\\.h\\Z")
 
     for afile in dumpfiles:
         if not afile[-5:] == '.dump':
             continue
-        if not args.cli:
+        if not cli:
             print('Checking ' + afile + '...')
         data = cppcheckdata.CppcheckData(afile)
-        process_data(conf,data)
+        process_data(conf,data,cli,debugprint)
 
 def check_file_naming(conf,data):
     for source_file in data.files:
@@ -297,7 +298,7 @@ def check_namespace_naming(conf,data):
         for exp in conf.namespace:
             evalExpr(conf.namespace, exp, mockToken, 'Namespace')
 
-def check_variable_naming(conf,cfg):
+def check_variable_naming(conf,cfg,debugprint):
     for var in cfg.variables:
         if not var.nameToken:
             continue
@@ -309,7 +310,7 @@ def check_variable_naming(conf,cfg):
             prev = prev.previous
             varType = prev.str + varType
 
-        if args.debugprint:
+        if debugprint:
             print("Variable Name: " + str(var.nameToken.str))
             print("original Type Name: " + str(var.nameToken.valueType.originalTypeName))
             print("Type Name: " + var.nameToken.valueType.type)
@@ -342,7 +343,7 @@ def check_gpp_naming(conf_list,cfg,access,message):
         for exp in conf_list:
             evalExpr(conf_list, exp, mockToken, message)
 
-def check_function_naming(conf,cfg):
+def check_function_naming(conf,cfg,debugprint):
     for token in cfg.tokenlist:
         if not token.function:
             continue
@@ -353,7 +354,7 @@ def check_function_naming(conf,cfg):
         while "*" in retval and len(retval.replace("*", "")) == 0:
             prev = prev.previous
             retval = prev.str + retval
-        if args.debugprint:
+        if debugprint:
             print("\t:: {} {}".format(retval, token.function.name))
 
         if retval and retval in conf.function_prefixes:
@@ -373,7 +374,7 @@ def check_class_naming(conf,cfg):
         for exp in conf.class_name:
             evalExpr(conf.class_name, exp, mockToken, msgType)
 
-def process_data(conf,data):
+def process_data(conf,data,cli,debugprint):
     if conf.file:
         check_file_naming(conf,data)
 
@@ -382,13 +383,13 @@ def process_data(conf,data):
 
     unguarded_include_files = []
     if conf.include_guard and conf.include_guard.get('required',1):
-        unguarded_include_files = [fn for fn in data.files if re.match(include_guard_header_re,fn)]
+        unguarded_include_files = [fn for fn in data.files if re.match(conf.include_guard_header_re,fn)]
 
     for cfg in data.configurations:
-        if not args.cli:
+        if not cli:
             print('Checking config %s...' % cfg.name)
         if conf.variable:
-            check_variable_naming(conf,cfg)
+            check_variable_naming(conf,cfg,debugprint)
         if conf.private_member:
             check_gpp_naming(conf.private_member,cfg,'Private','Private member variable')
         if conf.public_member:
@@ -396,7 +397,7 @@ def process_data(conf,data):
         if conf.global_variable:
             check_gpp_naming(conf.global_variable,cfg,'Global','Global variable')
         if conf.function_name:
-            check_function_naming(conf,cfg)
+            check_function_naming(conf,cfg,debugprint)
         if conf.class_name:
             check_class_naming(conf,cfg)
         if conf.include_guard:
@@ -414,6 +415,6 @@ if __name__ == "__main__":
                         help="Naming check config file")
 
     args = parser.parse_args()
-    process(args.dumpfile, args.configfile)
+    process(args.dumpfile, args.configfile, args.cli, args.debugprint)
 
     sys.exit(0)

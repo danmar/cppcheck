@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <stdexcept>
 #include <list>
 #include <string>
@@ -34,7 +35,7 @@ class Token;
 
 /** @brief Simple container to be thrown when internal error is detected. */
 struct CPPCHECKLIB InternalError {
-    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
+    enum Type : std::uint8_t {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
 
     InternalError(const Token *tok, std::string errorMsg, Type type = INTERNAL);
     InternalError(const Token *tok, std::string errorMsg, std::string details, Type type = INTERNAL);
@@ -51,16 +52,16 @@ public:
     TerminateException() : std::runtime_error("terminate") {}
 };
 
-enum class Certainty {
+enum class Certainty : std::uint8_t {
     normal, inconclusive
 };
 
-enum class Checks {
+enum class Checks : std::uint8_t {
     unusedFunction, missingInclude, internalCheck
 };
 
 /** @brief enum class for severity. Used when reporting errors. */
-enum class Severity {
+enum class Severity : std::uint8_t {
     /**
      * No severity (default value).
      */

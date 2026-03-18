@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,14 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "mathlib.h"
 #include "standards.h"
+#include "utils.h"
 
+#include <cassert>
 #include <climits>
 #include <cstddef>
-#include <stdexcept>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -42,51 +45,77 @@ namespace tinyxml2 {
  */
 class CPPCHECKLIB Platform {
 private:
-    static long long min_value(int bit) {
+    static long long min_value(std::uint8_t bit) {
+        assert(bit > 0);
         if (bit >= 64)
             return LLONG_MIN;
         return -(1LL << (bit-1));
     }
 
-    static long long max_value(int bit) {
+    static long long max_value(std::uint8_t bit) {
+        assert(bit > 0);
         if (bit >= 64)
             return (~0ULL) >> 1;
         return (1LL << (bit-1)) - 1LL;
     }
 
+    static unsigned long long max_value_unsigned(std::uint8_t bit) {
+        assert(bit > 0);
+        if (bit >= 64)
+            return ~0ULL;
+        return (1ULL << bit) - 1ULL;
+    }
+
+    void calculateBitMembers() {
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
+        float_bit = char_bit * sizeof_float;
+        double_bit = char_bit * sizeof_double;
+        long_double_bit = char_bit * sizeof_long_double;
+    }
+
     /** provides list of defines specified by the limit.h/climits includes */
     std::string getLimitsDefines(bool c99) const;
+
+protected:
+    /** load platform from xml document, primarily for testing */
+    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
 public:
     Platform();
 
-    bool isIntValue(long long value) const {
+    bool isIntValue(MathLib::bigint value) const {
         return value >= min_value(int_bit) && value <= max_value(int_bit);
     }
 
-    bool isIntValue(unsigned long long value) const {
+    bool isIntValue(MathLib::biguint value) const {
         const unsigned long long intMax = max_value(int_bit);
         return value <= intMax;
     }
 
-    bool isLongValue(long long value) const {
+    bool isLongValue(MathLib::bigint value) const {
         return value >= min_value(long_bit) && value <= max_value(long_bit);
     }
 
-    bool isLongValue(unsigned long long value) const {
-        const unsigned long long longMax = max_value(long_bit);
+    bool isLongValue(MathLib::biguint value) const {
+        const MathLib::biguint longMax = max_value(long_bit);
         return value <= longMax;
     }
 
-    bool isLongLongValue(unsigned long long value) const {
-        const unsigned long long longLongMax = max_value(long_long_bit);
+    bool isLongLongValue(MathLib::biguint value) const {
+        const MathLib::biguint longLongMax = max_value(long_long_bit);
         return value <= longLongMax;
     }
 
-    nonneg int char_bit;       /// bits in char
-    nonneg int short_bit;      /// bits in short
-    nonneg int int_bit;        /// bits in int
-    nonneg int long_bit;       /// bits in long
-    nonneg int long_long_bit;  /// bits in long long
+    std::uint8_t char_bit;       /// bits in char
+    std::uint8_t short_bit;      /// bits in short
+    std::uint8_t int_bit;        /// bits in int
+    std::uint8_t long_bit;       /// bits in long
+    std::uint8_t long_long_bit;  /// bits in long long
+    std::uint8_t float_bit;  /// bits in float
+    std::uint8_t double_bit;  /// bits in double
+    std::uint8_t long_double_bit;  /// bits in long double
 
     /** size of standard types */
     std::size_t sizeof_bool;
@@ -103,7 +132,9 @@ public:
 
     char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
-    enum Type {
+    bool windows{false}; // indicates if the platform is Windows
+
+    enum Type : std::uint8_t {
         Unspecified, // No platform specified
         Native, // whatever system this code was compiled on
         Win32A,
@@ -121,28 +152,24 @@ public:
     bool set(Type t);
 
     /** set the platform type */
-    bool set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool verbose = false);
+    bool set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool debug = false);
 
     /**
      * load platform file
-     * @param exename application path
+     * @param paths the additional paths to look into
      * @param filename platform filename
-     * @param verbose log verbose information about the lookup
+     * @param debug log verbose information about the lookup
      * @return returns true if file was loaded successfully
      */
-    bool loadFromFile(const char exename[], const std::string &filename, bool verbose = false);
+    bool loadFromFile(const std::vector<std::string>& paths, const std::string &filename, bool debug = false);
 
-    /** load platform from xml document, primarily for testing */
-    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
 
     /**
      * @brief Returns true if platform type is Windows
      * @return true if Windows platform type.
      */
     bool isWindows() const {
-        return type == Type::Win32A ||
-               type == Type::Win32W ||
-               type == Type::Win64;
+        return windows;
     }
 
     const char *toString() const {
@@ -167,9 +194,8 @@ public:
             return "unix64";
         case Type::File:
             return "platformFile";
-        default:
-            throw std::runtime_error("unknown platform");
         }
+        cppcheck::unreachable();
     }
 
     long long unsignedCharMax() const {

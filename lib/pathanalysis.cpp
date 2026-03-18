@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ const Scope* PathAnalysis::findOuterScope(const Scope * scope)
 {
     if (!scope)
         return nullptr;
-    if (scope->isLocal() && scope->type != Scope::eSwitch)
+    if (scope->isLocal() && scope->type != ScopeType::eSwitch)
         return findOuterScope(scope->nestedIn);
     return scope;
 }
@@ -48,9 +48,9 @@ static const Token* assignExpr(const Token* tok)
 
 std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
 {
-    if (tok->hasKnownIntValue()) {
+    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
         known = true;
-        return std::make_pair(tok->values().front().intvalue, !tok->values().front().intvalue);
+        return std::make_pair(!!v->intvalue, !v->intvalue);
     }
     auto it = std::find_if(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) {
         return v.isIntValue();
@@ -62,7 +62,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
         return true;
     })) {
         known = false;
-        return std::make_pair(it->intvalue, !it->intvalue);
+        return std::make_pair(!!it->intvalue, !it->intvalue);
     }
     return std::make_pair(true, true);
 }
@@ -123,14 +123,14 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
             }
-        } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
-            const Token * endCond = tok->next()->link();
-            const Token * endBlock = endCond->next()->link();
+        } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
+            const Token * endCond = tok->linkAt(1);
+            const Token * endBlock = endCond->linkAt(1);
             const Token * condTok = getCondTok(tok);
             if (!condTok)
                 continue;
             // Traverse condition
-            if (forwardRange(tok->next(), tok->next()->link(), info, f) == Progress::Break)
+            if (forwardRange(tok->next(), tok->linkAt(1), info, f) == Progress::Break)
                 return Progress::Break;
             Info i = info;
             i.known = false;
@@ -166,7 +166,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
                 return Progress::Break;
         }
         // Prevent infinite recursion
-        if (tok->next() == start)
+        if (tok->next() == mStart)
             break;
     }
     return Progress::Continue;
@@ -174,17 +174,17 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
 
 void PathAnalysis::forward(const std::function<Progress(const Info&)>& f) const
 {
-    const Scope * endScope = findOuterScope(start->scope());
+    const Scope * endScope = findOuterScope(mStart->scope());
     if (!endScope)
         return;
     const Token * endToken = endScope->bodyEnd;
-    Info info{start, ErrorPath{}, true};
-    forwardRange(start, endToken, std::move(info), f);
+    Info info{mStart, ErrorPath{}, true};
+    forwardRange(mStart, endToken, std::move(info), f);
 }
 
-bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
+bool reaches(const Token * start, const Token * dest, ErrorPath* errorPath)
 {
-    PathAnalysis::Info info = PathAnalysis{start, library}.forwardFind([&](const PathAnalysis::Info& i) {
+    PathAnalysis::Info info = PathAnalysis{start}.forwardFind([&](const PathAnalysis::Info& i) {
         return (i.tok == dest);
     });
     if (!info.tok)

@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,9 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "mathlib.h"
-#include "vfvalue.h"
 
-#include <cstdlib>
 #include <functional>
 #include <list>
 #include <string>
@@ -33,18 +32,18 @@
 #include <vector>
 
 class ErrorLogger;
-struct InferModel;
 class Settings;
 class SymbolDatabase;
 class TimerResultsIntf;
 class Token;
 class TokenList;
-class ValueType;
 class Variable;
 class Scope;
 
-template<class T>
-class ValuePtr;
+namespace ValueFlow
+{
+    class Value;
+}
 
 namespace ValueFlow {
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
@@ -59,8 +58,6 @@ namespace ValueFlow {
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
-    size_t getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion = 0);
-
     const Value* findValue(const std::list<Value>& values,
                            const Settings& settings,
                            const std::function<bool(const Value&)> &pred);
@@ -73,17 +70,17 @@ namespace ValueFlow {
 
     struct LifetimeToken {
         const Token* token{};
-        Value::ErrorPath errorPath;
+        ErrorPath errorPath;
         bool addressOf{};
         bool inconclusive{};
 
         LifetimeToken() = default;
 
-        LifetimeToken(const Token* token, Value::ErrorPath errorPath)
+        LifetimeToken(const Token* token, ErrorPath errorPath)
             : token(token), errorPath(std::move(errorPath))
         {}
 
-        LifetimeToken(const Token* token, bool addressOf, Value::ErrorPath errorPath)
+        LifetimeToken(const Token* token, bool addressOf, ErrorPath errorPath)
             : token(token), errorPath(std::move(errorPath)), addressOf(addressOf)
         {}
 
@@ -103,8 +100,6 @@ namespace ValueFlow {
     const Token *parseCompareInt(const Token *tok, Value &true_value, Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
     const Token *parseCompareInt(const Token *tok, Value &true_value, Value &false_value);
 
-    CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
-
     const Token* solveExprValue(const Token* expr,
                                 const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
                                 Value& value);
@@ -112,17 +107,17 @@ namespace ValueFlow {
     std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                                  const Settings& settings,
                                                  bool escape = false,
-                                                 Value::ErrorPath errorPath = Value::ErrorPath{});
+                                                 ErrorPath errorPath = ErrorPath{});
 
     bool hasLifetimeToken(const Token* tok, const Token* lifetime, const Settings& settings);
 
-    const Variable* getLifetimeVariable(const Token* tok, Value::ErrorPath& errorPath, const Settings& settings, bool* addressOf = nullptr);
+    const Variable* getLifetimeVariable(const Token* tok, ErrorPath& errorPath, const Settings& settings, bool* addressOf = nullptr);
 
     const Variable* getLifetimeVariable(const Token* tok, const Settings& settings);
 
     bool isLifetimeBorrowed(const Token *tok, const Settings &settings);
 
-    std::string lifetimeMessage(const Token *tok, const Value *val, Value::ErrorPath &errorPath);
+    std::string lifetimeMessage(const Token *tok, const Value *val, ErrorPath &errorPath);
 
     CPPCHECKLIB Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 

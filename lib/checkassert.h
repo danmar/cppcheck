@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
@@ -32,6 +31,7 @@ class ErrorLogger;
 class Scope;
 class Settings;
 class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -49,10 +49,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckAssert checkAssert(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkAssert.assertWithSideEffects();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     void assertWithSideEffects();
 
@@ -62,11 +59,7 @@ private:
     void sideEffectInAssertError(const Token *tok, const std::string& functionName);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckAssert c(nullptr, settings, errorLogger);
-        c.sideEffectInAssertError(nullptr, "function");
-        c.assignmentInAssertError(nullptr, "var");
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Assert";

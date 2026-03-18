@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 struct SelectMapKeys {
@@ -123,6 +124,11 @@ bool endsWith(const std::string& str, const char (&end)[N])
     return endsWith(str, end, N - 1);
 }
 
+inline bool endsWith(const std::string& str, const std::string& end)
+{
+    return endsWith(str, end.c_str(), end.length());
+}
+
 inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)
 {
     // str must be at least the prefix plus the start and end quote
@@ -201,9 +207,7 @@ CPPCHECKLIB int caseInsensitiveStringCompare(const std::string& lhs, const std::
 
 CPPCHECKLIB bool isValidGlobPattern(const std::string& pattern);
 
-CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name);
-
-CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name);
+CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name, bool caseInsensitive = false);
 
 CPPCHECKLIB void strTolower(std::string& str);
 
@@ -277,6 +281,9 @@ bool strToInt(const std::string& str, T &num, std::string* err = nullptr)
     return true;
 }
 
+/**
+ * @throws std::runtime_error thrown if conversion failed
+ */
 template<typename T>
 T strToInt(const std::string& str)
 {
@@ -292,7 +299,6 @@ T strToInt(const std::string& str)
  * \return size of array
  * */
 template<typename T, int size>
-// cppcheck-suppress unusedFunction - only used in conditional code
 std::size_t getArrayLength(const T (& /*unused*/)[size])
 {
     return size;
@@ -321,7 +327,7 @@ static inline std::string id_string_i(std::uintptr_t l)
     while (l != 0)
     {
         char c;
-        const uintptr_t temp = l % 16; // get the remainder
+        const std::uintptr_t temp = l % 16; // get the remainder
         if (temp < 10) {
             // 0-9
             c = '0' + temp;
@@ -339,7 +345,7 @@ static inline std::string id_string_i(std::uintptr_t l)
 
 static inline std::string id_string(const void* p)
 {
-    return id_string_i(reinterpret_cast<uintptr_t>(p));
+    return id_string_i(reinterpret_cast<std::uintptr_t>(p));
 }
 
 static inline const char* bool_to_string(bool b)
@@ -364,6 +370,12 @@ CPPCHECKLIB std::string trim(const std::string& s, const std::string& t = " \t")
  */
 CPPCHECKLIB void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
 
+/**
+ * Replace all escape sequences in the given string.
+ * @param source The string that contains escape sequences
+ */
+CPPCHECKLIB std::string replaceEscapeSequences(const std::string &source);
+
 namespace cppcheck
 {
     NORETURN inline void unreachable()
@@ -379,9 +391,51 @@ namespace cppcheck
 }
 
 template<typename T>
+static inline T* default_if_null(T* p, T* def)
+{
+    return p ? p : def;
+}
+
+template<typename T>
 static inline T* empty_if_null(T* p)
 {
-    return p ? p : "";
+    return default_if_null(p, "");
+}
+
+/**
+ * Split string by given separator.
+ * @param str The string to split
+ * @param sep The separator
+ * @return The list of separate strings (including empty ones). The whole input string if no separator found.
+ */
+CPPCHECKLIB std::vector<std::string> splitString(const std::string& str, char sep);
+
+namespace utils {
+    /**
+     * Drop-in replacement for C++17's std::as_const
+     * @param t  The function forms the lvalue reference to const type of this argument.
+     */
+    template<class T>
+    constexpr typename std::add_const<T>::type & as_const(T& t) noexcept
+    {
+        // NOLINTNEXTLINE(bugprone-return-const-ref-from-parameter) - potential false positive
+        return t;
+    }
+
+    // Thread-unsafe memoization
+    template<class F, class R=decltype(std::declval<F>()())>
+    static inline std::function<R()> memoize(F f)
+    {
+        bool init = false;
+        R result{};
+        return [=]() mutable -> R {
+            if (init)
+                return result;
+            result = f();
+            init = true;
+            return result;
+        };
+    }
 }
 
 #endif

@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,8 @@
 #include "config.h"
 #include "mathlib.h"
 #include "errortypes.h"
-#include "tokenize.h"
-#include "vfvalue.h"
 
-#include <list>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string>
@@ -40,15 +38,11 @@ class Variable;
 class ErrorLogger;
 class Settings;
 class Library;
-
-namespace CTU {
-    class FileInfo;
+class Tokenizer;
+namespace ValueFlow
+{
+    class Value;
 }
-
-namespace tinyxml2 {
-    class XMLElement;
-}
-
 
 struct VariableValue {
     explicit VariableValue(MathLib::bigint val = 0) : value(val) {}
@@ -69,7 +63,7 @@ public:
     /** @brief This constructor is used when registering the CheckUninitVar */
     CheckUninitVar() : Check(myName()) {}
 
-    enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
+    enum Alloc : std::uint8_t { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
 
     static const Token *isVariableUsage(const Token *vartok, const Library &library, bool pointer, Alloc alloc, int indirect = 0);
     const Token *isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
@@ -80,22 +74,18 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckUninitVar checkUninitVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkUninitVar.valueFlowUninit();
-        checkUninitVar.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     bool diag(const Token* tok);
     /** Check for uninitialized variables */
     void check();
     void checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs);
     void checkStruct(const Token *tok, const Variable &structvar);
-    bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar, std::map<nonneg int, VariableValue>& variableValue);
-    const Token* checkExpr(const Token* tok, const Variable& var, const Alloc alloc, bool known, bool* bailout = nullptr) const;
+    bool checkScopeForVariable(const Token *tok, const Variable& var, bool* possibleInit, bool* noreturn, Alloc* alloc, const std::string &membervar, std::map<nonneg int, VariableValue>& variableValue);
+    const Token* checkExpr(const Token* tok, const Variable& var, Alloc alloc, bool known, bool* bailout = nullptr) const;
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
-    bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
-    const Token* checkLoopBodyRecursive(const Token *start, const Variable& var, const Alloc alloc, const std::string &membervar, bool &bailout) const;
+    bool checkLoopBody(const Token *tok, const Variable& var, Alloc alloc, const std::string &membervar, bool suppressErrors);
+    const Token* checkLoopBodyRecursive(const Token *start, const Variable& var, Alloc alloc, const std::string &membervar, bool &bailout, bool &alwaysReturns) const;
     void checkRhs(const Token *tok, const Variable &var, Alloc alloc, nonneg int number_of_if, const std::string &membervar);
     static int isFunctionParUsage(const Token *vartok, const Library &library, bool pointer, Alloc alloc, int indirect = 0);
     int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
@@ -106,12 +96,12 @@ private:
     void valueFlowUninit();
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const override;
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
+    bool analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     void uninitvarError(const Token* tok, const ValueFlow::Value& v);
     void uninitdataError(const Token *tok, const std::string &varname);
@@ -129,16 +119,7 @@ private:
 
     std::set<const Token*> mUninitDiags;
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
-    {
-        CheckUninitVar c(nullptr, settings, errorLogger);
-
-        ValueFlow::Value v{};
-
-        c.uninitvarError(nullptr, v);
-        c.uninitdataError(nullptr, "varname");
-        c.uninitStructMemberError(nullptr, "a.b");
-    }
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override;
 
     static std::string myName() {
         return "Uninitialized variables";

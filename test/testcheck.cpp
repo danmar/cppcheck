@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ private:
     }
 
     void instancesSorted() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
-            std::list<Check *>::const_iterator j = i;
+        for (auto i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
+            auto j = i;
             ++j;
             if (j != Check::instances().cend()) {
                 ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
@@ -43,7 +43,7 @@ private:
     }
 
     void classInfoFormat() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
+        for (auto i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
             const std::string info = (*i)->classInfo();
             if (!info.empty()) {
                 ASSERT('\n' != info[0]);         // No \n in the beginning

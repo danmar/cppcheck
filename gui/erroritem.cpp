@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 ErrorItem::ErrorItem()
     : severity(Severity::none)
     , inconclusive(false)
-    , cwe(-1)
+    , cwe(0)
     , hash(0)
 {}
 
@@ -51,12 +51,10 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , cwe(errmsg.cwe.id)
     , hash(errmsg.hash)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
+    , remark(QString::fromStdString(errmsg.remark))
 {
-    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.cbegin();
-         loc != errmsg.callStack.cend();
-         ++loc) {
-        errorPath << QErrorPathItem(*loc);
-    }
+    for (const auto& loc: errmsg.callStack)
+        errorPath << QErrorPathItem(loc);
 }
 
 QString ErrorItem::tool() const
@@ -72,21 +70,22 @@ QString ErrorItem::tool() const
 
 QString ErrorItem::toString() const
 {
-    QString str = errorPath.back().file + " - " + errorId + " - ";
+    const int i = getMainLocIndex();
+    QString ret = errorPath[i].file + ":" + QString::number(errorPath[i].line) + ":" + QString::number(errorPath[i].column) + ":";
+    ret += GuiSeverity::toString(severity);
     if (inconclusive)
-        str += "inconclusive ";
-    str += GuiSeverity::toString(severity) +"\n";
-    str += summary + "\n";
-    str += message + "\n";
-    for (const QErrorPathItem& i : errorPath) {
-        str += "  " + i.file + ": " + QString::number(i.line) + "\n";
+        ret += ",inconclusive";
+    ret += ": " + summary + " [" + errorId + "]";
+    if (errorPath.size() >= 2) {
+        for (const auto& e: errorPath)
+            ret += "\n" + e.file + ":" + QString::number(e.line) + ":" + QString::number(e.column) + ":note: " + e.info;
     }
-    return str;
+    return ret;
 }
 
-bool ErrorItem::sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2)
+bool ErrorItem::same(const ErrorItem &errorItem1, const ErrorItem &errorItem2)
 {
-    if (errorItem1.hash || errorItem2.hash)
+    if (errorItem1.hash && errorItem2.hash)
         return errorItem1.hash == errorItem2.hash;
 
     // fallback
@@ -96,4 +95,20 @@ bool ErrorItem::sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2
            errorItem1.message == errorItem2.message &&
            errorItem1.inconclusive == errorItem2.inconclusive &&
            errorItem1.severity == errorItem2.severity;
+}
+
+bool ErrorItem::filterMatch(const QString& filter) const
+{
+    if (filter.isEmpty())
+        return true;
+    if (summary.contains(filter, Qt::CaseInsensitive) ||
+        message.contains(filter, Qt::CaseInsensitive) ||
+        errorId.contains(filter, Qt::CaseInsensitive) ||
+        classification.contains(filter, Qt::CaseInsensitive))
+        return true;
+    return std::any_of(errorPath.cbegin(), errorPath.cend(),
+                       [filter](const auto& e) {
+        return e.file.contains(filter, Qt::CaseInsensitive) ||
+               e.info.contains(filter, Qt::CaseInsensitive);
+    });
 }

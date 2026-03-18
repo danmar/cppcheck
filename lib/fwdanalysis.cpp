@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,9 +26,10 @@
 #include "token.h"
 #include "vfvalue.h"
 
+#include <deque>
 #include <list>
-#include <map>
 #include <string>
+#include <utility>
 
 static bool isUnchanged(const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local)
 {
@@ -76,7 +77,7 @@ static bool hasGccCompoundStatement(const Token *tok)
 
 static bool nonLocal(const Variable* var, bool deref)
 {
-    return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+    return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isExtern();
 }
 
 static bool hasVolatileCastOrVar(const Token *expr)
@@ -223,8 +224,8 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
             const Token *bodyStart = tok->linkAt(1)->next();
             const Token *conditionStart = tok->next();
             const Token *condTok = conditionStart->astOperand2();
-            if (condTok->hasKnownIntValue()) {
-                const bool cond = condTok->values().front().intvalue;
+            if (const ValueFlow::Value* v = condTok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                const bool cond = !!v->intvalue;
                 if (cond) {
                     FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
                     if (result.type != Result::Type::NONE)
@@ -323,8 +324,25 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
             }
-            if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1())
-                return Result(Result::Type::READ);
+            if (mWhat == What::Reassign) {
+                if (parent->variable() && parent->variable()->type() && parent->variable()->type()->isUnionType() && parent->varId() == expr->varId()) {
+                    while (parent && Token::simpleMatch(parent->astParent(), "."))
+                        parent = parent->astParent();
+                    if (parent && parent->valueType() && Token::simpleMatch(parent->astParent(), "=") && !Token::Match(parent->astParent()->astParent(), "%assign%") && parent->astParent()->astOperand1() == parent) {
+                        const Token * assignment = parent->astParent()->astOperand2();
+                        while (Token::simpleMatch(assignment, ".") && assignment->varId() != expr->varId())
+                            assignment = assignment->astOperand1();
+                        if (assignment && assignment->varId() != expr->varId()) {
+                            if (assignment->valueType() && assignment->valueType()->pointer) // Bailout
+                                return Result(Result::Type::BAILOUT);
+                            return Result(Result::Type::WRITE, parent->astParent());
+                        }
+                    }
+                    return Result(Result::Type::READ);
+                }
+                if (parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%"))
+                    return Result(Result::Type::READ);
+            }
 
             if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)
@@ -344,12 +362,8 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                     while (argnr < args.size() && args[argnr] != parent)
                         argnr++;
                     if (argnr < args.size()) {
-                        const Library::Function* functionInfo = mSettings.library.getFunction(ftok->astOperand1());
-                        if (functionInfo) {
-                            const auto it = functionInfo->argumentChecks.find(argnr + 1);
-                            if (it != functionInfo->argumentChecks.end() && it->second.direction == Library::ArgumentChecks::Direction::DIR_OUT)
-                                continue;
-                        }
+                        if (mSettings.library.getArgDirection(ftok->astOperand1(), argnr + 1) == Library::ArgumentChecks::Direction::DIR_OUT)
+                            continue;
                     }
                 }
                 return Result(Result::Type::BAILOUT, parent->astParent());
@@ -406,7 +420,7 @@ std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOu
                   [&](const Token *tok) {
         if (tok->str() == "[" && mWhat == What::UnusedValue)
             return ChildrenToVisit::op1;
-        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+        if (tok->varId() == 0 && tok->isName() && tok->strAt(-1) != ".") {
             // unknown variable
             unknownVarId = true;
             return ChildrenToVisit::none;
@@ -465,9 +479,18 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 {
     if (!tok)
         return false;
-    if (isSameExpression(false, tok, lhs, mSettings, false, false, nullptr))
-        return true;
-    return hasOperand(tok->astOperand1(), lhs) || hasOperand(tok->astOperand2(), lhs);
+    std::deque<const Token*> nodes{ tok };
+    while (!nodes.empty()) {
+        const Token* node = nodes.front();
+        if (isSameExpression(false, node, lhs, mSettings, false, false, nullptr))
+            return true;
+        if (node->astOperand1())
+            nodes.emplace_back(node->astOperand1());
+        if (node->astOperand2())
+            nodes.emplace_back(node->astOperand2());
+        nodes.pop_front();
+    }
+    return false;
 }
 
 const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class Test64BitPortability : public TestFixture {
 public:
     Test64BitPortability() : TestFixture("Test64BitPortability") {}
@@ -30,6 +32,7 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::portability).library("std.cfg").build();
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);
         TEST_CASE(structmember);
@@ -39,10 +42,11 @@ private:
         TEST_CASE(assignment);
     }
 
-#define check(code) check_(code, __FILE__, __LINE__)
-    void check_(const char code[], const char* file, int line) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool cpp = true) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check char variable usage..
@@ -63,6 +67,12 @@ private:
               "    t.a[i][j] = new std::vector<int>;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f();\n" // #11522
+              "void g() {\n"
+              "    int (*fp)() = *(int(*)())f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void novardecl() {
@@ -80,28 +90,28 @@ private:
               "    int a = p;\n"
               "    return a + 4;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:11]: (portability) Assigning a pointer to an integer is not portable. [AssignmentAddressToInteger]\n", errout_str());
 
         check("int foo(int p[])\n"
               "{\n"
               "    int a = p;\n"
               "    return a + 4;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:11]: (portability) Assigning a pointer to an integer is not portable. [AssignmentAddressToInteger]\n", errout_str());
 
         check("int foo(int p[])\n"
               "{\n"
               "    int *a = p;\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n", errout_str());
 
         check("void foo(int x)\n"
               "{\n"
               "    int *p = x;\n"
               "    *p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer to a pointer is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:12]: (portability) Assigning an integer to a pointer is not portable. [AssignmentIntegerToAddress]\n", errout_str());
 
         check("int f(const char *p) {\n" // #4659
               "    return 6 + p[2] * 256;\n"
@@ -153,6 +163,12 @@ private:
               "    return p ? p : 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f(int* p) {\n"
+              "    int n = (int)(size_t)*p;\n"
+              "    return n;\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void structmember() {
@@ -160,7 +176,7 @@ private:
               "void f(struct Foo *foo) {\n"
               "    int i = foo->p;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:11]: (portability) Assigning a pointer to an integer is not portable. [AssignmentAddressToInteger]\n", errout_str());
 
         check("struct S {\n" // #10145
               "    enum class E { e1, e2 };\n"
@@ -199,7 +215,7 @@ private:
               "    int x = 10;\n"
               "    int *a = x * x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer to a pointer is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:12]: (portability) Assigning an integer to a pointer is not portable. [AssignmentIntegerToAddress]\n", errout_str());
 
         check("void foo(int *start, int *end) {\n"
               "    int len;\n"
@@ -212,7 +228,7 @@ private:
         check("void* foo(int i) {\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an integer in a function with pointer return type is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an integer in a function with pointer return type is not portable. [CastIntegerToAddressAtReturn]\n", errout_str());
 
         check("void* foo(int* i) {\n"
               "    return i;\n"
@@ -239,12 +255,12 @@ private:
         check("int foo(char* c) {\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n", errout_str());
 
         check("int foo(char* c) {\n"
               "    return 1+c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n", errout_str());
 
         check("std::string foo(char* c) {\n"
               "    return c;\n"
@@ -295,6 +311,23 @@ private:
               "    std::shared_ptr<S> s = std::make_shared<S>();\n"
               "    auto x = s->f();\n"
               "    return x.get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int f(int* p) {\n" // #14294
+              "    return (int)p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n",
+                      errout_str());
+
+        check("int f(int* p) {\n"
+              "    return reinterpret_cast<int>(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n",
+                      errout_str());
+
+        check("bool f(const int* p) {\n"
+              "    return p;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

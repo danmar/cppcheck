@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,11 @@
 #include "checkfunctions.h"
 
 #include "astutils.h"
+#include "errortypes.h"
+#include "library.h"
 #include "mathlib.h"
 #include "platform.h"
+#include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -34,6 +37,7 @@
 
 #include <iomanip>
 #include <list>
+#include <map>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -66,7 +70,7 @@ void CheckFunctions::checkProhibitedFunctions()
             if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
                 continue;
             // alloca() is special as it depends on the code being C or C++, so it is not in Library
-            if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
+            if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == ScopeType::eGlobal)) {
                 if (tok->isC()) {
                     if (mSettings->standards.c > Standards::C89)
                         reportError(tok, Severity::warning, "allocaCalled",
@@ -107,6 +111,7 @@ void CheckFunctions::invalidFunctionUsage()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            tok = skipUnreachableBranch(tok);
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const functionToken = tok;
@@ -126,9 +131,9 @@ void CheckFunctions::invalidFunctionUsage()
                         invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
 
                     // Are the values 0 and 1 valid?
-                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 0))
+                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 0, *mSettings))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
-                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
+                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1, *mSettings))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
                 // check <strz>
@@ -150,7 +155,7 @@ void CheckFunctions::invalidFunctionUsage()
                         && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)
                         && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, *mSettings)) {
                         const Token* varTok = variable->declEndToken();
-                        auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
+                        MathLib::bigint count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
                         if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))
                         {
                             const Token* const countTok = varTok->astOperand1()->astOperand2();
@@ -278,7 +283,8 @@ void CheckFunctions::checkIgnoredReturnValue()
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
                 tok->next()->astOperand1()) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
-                const bool warn = (tok->function() && tok->function()->isAttributeNodiscard()) || // avoid duplicate warnings for resource-allocating functions
+                const bool warn = (tok->function() && (tok->function()->isAttributeNodiscard() || tok->function()->isAttributePure() || tok->function()->isAttributeConst())) ||
+                                  // avoid duplicate warnings for resource-allocating functions
                                   (retvalTy == Library::UseRetValType::DEFAULT && mSettings->library.getAllocFuncInfo(tok) == nullptr);
                 if (mSettings->severity.isEnabled(Severity::warning) && warn)
                     ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
@@ -317,7 +323,7 @@ void CheckFunctions::checkMissingReturn()
             continue;
         if (function->name() == "main" && !(mTokenizer->isC() && mSettings->standards.c < Standards::C99))
             continue;
-        if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
+        if (function->type != FunctionType::eFunction && function->type != FunctionType::eOperatorEqual)
             continue;
         if (Token::Match(function->retDef, "%name% (") && function->retDef->isUpperCaseName())
             continue;
@@ -334,9 +340,9 @@ static bool isForwardJump(const Token *gotoToken)
     if (!Token::Match(gotoToken, "goto %name% ;"))
         return false;
     for (const Token *prev = gotoToken; gotoToken; gotoToken = gotoToken->previous()) {
-        if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->next()->str())
+        if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->strAt(1))
             return true;
-        if (prev->str() == "{" && prev->scope()->type == Scope::eFunction)
+        if (prev->str() == "{" && prev->scope()->type == ScopeType::eFunction)
             return false;
     }
     return false;
@@ -357,9 +363,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 if (prev->str() == "goto" && !isForwardJump(prev))
                     return nullptr;
             }
-            if (tok->scope()->type == Scope::ScopeType::eSwitch) {
-                // find reachable break / !default
-                bool hasDefault = false;
+            if (tok->scope()->type == ScopeType::eSwitch) {
                 bool reachable = false;
                 for (const Token *switchToken = tok->link()->next(); switchToken != tok; switchToken = switchToken->next()) {
                     if (reachable && Token::simpleMatch(switchToken, "break ;")) {
@@ -374,19 +378,17 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                         reachable = false;
                     if (Token::Match(switchToken, "case|default"))
                         reachable = true;
-                    if (Token::simpleMatch(switchToken, "default :"))
-                        hasDefault = true;
-                    else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == Scope::ScopeType::eSwitch))
+                    else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == ScopeType::eSwitch))
                         switchToken = switchToken->link();
                 }
-                if (!hasDefault)
+                if (!isExhaustiveSwitch(tok->link()))
                     return tok->link();
-            } else if (tok->scope()->type == Scope::ScopeType::eIf) {
+            } else if (tok->scope()->type == ScopeType::eIf) {
                 const Token *condition = tok->scope()->classDef->next()->astOperand2();
                 if (condition && condition->hasKnownIntValue() && condition->getKnownIntValue() == 1)
                     return checkMissingReturnScope(tok, library);
                 return tok;
-            } else if (tok->scope()->type == Scope::ScopeType::eElse) {
+            } else if (tok->scope()->type == ScopeType::eElse) {
                 const Token *errorToken = checkMissingReturnScope(tok, library);
                 if (errorToken)
                     return errorToken;
@@ -394,6 +396,19 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
                     return checkMissingReturnScope(tok->tokAt(-2), library);
                 return tok;
+            } else if (tok->scope()->type == ScopeType::eCatch) {
+                while (tok->str() == "}") {
+                    const Token *errorToken = checkMissingReturnScope(tok, library);
+                    if (errorToken || tok->scope()->type == ScopeType::eTry)
+                        return errorToken;
+                    tok = tok->link();
+                    if (Token::simpleMatch(tok->previous(), ") {") && Token::simpleMatch(tok->linkAt(-1)->tokAt(-2), "} catch ("))
+                        tok = tok->linkAt(-1)->tokAt(-2);
+                    else
+                        break;
+                }
+                // FIXME this should not be reached
+                return nullptr;
             }
             // FIXME
             return nullptr;
@@ -402,7 +417,10 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
             return nullptr;
         if (tok->str() == "goto" && !isForwardJump(tok))
             return nullptr;
-        if (Token::Match(tok, "%name% (") && !library.isnotnoreturn(tok)) {
+        if (Token::Match(tok, "%name% (") && library.isnoreturn(tok)) {
+            return nullptr;
+        }
+        if (Token::Match(tok->previous(), "[;{}] %name% (") && !library.isnotnoreturn(tok)) {
             return nullptr;
         }
         if (Token::Match(tok, "[;{}] %name% :"))
@@ -577,7 +595,7 @@ void CheckFunctions::memsetInvalid2ndParam()
             }
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
-                const long long int value = MathLib::toBigNumber(secondParamTok->str());
+                const MathLib::bigint value = MathLib::toBigNumber(secondParamTok);
                 const long long sCharMin = mSettings->platform.signedCharMin();
                 const long long uCharMax = mSettings->platform.unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)
@@ -617,6 +635,12 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (!tok->scope() || !tok->scope()->isExecutable())
             continue;
 
+        // skip uninstantiated templates
+        if (tok == tok->scope()->bodyStart && tok->scope()->function && tok->scope()->function->templateDef) {
+            tok = tok->link();
+            continue;
+        }
+
         if (tok->str() == "new")
             insideNew = true;
         else if (tok->str() == ";")
@@ -641,9 +665,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
 
         if (Token::simpleMatch(tok->astParent(), ".")) {
             const Token* contTok = tok->astParent()->astOperand1();
-            if (astContainerAction(contTok) != Library::Container::Action::NO_ACTION)
+            if (astContainerAction(contTok, mSettings->library) != Library::Container::Action::NO_ACTION)
                 continue;
-            if (astContainerYield(contTok) != Library::Container::Yield::NO_YIELD)
+            if (astContainerYield(contTok, mSettings->library) != Library::Container::Yield::NO_YIELD)
                 continue;
         }
 
@@ -654,7 +678,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (functionName.empty())
             continue;
 
-        if (mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+        if (mSettings->library.functions().find(functionName) != mSettings->library.functions().end())
             continue;
 
         if (mSettings->library.podtype(tok->expressionString()))
@@ -726,7 +750,7 @@ void CheckFunctions::useStandardLibrary()
     logChecker("CheckFunctions::useStandardLibrary"); // style
 
     for (const Scope& scope: mTokenizer->getSymbolDatabase()->scopeList) {
-        if (scope.type != Scope::ScopeType::eFor)
+        if (scope.type != ScopeType::eFor)
             continue;
 
         const Token *forToken = scope.classDef;
@@ -827,4 +851,47 @@ void CheckFunctions::useStandardLibraryError(const Token *tok, const std::string
     reportError(tok, Severity::style,
                 "useStandardLibrary",
                 "Consider using " + expected + " instead of loop.");
+}
+
+void CheckFunctions::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckFunctions checkFunctions(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    checkFunctions.checkIgnoredReturnValue();
+    checkFunctions.checkMissingReturn();  // Missing "return" in exit path
+
+    // --check-library : functions with nonmatching configuration
+    checkFunctions.checkLibraryMatchFunctions();
+
+    checkFunctions.checkProhibitedFunctions();
+    checkFunctions.invalidFunctionUsage();
+    checkFunctions.checkMathFunctions();
+    checkFunctions.memsetZeroBytes();
+    checkFunctions.memsetInvalid2ndParam();
+    checkFunctions.returnLocalStdMove();
+    checkFunctions.useStandardLibrary();
+}
+
+void CheckFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckFunctions c(nullptr, settings, errorLogger);
+
+    for (auto i = settings->library.functionwarn().cbegin(); i != settings->library.functionwarn().cend(); ++i) {
+        c.reportError(nullptr, Severity::style, i->first+"Called", i->second.message);
+    }
+
+    c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr,"1:4");
+    c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
+    c.invalidFunctionArgStrError(nullptr, "func_name", 1);
+    c.ignoredReturnValueError(nullptr, "malloc");
+    c.ignoredReturnErrorCode(nullptr, "func_name");
+    c.mathfunctionCallWarning(nullptr);
+    c.mathfunctionCallWarning(nullptr, "1 - erf(x)", "erfc(x)");
+    c.memsetZeroBytesError(nullptr);
+    c.memsetFloatError(nullptr,  "varname");
+    c.memsetValueOutOfRangeError(nullptr,  "varname");
+    c.missingReturnError(nullptr);
+    c.copyElisionError(nullptr);
+    c.useStandardLibraryError(nullptr, "memcpy");
+    // TODO: allocaCalled, <funcname>Called
 }

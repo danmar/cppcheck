@@ -1,11 +1,12 @@
 
-# python -m pytest test-other.py
+# python -m pytest performance_test.py
 
 import os
 import sys
+
 import pytest
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck
 
 
 
@@ -16,7 +17,7 @@ def test_slow_array_many_floats(tmpdir):
     filename = os.path.join(tmpdir, 'hang.c')
     with open(filename, 'wt') as f:
         f.write("const float f[] = {\n")
-        for i in range(20000):
+        for _ in range(20000):
             f.write('    13.6f,\n')
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
@@ -29,7 +30,7 @@ def test_slow_array_many_strings(tmpdir):
     filename = os.path.join(tmpdir, 'hang.c')
     with open(filename, 'wt') as f:
         f.write("const char *strings[] = {\n")
-        for i in range(20000):
+        for _ in range(20000):
             f.write('    "abc",\n')
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
@@ -41,7 +42,7 @@ def test_slow_long_line(tmpdir):
     filename = os.path.join(tmpdir, 'hang.c')
     with open(filename, 'wt') as f:
         f.write("#define A() static const int a[] = {\\\n")
-        for i in range(5000):
+        for _ in range(5000):
             f.write(" -123, 456, -789,\\\n")
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
@@ -145,6 +146,29 @@ int foo(int a, int b)
     my_env["DISABLE_VALUEFLOW"] = "1"
     cppcheck([filename], env=my_env)
 
+@pytest.mark.timeout(35)
+def test_stack_overflow_AST(tmpdir):
+    # 14435
+    filename = os.path.join(tmpdir, 'hang.cpp')
+    with open(filename, 'wt') as f:
+        f.write("""
+#define ROW 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+#define ROW8 ROW ROW ROW ROW ROW ROW ROW ROW
+#define ROW64 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8
+#define ROW512 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64
+#define ROW4096 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512
+#define ROW32768 ROW4096 ROW4096 ROW4096 ROW4096 ROW4096 ROW4096 ROW4096 ROW4096
+void f(std::vector<int>& v) {
+	v = {
+		ROW32768 0
+	};
+}
+        """)
+
+    my_env = os.environ.copy()
+    my_env["DISABLE_VALUEFLOW"] = "1"
+    cppcheck([filename], env=my_env)
+
 
 @pytest.mark.timeout(10)
 def test_slow_initlist_varchanged(tmpdir):
@@ -185,7 +209,7 @@ def test_slow_initlist_varchanged(tmpdir):
                     }
                 }""")
     cppcheck([filename]) # should not take more than ~1 second
-    
+
 
 @pytest.mark.timeout(10)
 def test_slow_many_scopes(tmpdir):
@@ -217,5 +241,175 @@ def test_slow_many_scopes(tmpdir):
                     memset(cmp, '\376', sizeof cmp);
                     BLOCK64
                     return EXIT_SUCCESS;
+                }""")
+    cppcheck([filename]) # should not take more than ~1 second
+
+
+@pytest.mark.skipif(sys.platform == 'darwin', reason='GitHub macOS runners are too slow')
+@pytest.mark.timeout(20)
+def test_crash_array_in_namespace(tmpdir):
+    # 12847
+    filename = os.path.join(tmpdir, 'hang.cpp')
+    with open(filename, 'wt') as f:
+        f.write(r"""
+                #define ROW A, A, A, A, A, A, A, A,
+                #define ROW8 ROW ROW ROW ROW ROW ROW ROW ROW
+                #define ROW64 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8
+                #define ROW512 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64
+                #define ROW4096 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512
+                namespace N {
+                    static const char A = 'a';
+                    const char a[] = {
+                        ROW4096 ROW4096 ROW4096 ROW4096
+                    };
+                }""")
+    cppcheck([filename]) # should not take more than ~5 seconds
+
+
+@pytest.mark.skipif(sys.platform == 'darwin', reason='GitHub macOS runners are too slow')
+@pytest.mark.timeout(20)
+def test_crash_array_in_array(tmpdir):
+    # 12861
+    filename = os.path.join(tmpdir, 'hang.cpp')
+    with open(filename, 'wt') as f:
+        f.write(r"""
+                #define ROW A, A, A, A, A, A, A, A,
+                #define ROW8 ROW ROW ROW ROW ROW ROW ROW ROW
+                #define ROW64 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8
+                #define ROW512 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64
+                #define ROW4096 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512
+                void f() {
+                    static const char A = 'a';
+                    const char a[] = {
+                        ROW4096 ROW4096 ROW4096 ROW4096
+                    };
+                }""")
+    cppcheck([filename])
+
+
+@pytest.mark.timeout(5)
+def test_slow_bifurcate(tmpdir):
+    # #14134
+    filename = os.path.join(tmpdir, 'hang.cpp')
+    with open(filename, 'wt') as f:
+        f.write(r"""
+                class C {
+                public:
+	                enum class Status {
+                		Ok,
+                		Waiting,
+                		Error,
+                	};
+                	void setStatus(Status status, const QString& text);
+                	QColor m_statusColor;
+                };
+
+                template < size_t N, typename T >
+                inline QDataStream& deserialize(QDataStream& in, T& value) {
+                	if constexpr (N == 0) {}
+                	else if constexpr (N == 1) {
+                		auto& [f1] = value;
+                		in >> f1;
+                	}
+                	else if constexpr (N == 2) {
+                		auto& [f1, f2] = value;
+                		in >> f1 >> f2;
+                	}
+                	else if constexpr (N == 3) {
+                		auto& [f1, f2, f3] = value;
+                		in >> f1 >> f2 >> f3;
+                	}
+                	else if constexpr (N == 4) {
+                		auto& [f1, f2, f3, f4] = value;
+                		in >> f1 >> f2 >> f3 >> f4;
+                	}
+                	else if constexpr (N == 5) {
+                		auto& [f1, f2, f3, f4, f5] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5;
+                	}
+                	else if constexpr (N == 6) {
+                		auto& [f1, f2, f3, f4, f5, f6] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6;
+                	}
+                	else if constexpr (N == 7) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7;
+                	}
+                	else if constexpr (N == 8) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8;
+                	}
+                	else if constexpr (N == 9) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9;
+                	}
+                	else if constexpr (N == 10) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10;
+                	}
+                	else if constexpr (N == 11) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11;
+	                }
+                	else if constexpr (N == 12) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12;
+                	}
+                	else if constexpr (N == 13) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13;
+                	}
+                	else if constexpr (N == 14) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13 >> f14;
+                	}
+                	else if constexpr (N == 15) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13 >> f14 >> f15;
+                	}
+                	else if constexpr (N == 16) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13 >> f14 >> f15 >> f16;
+                	}
+                	else if constexpr (N == 17) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13 >> f14 >> f15 >> f16 >> f17;
+                	}
+                	else if constexpr (N == 18) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13 >> f14 >> f15 >> f16 >> f17 >> f18;
+                	}
+                	else if constexpr (N == 19) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13 >> f14 >> f15 >> f16 >> f17 >> f18 >> f19;
+                	}
+                	else if constexpr (N == 20) {
+                		auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19, f20] = value;
+                		in >> f1 >> f2 >> f3 >> f4 >> f5 >> f6 >> f7 >> f8 >> f9 >> f10 >> f11 >> f12 >> f13 >> f14 >> f15 >> f16 >> f17 >> f18 >> f19 >> f20;
+                	}
+                	else {
+                		static_assert (!sizeof(T), "missing implementation");
+                	}
+                	return in;
+                }
+
+                void C::setStatus(Status status, const QString& text) {
+                	const auto& colors = Config::get().ui().colors;
+                	QColor color;
+                	switch (status) {
+                	case Status::Ok:
+                		color = colors.green;
+                		break;
+                	case Status::Waiting:
+                		color = Qt::black;
+                		break;
+                	case Status::Error:
+                		color = colors.red;
+                		break;
+	                }
+
+                	if (m_statusColor != color) {
+                		m_statusColor = color;
+                	}
                 }""")
     cppcheck([filename]) # should not take more than ~1 second

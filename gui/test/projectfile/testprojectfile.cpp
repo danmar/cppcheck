@@ -18,15 +18,12 @@
 
 #include "testprojectfile.h"
 
-#include "importproject.h"
+#include "library.h"
 #include "platform.h"
 #include "projectfile.h"
 #include "settings.h"
 #include "suppressions.h"
 
-#include <string>
-
-#include <QDir>
 #include <QFile>
 #include <QIODevice>
 #include <QList>
@@ -42,9 +39,9 @@ const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 Settings::Settings() : maxCtuDepth(10) {}
 Platform::Platform() = default;
-bool ImportProject::sourceFileExists(const std::string & /*file*/) {
-    return true;
-}
+Library::Library() = default;
+Library::~Library() = default;
+struct Library::LibraryData {};
 
 void TestProjectFile::loadInexisting() const
 {
@@ -137,6 +134,39 @@ void TestProjectFile::getAddonFilePath() const
     // Absolute path to addon
     QCOMPARE(ProjectFile::getAddonFilePath("/not/exist", filepath), filepath);
     QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), filepath), filepath);
+}
+
+void TestProjectFile::getSearchPaths() const
+{
+#ifdef FILESDIR
+    const QString f(FILESDIR "\n"        // example: "/usr/local/share/cppcheck\n"
+                    FILESDIR "/dir\n");  // example: "/usr/local/share/cppcheck/dir\n"
+#else
+    const QString f;
+#endif
+
+    QCOMPARE(ProjectFile::getSearchPaths("projectPath", "appPath", "datadir", "dir").join("\n"),
+             "appPath\n"
+             "appPath/dir\n"
+             "projectPath\n" +
+             f +
+             "datadir\n"
+             "datadir/dir");
+}
+
+void TestProjectFile::getInlineSuppressionDefaultValue() const
+{
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    QCOMPARE(projectFile.getInlineSuppression(), true);
+}
+
+void TestProjectFile::getInlineSuppression() const
+{
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setInlineSuppression(false);
+    QCOMPARE(projectFile.getInlineSuppression(), false);
 }
 
 void TestProjectFile::getCheckingSuppressionsRelative() const

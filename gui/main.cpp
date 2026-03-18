@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,12 +47,6 @@ static bool CheckArgs(const QStringList &args);
 
 int main(int argc, char *argv[])
 {
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)) && (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#endif
-
     QApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName("Cppcheck");
@@ -130,6 +124,7 @@ static void ShowUsage()
 
 static void ShowVersion()
 {
+// TODO: should only *not* show a dialog when we are on a commnd-line
 #if defined(_WIN32)
     AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), 0);
     dlg->exec();

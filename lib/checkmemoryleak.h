@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
+#include <cstdint>
 #include <list>
 #include <string>
 
@@ -46,7 +46,8 @@ class Token;
 class Variable;
 class ErrorLogger;
 struct CWE;
-enum class Severity;
+class Tokenizer;
+enum class Severity : std::uint8_t;
 
 /// @addtogroup Core
 /// @{
@@ -92,7 +93,7 @@ public:
         : mTokenizer_(t), mErrorLogger_(e), mSettings_(s) {}
 
     /** @brief What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
-    enum AllocType { No, Malloc, New, NewArray, File, Fd, Pipe, OtherMem, OtherRes, Many };
+    enum AllocType : std::uint8_t { No, Malloc, New, NewArray, File, Fd, Pipe, OtherMem, OtherRes, Many };
 
     void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype) const;
 
@@ -176,10 +177,7 @@ private:
     CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkMemoryLeak.checkReallocUsage();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /**
      * Checking for a memory leak caused by improper realloc usage.
@@ -187,15 +185,7 @@ private:
     void checkReallocUsage();
 
     /** Report all possible errors (for the --errorlist) */
-    void getErrorMessages(ErrorLogger *e, const Settings *settings) const override {
-        CheckMemoryLeakInFunction c(nullptr, settings, e);
-        c.memleakError(nullptr, "varname");
-        c.resourceLeakError(nullptr, "varname");
-        c.deallocuseError(nullptr, "varname");
-        const std::list<const Token *> callstack;
-        c.mismatchAllocDealloc(callstack, "varname");
-        c.memleakUponReallocFailureError(nullptr, "realloc", "varname");
-    }
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const override;
 
     /**
      * Get name of class (--doc)
@@ -230,13 +220,7 @@ private:
     CheckMemoryLeakInClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        if (!tokenizer.isCPP())
-            return;
-
-        CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkMemoryLeak.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     void check();
 
@@ -248,11 +232,7 @@ private:
 
     void unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *e, const Settings *settings) const override {
-        CheckMemoryLeakInClass c(nullptr, settings, e);
-        c.publicAllocationError(nullptr, "varname");
-        c.unsafeClassError(nullptr, "class", "class::varname");
-    }
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const override;
 
     static std::string myName() {
         return "Memory leaks (class variables)";
@@ -277,19 +257,16 @@ private:
     CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakStructMember checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkMemoryLeak.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     void check();
 
     /** Is local variable allocated with malloc? */
     bool isMalloc(const Variable *variable) const;
 
-    void checkStructVariable(const Variable* const variable) const;
+    void checkStructVariable(const Variable*  variable) const;
 
-    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const override {}
+    void getErrorMessages(ErrorLogger * errorLogger, const Settings * settings) const override;
 
     static std::string myName() {
         return "Memory leaks (struct members)";
@@ -314,10 +291,7 @@ private:
     CheckMemoryLeakNoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakNoVar checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkMemoryLeak.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     void check();
 
@@ -344,12 +318,7 @@ private:
     void returnValueNotUsedError(const Token* tok, const std::string &alloc);
     void unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string &objType);
 
-    void getErrorMessages(ErrorLogger *e, const Settings *settings) const override {
-        CheckMemoryLeakNoVar c(nullptr, settings, e);
-        c.functionCallLeak(nullptr, "funcName", "funcName");
-        c.returnValueNotUsedError(nullptr, "funcName");
-        c.unsafeArgAllocError(nullptr, "funcName", "shared_ptr", "int");
-    }
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const override;
 
     static std::string myName() {
         return "Memory leaks (address not taken)";

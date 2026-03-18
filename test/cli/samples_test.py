@@ -18,7 +18,7 @@ def test_samples():
 
         with open(os.path.join(sample_dir, 'out.txt')) as out_in:
             out_txt = out_in.read()
-        if not sys.platform == 'win32':
+        if sys.platform != 'win32':
             out_txt = out_txt.replace('\\', '/')
 
         if not os.path.exists(os.path.join(sample_dir, 'good.c')):
@@ -29,13 +29,13 @@ def test_samples():
             bad_src = os.path.join('samples', entry, 'bad.c')
 
         # check that good input does not produce any warnings
-        ret, stdout, stderr = cppcheck(['-q', '--enable=all', '--disable=missingInclude', '--inconclusive', '--check-level=exhaustive', '--error-exitcode=1', good_src], cwd=__root_dir)
-        if not ret == 0:
+        ret, _, stderr = cppcheck(['-q', '--enable=all', '--disable=missingInclude', '--inconclusive', '--check-level=exhaustive', '--error-exitcode=1', good_src], cwd=__root_dir)
+        if ret != 0:
             failures[good_src] = stderr
 
         # check that the bad inout produces a warning
-        ret, stdout, stderr = cppcheck(['-q', '--enable=all', '--disable=missingInclude', '--inconclusive', '--check-level=exhaustive', '--error-exitcode=1', bad_src], cwd=__root_dir)
-        if not ret == 1:
+        ret, _, stderr = cppcheck(['-q', '--enable=all', '--disable=missingInclude', '--inconclusive', '--check-level=exhaustive', '--error-exitcode=1', bad_src], cwd=__root_dir)
+        if ret != 1:
             failures[bad_src] = stderr
 
         # check that the bad input procudes the expected output

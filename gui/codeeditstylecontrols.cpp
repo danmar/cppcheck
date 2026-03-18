@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #include <QColorDialog>
 #include <QDialog>
+#include <QObject>
+#include <QString>
 #include <QVariant>
 
 class QWidget;
@@ -63,7 +65,7 @@ void SelectColorButton::setColor(const QColor& color)
 }
 
 // cppcheck-suppress unusedFunction
-const QColor& SelectColorButton::getColor()
+const QColor& SelectColorButton::getColor() const
 {
     return mColor;
 }
@@ -120,7 +122,7 @@ void SelectFontWeightCombo::setWeight(QFont::Weight weight)
 }
 
 // cppcheck-suppress unusedFunction
-const QFont::Weight& SelectFontWeightCombo::getWeight()
+const QFont::Weight& SelectFontWeightCombo::getWeight() const
 {
     return mWeight;
 }

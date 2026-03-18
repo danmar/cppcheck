@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
 class Token;
-
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -53,10 +52,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        Check64BitPortability check64BitPortability(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        check64BitPortability.pointerassignment();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** Check for pointer assignment */
     void pointerassignment();
@@ -66,13 +62,7 @@ private:
     void returnIntegerError(const Token *tok);
     void returnPointerError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        Check64BitPortability c(nullptr, settings, errorLogger);
-        c.assignmentAddressToIntegerError(nullptr);
-        c.assignmentIntegerToAddressError(nullptr);
-        c.returnIntegerError(nullptr);
-        c.returnPointerError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "64-bit portability";

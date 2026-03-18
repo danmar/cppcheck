@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -40,14 +41,9 @@ struct ExprIdToken {
     const Token* tok = nullptr;
     nonneg int exprid = 0;
 
-    ExprIdToken() = default;
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
     ExprIdToken(const Token* tok);
-    // TODO: Make this constructor only available from ProgramMemory
-    // cppcheck-suppress noExplicitConstructor
-    // NOLINTNEXTLINE(google-explicit-constructor)
-    ExprIdToken(nonneg int exprid) : exprid(exprid) {}
 
     nonneg int getExpressionId() const;
 
@@ -94,14 +90,23 @@ struct ExprIdToken {
     struct Hash {
         std::size_t operator()(ExprIdToken etok) const;
     };
+
+    /** create object for hashed lookups */
+    static ExprIdToken create(nonneg int exprId) {
+        return ExprIdToken(exprId);
+    }
+
+private:
+    // for hashed lookups only
+    explicit ExprIdToken(nonneg int exprId);
 };
 
-struct ProgramMemory {
+struct CPPCHECKLIB ProgramMemory {
     using Map = std::unordered_map<ExprIdToken, ValueFlow::Value, ExprIdToken::Hash>;
 
-    ProgramMemory() = default;
+    ProgramMemory() : mValues(new Map()) {}
 
-    explicit ProgramMemory(Map values) : mValues(std::move(values)) {}
+    explicit ProgramMemory(Map values) : mValues(new Map(std::move(values))) {}
 
     void setValue(const Token* expr, const ValueFlow::Value& value);
     const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;
@@ -116,37 +121,27 @@ struct ProgramMemory {
     void setUnknown(const Token* expr);
 
     bool getTokValue(nonneg int exprid, const Token*& result) const;
-    bool hasValue(nonneg int exprid);
+    bool hasValue(nonneg int exprid) const;
 
     const ValueFlow::Value& at(nonneg int exprid) const;
     ValueFlow::Value& at(nonneg int exprid);
 
     void erase_if(const std::function<bool(const ExprIdToken&)>& pred);
 
-    void swap(ProgramMemory &pm);
+    void swap(ProgramMemory &pm) NOEXCEPT;
 
     void clear();
 
     bool empty() const;
 
-    void replace(ProgramMemory pm);
-
-    void insert(const ProgramMemory &pm);
-
-    Map::iterator begin() {
-        return mValues.begin();
-    }
-
-    Map::iterator end() {
-        return mValues.end();
-    }
+    void replace(ProgramMemory pm, bool skipUnknown = false);
 
     Map::const_iterator begin() const {
-        return mValues.begin();
+        return mValues->cbegin();
     }
 
     Map::const_iterator end() const {
-        return mValues.end();
+        return mValues->cend();
     }
 
     friend bool operator==(const ProgramMemory& x, const ProgramMemory& y) {
@@ -158,17 +153,20 @@ struct ProgramMemory {
     }
 
 private:
-    Map mValues;
+    void copyOnWrite();
+    Map::const_iterator find(nonneg int exprid) const;
+    Map::iterator find(nonneg int exprid);
+
+    std::shared_ptr<Map> mValues;
 };
 
 struct ProgramMemoryState {
     ProgramMemory state;
     std::map<nonneg int, const Token*> origins;
-    const Settings* settings;
+    const Settings& settings;
 
-    explicit ProgramMemoryState(const Settings* s);
+    explicit ProgramMemoryState(const Settings& s);
 
-    void insert(const ProgramMemory &pm, const Token* origin = nullptr);
     void replace(ProgramMemory pm, const Token* origin = nullptr);
 
     void addState(const Token* tok, const ProgramMemory::Map& vars);

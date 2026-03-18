@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "mathlib.h"
 #include "vfvalue.h"
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
@@ -51,7 +52,7 @@ namespace tinyxml2 {
 namespace CTU {
     class CPPCHECKLIB FileInfo : public Check::FileInfo {
     public:
-        enum class InvalidValueType { null, uninit, bufferOverflow };
+        enum class InvalidValueType : std::uint8_t { null, uninit, bufferOverflow };
 
         std::string toString() const override;
 
@@ -64,9 +65,24 @@ namespace CTU {
             nonneg int column{};
         };
 
+        struct Value {
+            Value& operator=(const ValueFlow::Value& val) & {
+                value = val.intvalue;
+                unknownFunctionReturn = val.unknownFunctionReturn;
+                return *this;
+            }
+            MathLib::bigint value{};
+            ValueFlow::Value::UnknownFunctionReturn unknownFunctionReturn{};
+        };
+
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(std::string myId, nonneg int myArgNr, std::string myArgumentName, Location location, MathLib::bigint value) : myId(std::move(myId)), myArgNr(myArgNr), myArgumentName(std::move(myArgumentName)), location(std::move(location)), value(value) {}
+            UnsafeUsage(std::string myId, nonneg int myArgNr, std::string myArgumentName, Location location, MathLib::bigint value)
+                : myId(std::move(myId))
+                , myArgNr(myArgNr)
+                , myArgumentName(std::move(myArgumentName))
+                , location(std::move(location))
+                , value(value) {}
             std::string myId;
             nonneg int myArgNr{};
             std::string myArgumentName;
@@ -96,7 +112,7 @@ namespace CTU {
         class FunctionCall : public CallBase {
         public:
             std::string callArgumentExpression;
-            MathLib::bigint callArgValue;
+            Value callArgValue;
             ValueFlow::Value::ValueType callValueType;
             std::vector<ErrorMessage::FileLocation> callValuePath;
             bool warning;
@@ -133,20 +149,20 @@ namespace CTU {
                                                                   const UnsafeUsage &unsafeUsage,
                                                                   const std::map<std::string, std::list<const CallBase *>> &callsMap,
                                                                   const char info[],
-                                                                  const FunctionCall ** const functionCallPtr,
-                                                                  bool warning);
+                                                                  const FunctionCall ** functionCallPtr,
+                                                                  bool warning,
+                                                                  int maxCtuDepth,
+                                                                  ValueFlow::Value::UnknownFunctionReturn *unknownFunctionReturn = nullptr);
     };
-
-    extern int maxCtuDepth;
 
     CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
 
     CPPCHECKLIB std::string getFunctionId(const Tokenizer &tokenizer, const Function *function);
 
     /** @brief Parse current TU and extract file info */
-    CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer &tokenizer);
+    CPPCHECKLIB RET_NONNULL FileInfo *getFileInfo(const Tokenizer &tokenizer);
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, MathLib::bigint *value));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, FileInfo::Value *value));
 
     CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }

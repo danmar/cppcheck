@@ -2,13 +2,15 @@
 // Test library configuration for openssl.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=openssl --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/openssl.c
+// $ cppcheck --check-library --library=openssl --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/openssl.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <openssl/ssl.h>
 #include <openssl/bio.h>
+#include <openssl/evp.h>
+//#include <openssl/types.h>
+#include <stdio.h>
 #include <string.h>
 
 void valid_code(BIO * bio)

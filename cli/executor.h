@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,14 @@
 #include <mutex>
 #include <string>
 #include <unordered_set>
-#include <utility>
 
 class Settings;
 class ErrorLogger;
 class ErrorMessage;
-class SuppressionList;
+struct Suppressions;
 struct FileSettings;
 class FileWithDetails;
+class TimerResults;
 
 /// @addtogroup CLI
 /// @{
@@ -42,7 +42,7 @@ class FileWithDetails;
  */
 class Executor {
 public:
-    Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger);
+    Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, TimerResults* timerResults);
     virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
@@ -71,8 +71,9 @@ protected:
     const std::list<FileWithDetails> &mFiles;
     const std::list<FileSettings>& mFileSettings;
     const Settings &mSettings;
-    SuppressionList &mSuppressions;
+    Suppressions &mSuppressions;
     ErrorLogger &mErrorLogger;
+    TimerResults *mTimerResults;
 
 private:
     std::mutex mErrorListSync;

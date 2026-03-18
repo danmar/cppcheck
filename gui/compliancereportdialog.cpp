@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "filesettings.h"
 #include "importproject.h"
 #include "projectfile.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <iterator>
@@ -86,11 +87,12 @@ static std::vector<std::string> toStdStringList(const QStringList& from) {
     return ret;
 }
 
-ComplianceReportDialog::ComplianceReportDialog(ProjectFile* projectFile, QString resultsFile) :
-    QDialog(nullptr),
+ComplianceReportDialog::ComplianceReportDialog(ProjectFile* projectFile, QString resultsFile, QString checkersReport)
+    : QDialog(nullptr),
     mUI(new Ui::ComplianceReportDialog),
     mProjectFile(projectFile),
-    mResultsFile(std::move(resultsFile))
+    mResultsFile(std::move(resultsFile)),
+    mCheckersReport(std::move(checkersReport))
 {
     mUI->setupUi(this);
     mUI->mEditProjectName->setText(projectFile->getProjectName());
@@ -121,7 +123,7 @@ void ComplianceReportDialog::buttonClicked(QAbstractButton* button)
         break;
     default:
         break;
-    };
+    }
 }
 
 void ComplianceReportDialog::save()
@@ -144,6 +146,13 @@ void ComplianceReportDialog::save()
     if (projectName != mProjectFile->getProjectName()) {
         mProjectFile->setProjectName(projectName);
         mProjectFile->write();
+    }
+
+    QTemporaryFile tempCheckersReport;
+    if (tempCheckersReport.open()) {
+        QTextStream out(&tempCheckersReport);
+        out << mCheckersReport << "\n";
+        tempCheckersReport.close();
     }
 
     QTemporaryFile tempFiles;
@@ -183,13 +192,13 @@ void ComplianceReportDialog::save()
         QSet<QString> allFiles;
         for (const QString &sourcefile: fileList.getFileList())
             addHeaders(sourcefile, allFiles);
-        for (const QString& fileName: allFiles) {
+        for (const QString& fileName: utils::as_const(allFiles)) {
             QFile f(fileName);
             if (f.open(QFile::ReadOnly)) {
                 QCryptographicHash hash(QCryptographicHash::Algorithm::Md5);
                 if (hash.addData(&f)) {
                     for (auto b: hash.result())
-                        out << QString::number((unsigned char)b,16);
+                        out << QString::number(static_cast<unsigned char>(b),16);
                     out << " " << fileName << "\n";
                 }
             }
@@ -205,7 +214,8 @@ void ComplianceReportDialog::save()
 
     QStringList args{"--project-name=" + projectName,
                      "--project-version=" + projectVersion,
-                     "--output-file=" + outFile};
+                     "--output-file=" + outFile,
+                     "--checkers-report=" + tempCheckersReport.fileName()};
     if (!suppressions.isEmpty())
         args << "--suppressions=" + suppressions.join(",");
 

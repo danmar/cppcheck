@@ -25,12 +25,12 @@
 
 // static functions are omitted from trace
 
-/*static*/ void my_func_2()
+/*static*/ void my_func_2() // NOLINT(misc-use-internal-linkage)
 {
     print_stacktrace(stdout, 0, true, -1, true);
 }
 
-/*static*/ void my_func()
+/*static*/ void my_func() // NOLINT(misc-use-internal-linkage)
 {
     my_func_2();
 }

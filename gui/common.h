@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,9 @@
 #define SETTINGS_TOOLBARS_MAIN_SHOW     "Toolbars/ShowStandard"
 #define SETTINGS_TOOLBARS_VIEW_SHOW     "Toolbars/ShowView"
 #define SETTINGS_TOOLBARS_FILTER_SHOW   "Toolbars/ShowFilter"
+
+// Report type
+#define SETTINGS_REPORT_TYPE            "Report type"
 
 // Show * states
 #define SETTINGS_SHOW_STYLE             "Show style"

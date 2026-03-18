@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 #ifndef SHOWTYPES_H
 #define SHOWTYPES_H
 
-#include <QVariant>
+#include <cstdint>
 
-enum class Severity;
+enum class Severity : std::uint8_t;
 
 /// @addtogroup GUI
 /// @{
@@ -41,7 +41,7 @@ public:
     /**
      * @brief Show types we have (i.e. severities in the GUI).
      */
-    enum ShowType {
+    enum ShowType : std::uint8_t {
         ShowStyle = 0,
         ShowWarnings,
         ShowPerformance,
@@ -100,21 +100,6 @@ public:
      * @return Severity converted to ShowTypes value
      */
     static ShowTypes::ShowType SeverityToShowType(Severity severity);
-
-    /**
-     * @brief Convert ShowType to severity string
-     * @param type ShowType to convert
-     * @return ShowType converted to severity
-     */
-    static Severity ShowTypeToSeverity(ShowTypes::ShowType type);
-
-    /**
-     * @brief Convert QVariant (that contains an int) to Showtypes value
-     *
-     * @param data QVariant (that contains an int) to be converted
-     * @return data converted to ShowTypes
-     */
-    static ShowTypes::ShowType VariantToShowType(const QVariant &data);
 
     bool mVisible[ShowNone];
 };

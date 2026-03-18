@@ -23,7 +23,6 @@ GUIも利用する場合、Qtライブラリが必要です。
 コマンドラインツールをビルドする場合、[PCRE](http://www.pcre.org/)はオプションです。これはルールを作成するために利用します。
 
 コンパイル上の選択肢がいくつかあります。
-* qmake - クロスプラットフォームのビルドツール
 * cmake - クロスプラットフォームのビルドツール
 * Windows: Visual Studio (VS 2013 またはそれ以上)
 * Windows: Qt Creator + mingw
@@ -51,16 +50,6 @@ CppcheckのGUIが必要な場合次のフラグを指定します。
 pcreが必要になりますが、正規表現のルールサポートが必要な場合次のフラグを指定します。
 -DHAVE_RULES=ON
 
-### qmake
-
-GUIをビルドするには、gui/gui.proファイルが利用できます。
-
-```shell
-cd gui
-qmake
-make
-```
-
 ### Visual Studio
 
 cppcheck.slnファイルが利用できます。このファイルは、Visual Studio 2019向けです。しかし、このプラットフォームツールセットはこれより新しいバージョンまたは古いバージョン向けに変更できます。このソルーションには、プラットフォームターゲットとしてx86とx64があります。
@@ -83,7 +72,7 @@ make
 推奨するリリースビルド方法:
 
 ```shell
-make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXOPTS="-O2 -DNDEBUG"
 ```
 
 フラグ:
@@ -97,7 +86,7 @@ cppcheckの設定ファイル(addon や cfg や platform)を置くディレク�
 3. `HAVE_RULES=yes`
 ルール機能の有効化 (ルール機能には PCRE が必要です)設定です。
 
-4. `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"`
+4. `CXXOPTS="-O2 -DNDEBUG"`
 ほとんどのコンパイラの最適化オプション、cppcheckの内部デバッグコードの無効化、基本的なコンパイラ警告の有効化
 
 ### g++ (エキスパート向け)

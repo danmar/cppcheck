@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
 class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -49,19 +49,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer& tokenizer, ErrorLogger* errorLogger) override {
-        CheckSizeof checkSizeof(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // Checks
-        checkSizeof.sizeofsizeof();
-        checkSizeof.sizeofCalculation();
-        checkSizeof.sizeofFunction();
-        checkSizeof.suspiciousSizeofCalculation();
-        checkSizeof.checkSizeofForArrayParameter();
-        checkSizeof.checkSizeofForPointerSize();
-        checkSizeof.checkSizeofForNumericParameter();
-        checkSizeof.sizeofVoid();
-    }
+    void runChecks(const Tokenizer& tokenizer, ErrorLogger* errorLogger) override;
 
     /** @brief %Check for 'sizeof sizeof ..' */
     void sizeofsizeof();
@@ -101,21 +89,7 @@ private:
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
     void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
-        CheckSizeof c(nullptr, settings, errorLogger);
-        c.sizeofForArrayParameterError(nullptr);
-        c.sizeofForPointerError(nullptr, "varname");
-        c.divideBySizeofError(nullptr, "memset");
-        c.sizeofForNumericParameterError(nullptr);
-        c.sizeofsizeofError(nullptr);
-        c.sizeofCalculationError(nullptr, false);
-        c.sizeofFunctionError(nullptr);
-        c.multiplySizeofError(nullptr);
-        c.divideSizeofError(nullptr);
-        c.sizeofVoidError(nullptr);
-        c.sizeofDereferencedVoidPointerError(nullptr, "varname");
-        c.arithOperationsOnVoidPointerError(nullptr, "varname", "vartype");
-    }
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override;
 
     static std::string myName() {
         return "Sizeof";

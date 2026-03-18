@@ -1,4 +1,4 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2024 Cppcheck team.
  *
@@ -25,12 +25,7 @@
 
 #include <cstdio>
 
-/**
- * @param f Output file
- */
-void set_signal_handler_output(FILE* f);
-
-void register_signal_handler();
+void register_signal_handler(FILE* output);
 
 #endif // USE_UNIX_SIGNAL_HANDLING
 

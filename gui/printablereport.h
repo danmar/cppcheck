@@ -1,4 +1,4 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2024 Cppcheck team.
  *
@@ -22,8 +22,6 @@
 #include "report.h"
 
 #include <QString>
-
-class ErrorItem;
 
 /// @addtogroup GUI
 /// @{

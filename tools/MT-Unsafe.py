@@ -59,7 +59,7 @@ def man_search(manpage):
             MANPAGE = open(manpage, 'r')
     except OSError as filename:
         print('cannot open %s' % filename, file=sys.stderr)
-        return None, None
+        return  # None, None
 
     vprint(1, '%s opened' % (manpage))
 
@@ -95,7 +95,7 @@ def man_search(manpage):
         if res:
             apis.add(res.group(1))
             dprint(1, 'found api %s in %s' % (res.group(1), lineread))
-            next
+            continue
 
         if 'MT-Unsafe' in lineread:
             resUnsafe = re.search("MT-Unsafe\\s+(.*)(\\n\'|$)", lineread)
@@ -114,7 +114,7 @@ def man_search(manpage):
             dprint(1, 'new apis %s' % list(apis))
             for api in apis:
                 unsafe_apis.add(api)
-                next
+                continue
 
         #  if lineread.startswith('.TE'):
         if re.search('.TE', lineread):
@@ -147,9 +147,10 @@ def do_man_dir(directory):
     """Recursively process a directory of man-pages."""
     dprint(1, 'do_man_dir(%s)' % (directory))
     if os.path.isfile(directory):
-        return do_man_page(directory)
+        do_man_page(directory)
+        return
 
-    for path, directories, files in os.walk(directory):
+    for path, _, files in os.walk(directory):
         for file in files:
             dprint(2, 'calling do_man_page(%s)' % (
                 os.path.join(path, file)))
@@ -162,7 +163,7 @@ for arg in sys.argv[1:]:
         if re.match('^-+debug', arg):
             debug = debug+1
             dprint(1, 'debug %d' % debug)
-            next
+            continue
     else:
         if os.access(arg, os.R_OK):
             manpages.add(arg)

@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,12 @@
 #include "library.h"
 #include "platforms.h"
 
+#include <cstdint>
+#include <list>
+
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QObject>
-#include <QPair>
 #include <QString>
 #include <QStringList>
 
@@ -40,10 +42,11 @@ class QSettings;
 class QTimer;
 class QLineEdit;
 class ImportProject;
-class QCloseEvent;
 class QNetworkAccessManager;
 class QNetworkReply;
 class Settings;
+struct Suppressions;
+class FileWithDetails;
 namespace Ui {
     class MainWindow;
 }
@@ -62,7 +65,7 @@ public:
     /**
      * @brief Maximum number of MRU project items in File-menu.
      */
-    enum { MaxRecentProjects = 5 };
+    enum : std::uint8_t { MaxRecentProjects = 5 };
 
     MainWindow(TranslationHandler* th, QSettings* settings);
     MainWindow(const MainWindow &) = delete;
@@ -167,6 +170,9 @@ public slots:
     /** @brief Slot to to show authors list */
     void showAuthors();
 
+    /** @brief Slot to to show EULA */
+    void showEULA();
+
     /** @brief Slot to save results */
     void save();
 
@@ -193,6 +199,9 @@ public slots:
 
     /** @brief Slot for showing the library editor */
     void showLibraryEditor();
+
+    /** @brief Slot for showing the thread details window */
+    void showThreadDetails();
 
 private slots:
 
@@ -239,6 +248,8 @@ private slots:
     void replyFinished(QNetworkReply *reply);
 
     void hideInformation();
+
+    void changeReportType();
 private:
 
     bool isCppcheckPremium() const;
@@ -258,10 +269,11 @@ private:
     /**
      * @brief Analyze the project.
      * @param projectFile Pointer to the project to analyze.
+     * @param recheckFiles files to recheck, empty => check all files
      * @param checkLibrary Flag to indicate if the library should be checked.
      * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void analyzeProject(const ProjectFile *projectFile, const bool checkLibrary = false, const bool checkConfiguration = false);
+    void analyzeProject(const ProjectFile *projectFile, const QStringList& recheckFiles, bool checkLibrary = false, bool checkConfiguration = false);
 
     /**
      * @brief Set current language
@@ -300,7 +312,7 @@ private:
      * @param checkLibrary Flag to indicate if library should be checked
      * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void doAnalyzeProject(ImportProject p, const bool checkLibrary = false, const bool checkConfiguration = false);
+    void doAnalyzeProject(ImportProject p, bool checkLibrary = false, bool checkConfiguration = false);
 
     /**
      * @brief Analyze all files specified in parameter files
@@ -309,14 +321,12 @@ private:
      * @param checkLibrary Flag to indicate if library should be checked
      * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void doAnalyzeFiles(const QStringList &files, const bool checkLibrary = false, const bool checkConfiguration = false);
+    void doAnalyzeFiles(const QStringList &files, bool checkLibrary = false, bool checkConfiguration = false);
 
     /**
      * @brief Get our default cppcheck settings and read project file.
-     *
-     * @return Default cppcheck settings
      */
-    QPair<bool, Settings> getCppcheckSettings();
+    bool getCppcheckSettings(Settings& settings, Suppressions& supprs);
 
     /** @brief Load program settings */
     void loadSettings();
@@ -421,6 +431,9 @@ private:
      */
     void removeProjectMRU(const QString &project);
 
+    /** @brief Generate list of detailed files from list of filenames. */
+    std::list<FileWithDetails> enrichFilesForAnalysis(const QStringList& fileNames, const Settings& settings) const;
+
     /** @brief Program settings */
     QSettings *mSettings;
 
@@ -459,6 +472,9 @@ private:
 
     /** @brief GUI actions for selecting language. */
     QActionGroup *mSelectLanguageActions;
+
+    /** @brief GUI actions for selecting report. */
+    QActionGroup *mSelectReportActions;
 
     /**
      * @brief Are we exiting the cppcheck?

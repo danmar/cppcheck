@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,6 @@
 #include <QIODevice>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QStringRef>
-#endif
 
 static constexpr char ResultElementName[] = "results";
 static constexpr char VersionAttribute[] = "version";

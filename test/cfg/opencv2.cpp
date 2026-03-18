@@ -2,7 +2,7 @@
 // Test library configuration for opencv2.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=opencv2 --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/opencv2.cpp
+// $ cppcheck --check-library --library=opencv2 --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/opencv2.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -45,7 +45,7 @@ void memleak()
 {
     // cppcheck-suppress cstyleCast
     const char * pBuf = (char *)cv::fastMalloc(1000);
-    // cppcheck-suppress [uninitdata, valueFlowBailoutIncompleteVar]
+    // cppcheck-suppress [uninitdata, valueFlowBailoutIncompleteVar, nullPointerOutOfMemory]
     std::cout << pBuf;
     // cppcheck-suppress memleak
 }

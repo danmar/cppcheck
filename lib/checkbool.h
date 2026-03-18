@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
 class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -49,21 +49,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckBool checkBool(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // Checks
-        checkBool.checkComparisonOfBoolExpressionWithInt();
-        checkBool.checkComparisonOfBoolWithInt();
-        checkBool.checkAssignBoolToFloat();
-        checkBool.pointerArithBool();
-        checkBool.returnValueOfFunctionReturningBool();
-        checkBool.checkComparisonOfFuncReturningBool();
-        checkBool.checkComparisonOfBoolWithBool();
-        checkBool.checkIncrementBoolean();
-        checkBool.checkAssignBoolToPointer();
-        checkBool.checkBitwiseOnBoolean();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief %Check for comparison of function returning bool*/
     void checkComparisonOfFuncReturningBool();
@@ -109,20 +95,7 @@ private:
     void pointerArithBoolError(const Token *tok);
     void returnValueBoolError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckBool c(nullptr, settings, errorLogger);
-        c.assignBoolToPointerError(nullptr);
-        c.assignBoolToFloatError(nullptr);
-        c.comparisonOfFuncReturningBoolError(nullptr, "func_name");
-        c.comparisonOfTwoFuncsReturningBoolError(nullptr, "func_name1", "func_name2");
-        c.comparisonOfBoolWithBoolError(nullptr, "var_name");
-        c.incrementBooleanError(nullptr);
-        c.bitwiseOnBooleanError(nullptr, "expression", "&&");
-        c.comparisonOfBoolExpressionWithIntError(nullptr, true);
-        c.pointerArithBoolError(nullptr);
-        c.comparisonOfBoolWithInvalidComparator(nullptr, "expression");
-        c.returnValueBoolError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Boolean";

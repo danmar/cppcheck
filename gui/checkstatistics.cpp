@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,14 @@
 
 #include "checkstatistics.h"
 
+#include "utils.h"
+
 #include <QDebug>
 #include <QList>
 #include <QSet>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 CheckStatistics::CheckStatistics(QObject *parent)
     : QObject(parent)
@@ -30,10 +35,7 @@ CheckStatistics::CheckStatistics(QObject *parent)
 
 static void addItem(QMap<QString,unsigned> &m, const QString &key)
 {
-    if (m.contains(key))
-        m[key]++;
-    else
-        m[key] = 0;
+    m[key]++;
 }
 
 void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
@@ -59,7 +61,6 @@ void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
         ::addItem(mInformation, lower);
         break;
     case ShowTypes::ShowNone:
-    default:
         qDebug() << "Unknown error type - not added to statistics.";
         break;
     }
@@ -99,10 +100,10 @@ unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type
     case ShowTypes::ShowInformation:
         return mInformation.value(lower,0);
     case ShowTypes::ShowNone:
-    default:
         qDebug() << "Unknown error type - returning zero statistics.";
         return 0;
     }
+    cppcheck::unreachable();
 }
 
 QStringList CheckStatistics::getTools() const
@@ -113,5 +114,5 @@ QStringList CheckStatistics::getTools() const
     for (const QString& tool: mPerformance.keys()) ret.insert(tool);
     for (const QString& tool: mPortability.keys()) ret.insert(tool);
     for (const QString& tool: mError.keys()) ret.insert(tool);
-    return QStringList(ret.values());
+    return ret.values();
 }

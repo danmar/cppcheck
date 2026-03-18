@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,9 @@
 
 #include "calculate.h"
 #include "errortypes.h"
+#include "token.h"
 #include "valueptr.h"
+#include "vfvalue.h"
 
 #include <cassert>
 #include <algorithm>
@@ -28,8 +30,6 @@
 #include <iterator>
 #include <unordered_set>
 #include <utility>
-
-class Token;
 
 template<class Predicate, class Compare>
 static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values, Predicate pred, Compare compare)
@@ -293,8 +293,10 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         return !model->match(value);
     };
     lhsValues.remove_if(notMatch);
+    if (lhsValues.empty())
+        return result;
     rhsValues.remove_if(notMatch);
-    if (lhsValues.empty() || rhsValues.empty())
+    if (rhsValues.empty())
         return result;
 
     Interval lhs = Interval::fromValues(lhsValues);
@@ -348,7 +350,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         std::vector<const ValueFlow::Value*> refs;
         std::vector<bool> r = Interval::compare(op, lhs, rhs, &refs);
         if (!r.empty()) {
-            ValueFlow::Value value(r.front());
+            ValueFlow::Value value(static_cast<int>(r.front()));
             addToErrorPath(value, refs);
             setValueKind(value, refs);
             result.push_back(std::move(value));
@@ -385,4 +387,36 @@ std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, cons
     return Interval::fromValues(values, [&](const ValueFlow::Value& v) {
         return model->match(v);
     }).maxvalue;
+}
+
+namespace {
+    struct IntegralInferModel : InferModel {
+        bool match(const ValueFlow::Value& value) const override {
+            return value.isIntValue();
+        }
+        ValueFlow::Value yield(MathLib::bigint value) const override
+        {
+            ValueFlow::Value result(value);
+            result.valueType = ValueFlow::Value::ValueType::INT;
+            result.setKnown();
+            return result;
+        }
+    };
+}
+
+ValuePtr<InferModel> makeIntegralInferModel()
+{
+    return IntegralInferModel{};
+}
+
+ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
+{
+    if (!varTok)
+        return ValueFlow::Value{};
+    if (varTok->hasKnownIntValue())
+        return ValueFlow::Value{};
+    std::vector<ValueFlow::Value> r = infer(makeIntegralInferModel(), op, varTok->values(), val);
+    if (r.size() == 1 && r.front().isKnown())
+        return r.front();
+    return ValueFlow::Value{};
 }

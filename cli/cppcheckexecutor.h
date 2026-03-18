@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,16 @@
 #ifndef CPPCHECKEXECUTOR_H
 #define CPPCHECKEXECUTOR_H
 
-#include "config.h"
 #include "filesettings.h"
 
-#include <cstdio>
 #include <list>
 #include <string>
-#include <utility>
 #include <vector>
 
 class Settings;
 class ErrorLogger;
 class SuppressionList;
-class FileWithDetails;
+struct Suppressions;
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -42,8 +39,6 @@ class FileWithDetails;
  */
 class CppCheckExecutor {
 public:
-    friend class TestSuppressions;
-
     /**
      * Constructor
      */
@@ -64,45 +59,37 @@ public:
      */
     int check(int argc, const char* const argv[]);
 
-    /**
-     * @param exceptionOutput Output file
-     */
-    static void setExceptionOutput(FILE* exceptionOutput);
-    /**
-     * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
-     */
-    static FILE* getExceptionOutput();
-
-private:
+protected:
 
     /**
      * Execute a shell command and read the output from it. Returns exitcode of the executed command,.
      */
     static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
 
-protected:
+    static bool reportUnmatchedSuppressions(const Settings &settings, const SuppressionList& suppressions, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger);
 
-    static bool reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger);
-
+private:
     /**
      * Wrapper around check_internal
      *   - installs optional platform dependent signal handling
      *
      * @param settings the settings
+     * @param supprs the suppressions
      **/
-    int check_wrapper(const Settings& settings);
+    int check_wrapper(const Settings& settings, Suppressions& supprs);
 
     /**
      * Starts the checking.
      *
      * @param settings the settings
+     * @param supprs the suppressions
      * @return EXIT_FAILURE if arguments are invalid or no input files
      *         were found.
      *         If errors are found and --error-exitcode is used,
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    int check_internal(const Settings& settings) const;
+    int check_internal(const Settings& settings, Suppressions& supprs) const;
 
     /**
      * Filename associated with size of file
@@ -110,13 +97,6 @@ protected:
     std::list<FileWithDetails> mFiles;
 
     std::list<FileSettings> mFileSettings;
-
-#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
-    /**
-     * Output file name for exception handler
-     */
-    static FILE* mExceptionOutput;
-#endif
 };
 
 #endif // CPPCHECKEXECUTOR_H

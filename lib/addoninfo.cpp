@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,24 +22,39 @@
 #include "utils.h"
 
 #include <fstream>
+#include <iostream>
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "json.h"
 
-static std::string getFullPath(const std::string &fileName, const std::string &exename) {
+static std::string getFullPath(const std::string &fileName, const std::string &exename, bool debug = false) {
+    if (debug)
+        std::cout << "looking for addon '" << fileName << "'" << std::endl;
     if (Path::isFile(fileName))
         return fileName;
 
+    const bool is_abs_path = Path::isAbsolute(fileName);
+    if (is_abs_path)
+        return "";
+
     const std::string exepath = Path::getPathFromFilename(exename);
+    if (debug)
+        std::cout << "looking for addon '" << (exepath + fileName) << "'" << std::endl;
     if (Path::isFile(exepath + fileName))
         return exepath + fileName;
+    if (debug)
+        std::cout << "looking for addon '" << (exepath + "addons/" + fileName) << "'" << std::endl;
     if (Path::isFile(exepath + "addons/" + fileName))
         return exepath + "addons/" + fileName;
 
 #ifdef FILESDIR
+    if (debug)
+        std::cout << "looking for addon '" << (FILESDIR + ("/" + fileName)) << "'" << std::endl;
     if (Path::isFile(FILESDIR + ("/" + fileName)))
         return FILESDIR + ("/" + fileName);
+    if (debug)
+        std::cout << "looking for addon '" << (FILESDIR + ("/addons/" + fileName)) << "'" << std::endl;
     if (Path::isFile(FILESDIR + ("/addons/" + fileName)))
         return FILESDIR + ("/addons/" + fileName);
 #endif
@@ -100,15 +115,37 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
     }
 
     {
+        const auto it = obj.find("checkers");
+        if (it != obj.cend()) {
+            const auto& val = it->second;
+            if (!val.is<picojson::array>())
+                return "Loading " + fileName + " failed. 'checkers' must be an array.";
+            for (const picojson::value &v : val.get<picojson::array>()) {
+                if (!v.is<picojson::object>())
+                    return "Loading " + fileName + " failed. 'checkers' entry is not an object.";
+
+                const picojson::object& checkerObj = v.get<picojson::object>();
+                if (checkerObj.size() == 1) {
+                    const std::string c = checkerObj.begin()->first;
+                    if (!checkerObj.begin()->second.is<std::string>())
+                        return "Loading " + fileName + " failed. 'checkers' entry requirement is not a string.";
+                    const std::string req = checkerObj.begin()->second.get<std::string>();
+                    addoninfo.checkers.emplace(c, req);
+                }
+            }
+        }
+    }
+
+    {
         const auto it = obj.find("executable");
         if (it != obj.cend()) {
             const auto& val = it->second;
             if (!val.is<std::string>())
                 return "Loading " + fileName + " failed. 'executable' must be a string.";
-            const std::string e = val.get<std::string>();
+            std::string e = val.get<std::string>();
             addoninfo.executable = getFullPath(e, fileName);
             if (addoninfo.executable.empty())
-                addoninfo.executable = e;
+                addoninfo.executable = std::move(e);
             return ""; // <- do not load both "executable" and "script".
         }
     }
@@ -124,7 +161,7 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
     return addoninfo.getAddonInfo(val.get<std::string>(), exename);
 }
 
-std::string AddonInfo::getAddonInfo(const std::string &fileName, const std::string &exename) {
+std::string AddonInfo::getAddonInfo(const std::string &fileName, const std::string &exename, bool debug) {
     if (fileName[0] == '{') {
         picojson::value json;
         const std::string err = picojson::parse(json, fileName);
@@ -132,10 +169,10 @@ std::string AddonInfo::getAddonInfo(const std::string &fileName, const std::stri
         return parseAddonInfo(*this, json, fileName, exename);
     }
     if (fileName.find('.') == std::string::npos)
-        return getAddonInfo(fileName + ".py", exename);
+        return getAddonInfo(fileName + ".py", exename, debug);
 
     if (endsWith(fileName, ".py")) {
-        scriptFile = Path::fromNativeSeparators(getFullPath(fileName, exename));
+        scriptFile = Path::fromNativeSeparators(getFullPath(fileName, exename, debug));
         if (scriptFile.empty())
             return "Did not find addon " + fileName;
 

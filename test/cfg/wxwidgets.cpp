@@ -2,7 +2,7 @@
 // Test library configuration for wxwidgets.cfg
 //
 // Usage:
-// $ ./cppcheck --check-library --library=wxwidgets --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/wxwidgets.cpp
+// $ ./cppcheck --check-library --library=wxwidgets --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/wxwidgets.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -972,6 +972,10 @@ void ignoredReturnValue_wxDC_GetSizeMM(const wxDC &dc, wxCoord *width, wxCoord *
     (void)dc.GetSizeMM();
 }
 
+void ignoredReturnValue_wxPanel_Layout(wxPanel* panel) { // #14403
+    panel->Layout();
+}
+
 wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, wxWindow * window, const wxSizerFlags &flags)
 {
     // No warning is expected for
@@ -1200,7 +1204,7 @@ void deprecatedFunctions([[maybe_unused]] wxApp &a,
 #if wxCHECK_VERSION(3, 1, 0)  // wxWidets-3.1.0 or higher:
     // Some functions are not available anymore in newer versions
 
-    // @todo cppcheck-suppress ShowPopupCalled
+    // cppcheck-suppress ShowPopupCalled
     comboCtrl.ShowPopup();
 #else
     // cppcheck-suppress InsertCalled

@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
 class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -49,18 +49,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckString checkString(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // Checks
-        checkString.strPlusChar();
-        checkString.checkSuspiciousStringCompare();
-        checkString.stringLiteralWrite();
-        checkString.overlappingStrcmp();
-        checkString.checkIncorrectStringCompare();
-        checkString.sprintfOverlappingData();
-        checkString.checkAlwaysTrueOrFalseStringCompare();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief undefined behaviour, writing string literal */
     void stringLiteralWrite();
@@ -94,20 +83,7 @@ private:
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
     void overlappingStrcmpError(const Token* eq0, const Token *ne0);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckString c(nullptr, settings, errorLogger);
-        c.stringLiteralWriteError(nullptr, nullptr);
-        c.sprintfOverlappingDataError(nullptr, nullptr, "varname");
-        c.strPlusCharError(nullptr);
-        c.incorrectStringCompareError(nullptr, "substr", "\"Hello World\"");
-        c.suspiciousStringCompareError(nullptr, "foo", false);
-        c.suspiciousStringCompareError_char(nullptr, "foo");
-        c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
-        c.incorrectStringBooleanError(nullptr, "\'x\'");
-        c.alwaysTrueFalseStringCompareError(nullptr, "str1", "str2");
-        c.alwaysTrueStringVariableCompareError(nullptr, "varname1", "varname2");
-        c.overlappingStrcmpError(nullptr, nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "String";

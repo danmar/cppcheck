@@ -2,7 +2,7 @@
 #include "stdio.h"
 
 #define PRINT_DEF(d, f) \
-    fprintf(stdout, ";"#d"=%"#f, d)
+    fprintf(stdout, ";"#d "=%"#f, d)
 
 int main(void)
 {

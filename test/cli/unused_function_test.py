@@ -3,6 +3,8 @@
 
 import os
 import json
+import sys
+import pytest
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -30,79 +32,40 @@ def __create_compdb(tmpdir, projpath):
     return compile_commands
 
 
-def test_unused_functions():
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j1', __project_dir])
+def __test_unused_functions(extra_args):
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        __project_dir
+    ]
+    args += extra_args
+    ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:6: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout
+
+
+def test_unused_functions():
+    __test_unused_functions(['-j1', '--no-cppcheck-build-dir'])
 
 
 def test_unused_functions_j():
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j2', __project_dir])
-    assert stdout.splitlines() == [
-        "cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check."
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '-j2',
+        '--no-cppcheck-build-dir',
+        __project_dir
     ]
-    assert stderr.splitlines() == []
-    assert ret == 0, stdout
-
-
-def test_unused_functions_project():
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck')),
-                                    '-j1'])
-    assert stdout.splitlines() == []
-    assert [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
-    ] == stderr.splitlines()
-    assert ret == 0, stdout
-
-
-def test_unused_functions_project_j():
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck')),
-                                    '-j2'])
+    ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == [
-        "cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check."
-    ]
-    assert [] == stderr.splitlines()
-    assert ret == 0, stdout
-
-
-def test_unused_functions_compdb(tmpdir):
-    compdb_file = __create_compdb(tmpdir, __project_dir)
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(compdb_file),
-                                    '-j1'
-                                    ])
-    assert stdout.splitlines() == []
-    assert stderr.splitlines() == [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
-    ]
-    assert ret == 0, stdout
-
-
-def test_unused_functions_compdb_j(tmpdir):
-    compdb_file = __create_compdb(tmpdir, __project_dir)
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(compdb_file),
-                                    '-j2'
-                                    ])
-    assert stdout.splitlines() == [
-        "cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check."
+        "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
     assert stderr.splitlines() == []
     assert ret == 0, stdout
@@ -111,104 +74,131 @@ def test_unused_functions_compdb_j(tmpdir):
 def test_unused_functions_builddir(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j1', '--cppcheck-build-dir={}'.format(build_dir), __project_dir])
-    assert stdout.splitlines() == []
-    assert stderr.splitlines() == [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
-    ]
-    assert ret == 0, stdout
+    __test_unused_functions(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-# TODO: only f3_3 is unused
-def test_unused_functions_builddir_j(tmpdir):
+def test_unused_functions_builddir_j_thread(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j2', '--cppcheck-build-dir={}'.format(build_dir), __project_dir])
-    assert stdout.splitlines() == []
-    assert stderr.splitlines() == [
-        "{}1.c:4:0: style: The function 'f1' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}2.c:4:0: style: The function 'f2' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}4.c:4:0: style: The function 'f4_1' is never used. [unusedFunction]".format(__project_dir_sep)
-    ]
-    assert ret == 0, stdout
+    __test_unused_functions(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=thread'])
 
 
-def test_unused_functions_builddir_project(tmpdir):
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
+def test_unused_functions_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck')),
-                                    '--cppcheck-build-dir={}'.format(build_dir),
-                                    '-j1'])
-    assert stdout.splitlines() == []
-    assert stderr.splitlines() == [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+    __test_unused_functions(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])
+
+
+def __test_unused_functions_project(extra_args):
+    project_file = os.path.join(__project_dir, 'unusedFunction.cppcheck')
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(project_file),
     ]
+    args += extra_args
+    ret, stdout, stderr = cppcheck(args)
+    assert stdout.splitlines() == []
+    assert [
+        "{}3.c:3:6: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+    ] == stderr.splitlines()
     assert ret == 0, stdout
 
 
-# TODO: only f3_3 is unused
-def test_unused_functions_builddir_project_j(tmpdir):
+def test_unused_functions_project():
+    __test_unused_functions_project(['-j1', '--no-cppcheck-build-dir'])
+
+
+def test_unused_functions_project_j():
+    project_file = os.path.join(__project_dir, 'unusedFunction.cppcheck')
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(project_file),
+        '-j2',
+        '--no-cppcheck-build-dir'
+    ]
+    ret, stdout, stderr = cppcheck(args)
+    assert stdout.splitlines() == [
+        "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
+    ]
+    assert [] == stderr.splitlines()
+    assert ret == 0, stdout
+
+
+def test_unused_functions_project_builddir(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck')),
-                                    '--cppcheck-build-dir={}'.format(build_dir),
-                                    '-j2'])
-    assert stdout.splitlines() == []
-    assert stderr.splitlines() == [
-        "{}1.c:4:0: style: The function 'f1' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}2.c:4:0: style: The function 'f2' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}4.c:4:0: style: The function 'f4_1' is never used. [unusedFunction]".format(__project_dir_sep)
-    ]
-    assert ret == 0, stdout
+    __test_unused_functions_project(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-def test_unused_functions_builddir_compdb(tmpdir):
+def test_unused_functions_project_builddir_j_thread(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_unused_functions_project(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=thread'])
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
+def test_unused_functions_project_builddir_j_process(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_unused_functions_project(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])
+
+
+def __test_unused_functions_compdb(tmpdir, extra_args):
     compdb_file = __create_compdb(tmpdir, __project_dir)
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(compdb_file),
-                                    '--cppcheck-build-dir={}'.format(build_dir),
-                                    '-j1'
-                                    ])
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(compdb_file)
+    ]
+    args += extra_args
+    ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:6: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout
 
 
-# TODO: only f3_3 is unused
-def test_unused_functions_builddir_compdb_j(tmpdir):
+def test_unused_functions_compdb(tmpdir):
+    __test_unused_functions_compdb(tmpdir, ['-j1', '--no-cppcheck-build-dir'])
+
+
+def test_unused_functions_compdb_j(tmpdir):
     compdb_file = __create_compdb(tmpdir, __project_dir)
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(compdb_file),
+        '-j2',
+        '--no-cppcheck-build-dir'
+    ]
+    ret, stdout, stderr = cppcheck(args)
+    assert stdout.splitlines() == [
+        "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
+    ]
+    assert stderr.splitlines() == []
+    assert ret == 0, stdout
+
+
+def test_unused_functions_compdb_buildir_j_thread(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(compdb_file),
-                                    '--cppcheck-build-dir={}'.format(build_dir),
-                                    '-j2'
-                                    ])
-    assert stdout.splitlines() == []
-    assert stderr.splitlines() == [
-        "{}1.c:4:0: style: The function 'f1' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}2.c:4:0: style: The function 'f2' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}4.c:4:0: style: The function 'f4_1' is never used. [unusedFunction]".format(__project_dir_sep)
-    ]
-    assert ret == 0, stdout
+    __test_unused_functions_compdb(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=thread'])
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
+def test_unused_functions_compdb_builddir_j_process(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_unused_functions_compdb(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])

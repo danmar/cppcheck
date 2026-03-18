@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "helpdialog.h"
 
 #include "common.h"
+#include "utils.h"
 
 #include "ui_helpdialog.h"
 
@@ -28,6 +29,7 @@
 #include <QHelpContentWidget>
 #include <QHelpIndexWidget>
 #include <QMessageBox>
+#include <QString>
 #include <QStringList>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -64,7 +66,7 @@ static QString getHelpFile()
     paths << (filesdir + "/help")
           << filesdir;
 #endif
-    for (const QString &p: paths) {
+    for (const QString &p: utils::as_const(paths)) {
         QString filename = p + "/online-help.qhc";
         if (QFileInfo::exists(filename))
             return filename;

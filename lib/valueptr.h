@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ class CPPCHECKLIB ValuePtr {
 public:
     using pointer = T*;
     using element_type = T;
+    // cppcheck-suppress simplifyUsing - TODO: fix this
     using cloner_type = decltype(&cloner<T>::apply);
 
     ValuePtr() : mPtr(nullptr), mClone() {}
@@ -53,13 +54,6 @@ public:
         }
     }
     ValuePtr(ValuePtr&& rhs) NOEXCEPT : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
-
-    /**
-     * Releases the shared_ptr's ownership of the managed object using the .reset() function
-     */
-    void release() {
-        mPtr.reset();
-    }
 
     T* get() NOEXCEPT {
         return mPtr.get();
@@ -82,13 +76,13 @@ public:
         return get();
     }
 
-    void swap(ValuePtr& rhs) {
+    void swap(ValuePtr& rhs) NOEXCEPT {
         using std::swap;
         swap(mPtr, rhs.mPtr);
         swap(mClone, rhs.mClone);
     }
 
-    ValuePtr<T>& operator=(ValuePtr rhs) {
+    ValuePtr<T>& operator=(ValuePtr rhs) & {
         swap(rhs);
         return *this;
     }

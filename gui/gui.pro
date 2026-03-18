@@ -1,7 +1,4 @@
-lessThan(QT_MAJOR_VERSION, 5): error(requires >= Qt 5 (You used: $$QT_VERSION))
-greaterThan(QT_MAJOR_VERSION, 5): error(Qt 6 is not supported via qmake - please use CMake instead)
-
-message("Building the GUI via qmake is deprecated and will be removed in a future release. Please use CMake instead.")
+lessThan(QT_MAJOR_VERSION, 6): error(requires >= Qt 6 (You used: $$QT_VERSION))
 
 TEMPLATE = app
 TARGET = cppcheck-gui
@@ -16,15 +13,10 @@ QT += help
 QT += network
 
 # Build online help
-onlinehelp.target = online-help.qhc
-equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 12) {
-    # qcollectiongenerator is used in case of QT version < 5.12
-    onlinehelp.commands = qcollectiongenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
-} else {
-    onlinehelp.commands = qhelpgenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
-}
-QMAKE_EXTRA_TARGETS += onlinehelp
-PRE_TARGETDEPS += online-help.qhc
+#onlinehelp.target = online-help.qhc
+#onlinehelp.commands = qhelpgenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
+#QMAKE_EXTRA_TARGETS += onlinehelp
+#PRE_TARGETDEPS += online-help.qhc
 
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
@@ -78,7 +70,8 @@ FORMS = about.ui \
         librarydialog.ui \
         libraryaddfunctiondialog.ui \
         libraryeditargdialog.ui \
-        newsuppressiondialog.ui
+        newsuppressiondialog.ui \
+        threaddetails.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -86,6 +79,7 @@ TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_fr.ts \
                 cppcheck_it.ts \
                 cppcheck_ja.ts \
+                cppcheck_ka.ts \
                 cppcheck_ko.ts \
                 cppcheck_nl.ts \
                 cppcheck_ru.ts \
@@ -99,8 +93,25 @@ CONFIG += embed_manifest_exe
 
 contains(LINKCORE, [yY][eE][sS]) {
 } else {
-    BASEPATH = ../lib/
-    include($$PWD/../lib/lib.pri)
+    INCLUDEPATH += $$PWD/../lib
+    HEADERS += $$PWD/../lib/*.h
+    SOURCES += $$PWD/../lib/*.cpp
+
+    INCLUDEPATH += $$PWD/../frontend
+    HEADERS += $$PWD/../frontend/*.h
+    SOURCES += $$PWD/../frontend/*.cpp
+
+    INCLUDEPATH += $$PWD/../externals/picojson
+    HEADERS += $$PWD/../externals/picojson/picojson.h
+
+    INCLUDEPATH += $$PWD/../externals/simplecpp
+    HEADERS += $$PWD/../externals/simplecpp/simplecpp.h
+    SOURCES += $$PWD/../externals/simplecpp/simplecpp.cpp
+    DEFINES += SIMPLECPP_TOKENLIST_ALLOW_PTR
+
+    INCLUDEPATH += $$PWD/../externals/tinyxml2
+    HEADERS += $$PWD/../externals/tinyxml2/tinyxml2.h
+    SOURCES += $$PWD/../externals/tinyxml2/tinyxml2.cpp
 }
 
 win32-msvc* {
@@ -139,12 +150,14 @@ HEADERS += aboutdialog.h \
            projectfile.h \
            projectfiledialog.h \
            report.h \
+           resultitem.h \
            resultstree.h \
            resultsview.h \
            scratchpad.h \
            settingsdialog.h \
            showtypes.h \
            statsdialog.h \
+           threaddetails.h \
            threadhandler.h \
            threadresult.h \
            translationhandler.h \
@@ -181,12 +194,14 @@ SOURCES += aboutdialog.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
            report.cpp \
+           resultitem.cpp \
            resultstree.cpp \
            resultsview.cpp \
            scratchpad.cpp \
            settingsdialog.cpp \
            showtypes.cpp \
            statsdialog.cpp \
+           threaddetails.cpp \
            threadhandler.cpp \
            threadresult.cpp \
            translationhandler.cpp \

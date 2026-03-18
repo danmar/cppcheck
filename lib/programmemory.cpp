@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,10 @@
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
+#include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "valueptr.h"
@@ -37,14 +39,23 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <stack>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
-ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
+ExprIdToken::ExprIdToken(const Token* tok)
+    : tok(tok)
+{
+    assert(tok);
+    exprid = tok->exprId();
+}
+
+ExprIdToken::ExprIdToken(nonneg int exprId) : exprid(exprId) {}
 
 nonneg int ExprIdToken::getExpressionId() const {
-    return tok ? tok->exprId() : exprid;
+    return exprid;
 }
 
 std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
@@ -53,32 +64,38 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 }
 
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
-    mValues[expr] = value;
+    if (!expr)
+        return;
+
+    copyOnWrite();
+
     ValueFlow::Value subvalue = value;
     const Token* subexpr = solveExprValue(
         expr,
         [&](const Token* tok) -> std::vector<MathLib::bigint> {
-        if (tok->hasKnownIntValue())
-            return {tok->values().front().intvalue};
+        if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::INT))
+            return {v->intvalue};
         MathLib::bigint result = 0;
         if (getIntValue(tok->exprId(), result))
             return {result};
         return {};
     },
         subvalue);
+    if (expr != subexpr)
+        (*mValues)[expr] = value;
     if (subexpr)
-        mValues[subexpr] = std::move(subvalue);
+        (*mValues)[subexpr] = std::move(subvalue);
 }
+
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
-    const ProgramMemory::Map::const_iterator it = mValues.find(exprid);
-    const bool found = it != mValues.cend() && (impossible || !it->second.isImpossible());
+    const auto it = find(exprid);
+    const bool found = it != mValues->cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
     return nullptr;
 }
 
-// cppcheck-suppress unusedFunction
 bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint& result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -143,57 +160,106 @@ void ProgramMemory::setContainerSizeValue(const Token* expr, MathLib::bigint val
 }
 
 void ProgramMemory::setUnknown(const Token* expr) {
-    mValues[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
+    copyOnWrite();
+
+    (*mValues)[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(nonneg int exprid)
+bool ProgramMemory::hasValue(nonneg int exprid) const
 {
-    return mValues.find(exprid) != mValues.end();
+    const auto it = find(exprid);
+    return it != mValues->cend();
 }
 
 const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
-    return mValues.at(exprid);
+    const auto it = find(exprid);
+    if (it == mValues->cend()) {
+        throw std::out_of_range("ProgramMemory::at");
+    }
+    return it->second;
 }
+
 ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
-    return mValues.at(exprid);
+    copyOnWrite();
+
+    const auto it = find(exprid);
+    if (it == mValues->end()) {
+        throw std::out_of_range("ProgramMemory::at");
+    }
+    return it->second;
 }
 
 void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
 {
-    for (auto it = mValues.begin(); it != mValues.end();) {
+    if (mValues->empty())
+        return;
+
+    // TODO: how to delay until we actuallly modify?
+    copyOnWrite();
+
+    for (auto it = mValues->begin(); it != mValues->end();) {
         if (pred(it->first))
-            it = mValues.erase(it);
+            it = mValues->erase(it);
         else
             ++it;
     }
 }
 
-void ProgramMemory::swap(ProgramMemory &pm)
+void ProgramMemory::swap(ProgramMemory &pm) NOEXCEPT
 {
     mValues.swap(pm.mValues);
 }
 
 void ProgramMemory::clear()
 {
-    mValues.clear();
+    if (mValues->empty())
+        return;
+
+    copyOnWrite();
+
+    mValues->clear();
 }
 
 bool ProgramMemory::empty() const
 {
-    return mValues.empty();
+    return mValues->empty();
 }
 
-void ProgramMemory::replace(ProgramMemory pm)
+// NOLINTNEXTLINE(performance-unnecessary-value-param) - technically correct but we are moving the given values
+void ProgramMemory::replace(ProgramMemory pm, bool skipUnknown)
 {
-    for (auto&& p : pm.mValues) {
-        mValues[p.first] = std::move(p.second);
+    if (pm.empty())
+        return;
+
+    copyOnWrite();
+
+    for (auto&& p : (*pm.mValues)) {
+        if (skipUnknown) {
+            auto it = mValues->find(p.first);
+            if (it != mValues->end() && it->second.isUninitValue())
+                continue;
+        }
+        (*mValues)[p.first] = std::move(p.second);
     }
 }
 
-void ProgramMemory::insert(const ProgramMemory &pm)
+void ProgramMemory::copyOnWrite()
 {
-    for (auto&& p : pm)
-        mValues.insert(p);
+    if (mValues.use_count() == 1)
+        return;
+
+    mValues = std::make_shared<Map>(*mValues);
+}
+
+ProgramMemory::Map::const_iterator ProgramMemory::find(nonneg int exprid) const
+{
+    const auto& cvalues = utils::as_const(*mValues);
+    return cvalues.find(ExprIdToken::create(exprid));
+}
+
+ProgramMemory::Map::iterator ProgramMemory::find(nonneg int exprid)
+{
+    return mValues->find(ExprIdToken::create(exprid));
 }
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings);
@@ -276,8 +342,8 @@ static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, con
     auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
         if (!t)
             return std::vector<MathLib::bigint>{};
-        if (t->hasKnownIntValue())
-            return {t->values().front().intvalue};
+        if (const ValueFlow::Value* v = t->getKnownValue(ValueFlow::Value::ValueType::INT))
+            return {v->intvalue};
         MathLib::bigint result = 0;
         bool error = false;
         execute(t, pm, &result, &error, settings);
@@ -340,7 +406,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         return;
     assert(scope != scope->nestedIn);
     fillProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
-    if (scope->type == Scope::eIf || scope->type == Scope::eWhile || scope->type == Scope::eElse || scope->type == Scope::eFor) {
+    if (scope->type == ScopeType::eIf || scope->type == ScopeType::eWhile || scope->type == ScopeType::eElse || scope->type == ScopeType::eFor) {
         const Token* condTok = getCondTokFromEnd(scope->bodyEnd);
         if (!condTok)
             return;
@@ -348,7 +414,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         bool error = false;
         execute(condTok, pm, &result, &error, settings);
         if (error)
-            programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
+            programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != ScopeType::eElse);
     }
 }
 
@@ -366,7 +432,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             bool setvar = false;
             const Token* vartok = tok2->astOperand1();
             for (const auto& p:vars) {
-                if (p.first != vartok->exprId())
+                if (p.first.getExpressionId() != vartok->exprId())
                     continue;
                 if (vartok == tok)
                     continue;
@@ -376,9 +442,20 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
                     const Token* valuetok = tok2->astOperand2();
-                    pm.setValue(vartok, execute(valuetok, pm, settings));
+                    ProgramMemory local = state;
+                    pm.setValue(vartok, execute(valuetok, local, settings));
                 }
             }
+        } else if (Token::simpleMatch(tok2, ")") && tok2->link() &&
+                   Token::Match(tok2->link()->previous(), "assert|ASSERT ( !!)")) {
+            const Token* cond = tok2->link()->astOperand2();
+            if (!conditionIsTrue(cond, state, settings)) {
+                // TODO: change to assert when we can propagate the assert, for now just bail
+                if (conditionIsFalse(cond, state, settings))
+                    return;
+                programMemoryParseCondition(pm, cond, nullptr, settings, true);
+            }
+            tok2 = tok2->link()->previous();
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
                    isVariableChanged(tok2, 0, settings)) {
             pm.setUnknown(tok2);
@@ -439,25 +516,15 @@ static ProgramMemory getInitialProgramState(const Token* tok,
     return pm;
 }
 
-ProgramMemoryState::ProgramMemoryState(const Settings* s) : settings(s)
-{
-    assert(settings != nullptr);
-}
-
-void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
-{
-    if (origin)
-        for (auto&& p : pm)
-            origins.insert(std::make_pair(p.first.getExpressionId(), origin));
-    state.insert(pm);
-}
+ProgramMemoryState::ProgramMemoryState(const Settings& s) : settings(s)
+{}
 
 void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
 {
     if (origin)
         for (const auto& p : pm)
             origins[p.first.getExpressionId()] = origin;
-    state.replace(std::move(pm));
+    state.replace(std::move(pm), /*skipUnknown*/ true);
 }
 
 static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
@@ -470,13 +537,14 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
-    ProgramMemory pm = state;
-    addVars(pm, vars);
-    fillProgramMemoryFromConditions(pm, tok, *settings);
-    ProgramMemory local = pm;
-    fillProgramMemoryFromAssignments(pm, tok, *settings, local, vars);
-    addVars(pm, vars);
-    replace(std::move(pm), tok);
+    ProgramMemory local = state;
+    addVars(local, vars);
+    fillProgramMemoryFromConditions(local, tok, settings);
+    ProgramMemory pm;
+    fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
+    local.replace(std::move(pm));
+    addVars(local, vars);
+    replace(std::move(local), tok);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
@@ -485,10 +553,10 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
     if (isEmpty)
         pm.setContainerSizeValue(tok, 0, b);
     else
-        programMemoryParseCondition(pm, tok, nullptr, *settings, b);
+        programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
-    if (top && Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
+    if (Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
         origin = top->link()->next();
         if (!b && origin->link()) {
             origin = origin->link();
@@ -501,16 +569,18 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
     const ProgramMemory& pm = state;
     auto eval = [&](const Token* cond) -> std::vector<MathLib::bigint> {
-        if (conditionIsTrue(cond, pm, *settings))
+        ProgramMemory pm2 = pm;
+        auto result = execute(cond, pm2, settings);
+        if (isTrue(result))
             return {1};
-        if (conditionIsFalse(cond, pm, *settings))
+        if (isFalse(result))
             return {0};
         return {};
     };
     state.erase_if([&](const ExprIdToken& e) {
         const Token* start = origins[e.getExpressionId()];
         const Token* expr = e.tok;
-        if (!expr || findExpressionChangedSkipDeadCode(expr, start, tok, *settings, eval)) {
+        if (!expr || findExpressionChangedSkipDeadCode(expr, start, tok, settings, eval)) {
             origins.erase(e.getExpressionId());
             return true;
         }
@@ -554,7 +624,12 @@ static bool isNumericValue(const ValueFlow::Value& value) {
 
 static double asFloat(const ValueFlow::Value& value)
 {
-    return value.isFloatValue() ? value.floatValue : value.intvalue;
+    return value.isFloatValue() ? value.floatValue : static_cast<double>(value.intvalue);
+}
+
+static MathLib::bigint asInt(const ValueFlow::Value& value)
+{
+    return value.isFloatValue() ? static_cast<MathLib::bigint>(value.floatValue) : value.intvalue;
 }
 
 static std::string removeAssign(const std::string& assign) {
@@ -566,7 +641,7 @@ namespace {
         template<class T, class U>
         void operator()(T& x, const U& y) const
         {
-            x = y;
+            x = static_cast<T>(y);
         }
     };
 }
@@ -579,7 +654,6 @@ static bool isIntegralValue(const ValueFlow::Value& value)
 static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& lhs, const ValueFlow::Value& rhs)
 {
     ValueFlow::Value result;
-    combineValueProperties(lhs, rhs, result);
     if (lhs.isImpossible() && rhs.isImpossible())
         return ValueFlow::Value::unknown();
     if (lhs.isImpossible() || rhs.isImpossible()) {
@@ -644,16 +718,17 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     return result;
 }
 
-using BuiltinLibraryFunction = std::function<ValueFlow::Value(const std::vector<ValueFlow::Value>&)>;
+using BuiltinLibraryFunction = std::function<ValueFlow::Value (const std::vector<ValueFlow::Value>&)>;
 static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibraryFunctions()
 {
     std::unordered_map<std::string, BuiltinLibraryFunction> functions;
     functions["strlen"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!(v.isTokValue() && v.tokvalue->tokType() == Token::eString))
+        const ValueFlow::Value& v_ref = args[0];
+        if (!(v_ref.isTokValue() && v_ref.tokvalue->tokType() == Token::eString))
             return ValueFlow::Value::unknown();
+        ValueFlow::Value v = v_ref;
         v.valueType = ValueFlow::Value::ValueType::INT;
         v.intvalue = Token::getStrLength(v.tokvalue);
         v.tokvalue = nullptr;
@@ -692,77 +767,77 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
     functions["sin"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::sin(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::sin(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["lgamma"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::lgamma(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::lgamma(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["cos"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::cos(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::cos(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["tan"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::tan(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::tan(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["asin"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::asin(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::asin(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["acos"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::acos(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::acos(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["atan"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::atan(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::atan(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -771,10 +846,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::atan2(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::atan2(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -783,10 +857,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::remainder(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::remainder(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -795,10 +868,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::nextafter(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::nextafter(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -807,10 +879,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::nexttoward(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::nexttoward(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -819,10 +890,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::hypot(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::hypot(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -831,10 +901,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::fdim(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::fdim(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -843,10 +912,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::fmax(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::fmax(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -855,10 +923,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::fmin(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::fmin(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -867,10 +934,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::fmod(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::fmod(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -879,10 +945,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::pow(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::pow(asFloat(args[0]), asFloat(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -891,10 +956,9 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::scalbln(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::scalbln(asFloat(args[0]), asInt(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -903,296 +967,295 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::ldexp(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.floatValue = std::ldexp(asFloat(args[0]), asInt(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["ilogb"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.intvalue = std::ilogb(value);
+        ValueFlow::Value v = v_ref;
+        v.intvalue = std::ilogb(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::INT;
         return v;
     };
     functions["erf"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::erf(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::erf(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["erfc"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::erfc(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::erfc(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["floor"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::floor(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::floor(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["sqrt"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::sqrt(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::sqrt(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["cbrt"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::cbrt(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::cbrt(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["ceil"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::ceil(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::ceil(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["exp"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::exp(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::exp(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["exp2"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::exp2(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::exp2(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["expm1"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::expm1(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::expm1(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["fabs"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::fabs(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::fabs(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["log"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::log(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::log(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["log10"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::log10(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::log10(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["log1p"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::log1p(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::log1p(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["log2"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::log2(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::log2(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["logb"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::logb(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::logb(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["nearbyint"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::nearbyint(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::nearbyint(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["sinh"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::sinh(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::sinh(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["cosh"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::cosh(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::cosh(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["tanh"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::tanh(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::tanh(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["asinh"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::asinh(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::asinh(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["acosh"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::acosh(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::acosh(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["atanh"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::atanh(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::atanh(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["round"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::round(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::round(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["tgamma"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::tgamma(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::tgamma(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["trunc"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        const ValueFlow::Value& v_ref = args[0];
+        if (!v_ref.isFloatValue() && !v_ref.isIntValue())
             return ValueFlow::Value::unknown();
-        const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::trunc(value);
+        ValueFlow::Value v = v_ref;
+        v.floatValue = std::trunc(asFloat(args[0]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -1254,14 +1317,14 @@ static void pruneConditions(std::vector<const Token*>& conds,
 
 namespace {
     struct Executor {
-        ProgramMemory* pm = nullptr;
-        const Settings* settings = nullptr;
+        ProgramMemory* pm;
+        const Settings& settings;
         int fdepth = 4;
         int depth = 10;
 
-        Executor(ProgramMemory* pm, const Settings* settings) : pm(pm), settings(settings)
+        Executor(ProgramMemory* pm, const Settings& settings) : pm(pm), settings(settings)
         {
-            assert(settings != nullptr);
+            assert(pm != nullptr);
         }
 
         static ValueFlow::Value unknown() {
@@ -1304,7 +1367,7 @@ namespace {
         ValueFlow::Value executeMultiCondition(bool b, const Token* expr)
         {
             if (pm->hasValue(expr->exprId())) {
-                const ValueFlow::Value& v = pm->at(expr->exprId());
+                const ValueFlow::Value& v = utils::as_const(*pm).at(expr->exprId());
                 if (v.isIntValue())
                     return v;
             }
@@ -1364,16 +1427,16 @@ namespace {
                         std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), &TokenExprIdEqual))
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
-                    std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
                     pruneConditions(diffConditions1, !b, condValues);
+                    if (diffConditions1.size() == conditions1.size())
+                        continue;
+                    std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
                     pruneConditions(diffConditions2, !b, executeAll(diffConditions2));
                     if (diffConditions1.size() != diffConditions2.size())
                         continue;
-                    if (diffConditions1.size() == conditions1.size())
-                        continue;
                     for (const Token* cond1 : diffConditions1) {
                         auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
-                            return evalSameCondition(*pm, cond2, cond1, *settings);
+                            return evalSameCondition(*pm, cond2, cond1, settings);
                         });
                         if (it == diffConditions2.end())
                             break;
@@ -1392,7 +1455,7 @@ namespace {
             if (!expr)
                 return unknown();
             if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
-                return expr->values().front();
+                return *expr->getKnownValue(ValueFlow::Value::ValueType::INT);
             if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
                 (value = expr->getKnownValue(ValueFlow::Value::ValueType::TOK)) ||
                 (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
@@ -1403,7 +1466,7 @@ namespace {
             if (expr->isNumber()) {
                 if (MathLib::isFloat(expr->str()))
                     return unknown();
-                MathLib::bigint i = MathLib::toBigNumber(expr->str());
+                MathLib::bigint i = MathLib::toBigNumber(expr);
                 if (i < 0 && astIsUnsigned(expr))
                     return unknown();
                 return ValueFlow::Value{i};
@@ -1492,27 +1555,33 @@ namespace {
                     return unknown();
                 const MathLib::bigint index = rhs.intvalue;
                 if (index >= 0 && index < strValue.size())
-                    return ValueFlow::Value{strValue[index]};
+                    return ValueFlow::Value{strValue[static_cast<std::size_t>(index)]};
                 if (index == strValue.size())
                     return ValueFlow::Value{};
             } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
                 ValueFlow::Value lhs = execute(expr->astOperand1());
+                if (lhs.isUninitValue())
+                    return unknown();
                 ValueFlow::Value rhs = execute(expr->astOperand2());
-                ValueFlow::Value r = unknown();
-                if (!lhs.isUninitValue() && !rhs.isUninitValue())
-                    r = evaluate(expr->str(), lhs, rhs);
+                if (rhs.isUninitValue())
+                    return unknown();
+                ValueFlow::Value r = evaluate(expr->str(), lhs, rhs);
                 if (expr->isComparisonOp() && (r.isUninitValue() || r.isImpossible())) {
-                    if (rhs.isIntValue()) {
-                        std::vector<ValueFlow::Value> result =
-                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {std::move(rhs)});
+                    if (rhs.isIntValue() && !expr->astOperand1()->values().empty()) {
+                        std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(),
+                                                                     expr->str(),
+                                                                     expr->astOperand1()->values(),
+                                                                     {std::move(rhs)});
                         if (!result.empty() && result.front().isKnown())
-                            return result.front();
+                            return std::move(result.front());
                     }
-                    if (lhs.isIntValue()) {
-                        std::vector<ValueFlow::Value> result =
-                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), {std::move(lhs)}, expr->astOperand2()->values());
+                    if (lhs.isIntValue() && !expr->astOperand2()->values().empty()) {
+                        std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(),
+                                                                     expr->str(),
+                                                                     {std::move(lhs)},
+                                                                     expr->astOperand2()->values());
                         if (!result.empty() && result.front().isKnown())
-                            return result.front();
+                            return std::move(result.front());
                     }
                     return unknown();
                 }
@@ -1549,13 +1618,16 @@ namespace {
 
                 return unknown();
             } else if (expr->str() == "(" && expr->isCast()) {
-                if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
-                    return execute(expr->astOperand2());
+                if (expr->astOperand2()) {
+                    if (expr->astOperand1()->str() != "dynamic_cast")
+                        return execute(expr->astOperand2());
+                    return unknown();
+                }
                 return execute(expr->astOperand1());
             }
             if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {
-                ValueFlow::Value result = pm->at(expr->exprId());
-                if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr, *settings)) {
+                ValueFlow::Value result = utils::as_const(*pm).at(expr->exprId());
+                if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr, settings)) {
                     result.intvalue = !result.intvalue;
                     result.setKnown();
                 }
@@ -1566,7 +1638,7 @@ namespace {
                 const Token* ftok = expr->previous();
                 const Function* f = ftok->function();
                 ValueFlow::Value result = unknown();
-                if (settings && expr->str() == "(") {
+                if (expr->str() == "(") {
                     std::vector<const Token*> tokArgs = getArguments(expr);
                     std::vector<ValueFlow::Value> args(tokArgs.size());
                     std::transform(
@@ -1587,14 +1659,14 @@ namespace {
                             ex.fdepth--;
                             auto r = ex.execute(f->functionScope);
                             if (!r.empty())
-                                result = r.front();
+                                result = std::move(r.front());
                             // TODO: Track values changed by reference
                         }
                     } else {
                         BuiltinLibraryFunction lf = getBuiltinLibraryFunction(ftok->str());
                         if (lf)
                             return lf(args);
-                        const std::string& returnValue = settings->library.returnValue(ftok);
+                        const std::string& returnValue = settings.library.returnValue(ftok);
                         if (!returnValue.empty()) {
                             std::unordered_map<nonneg int, ValueFlow::Value> arg_map;
                             int argn = 0;
@@ -1603,7 +1675,7 @@ namespace {
                                     arg_map[argn] = v;
                                 argn++;
                             }
-                            return evaluateLibraryFunction(arg_map, returnValue, *settings, ftok->isCpp());
+                            return evaluateLibraryFunction(arg_map, returnValue, settings, ftok->isCpp());
                         }
                     }
                 }
@@ -1611,12 +1683,11 @@ namespace {
                 visitAstNodes(expr->astOperand2(), [&](const Token* child) {
                     if (child->exprId() > 0 && pm->hasValue(child->exprId())) {
                         ValueFlow::Value& v = pm->at(child->exprId());
-                        assert(settings != nullptr);
                         if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
-                            if (ValueFlow::isContainerSizeChanged(child, v.indirect, *settings))
+                            if (ValueFlow::isContainerSizeChanged(child, v.indirect, settings))
                                 v = unknown();
                         } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
-                            if (isVariableChanged(child, v.indirect, *settings))
+                            if (isVariableChanged(child, v.indirect, settings))
                                 v = unknown();
                         }
                     }
@@ -1670,7 +1741,7 @@ namespace {
             if (!expr)
                 return v;
             if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {
-                if (updateValue(v, pm->at(expr->exprId())))
+                if (updateValue(v, utils::as_const(*pm).at(expr->exprId())))
                     return v;
             }
             // Find symbolic values
@@ -1681,9 +1752,10 @@ namespace {
                     continue;
                 if (value.tokvalue->exprId() > 0 && !pm->hasValue(value.tokvalue->exprId()))
                     continue;
-                ValueFlow::Value v2 = pm->at(value.tokvalue->exprId());
-                if (!v2.isIntValue() && value.intvalue != 0)
+                const ValueFlow::Value& v_ref = utils::as_const(*pm).at(value.tokvalue->exprId());
+                if (!v_ref.isIntValue() && value.intvalue != 0)
                     continue;
+                ValueFlow::Value v2 = v_ref;
                 v2.intvalue += value.intvalue;
                 return v2;
             }
@@ -1702,8 +1774,6 @@ namespace {
                 return {unknown()};
             for (const Token* tok = scope->bodyStart->next(); precedes(tok, scope->bodyEnd); tok = tok->next()) {
                 const Token* top = tok->astTop();
-                if (!top)
-                    return {unknown()};
 
                 if (Token::simpleMatch(top, "return") && top->astOperand1())
                     return {execute(top->astOperand1())};
@@ -1750,14 +1820,61 @@ namespace {
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings)
 {
-    Executor ex{&pm, &settings};
+    Executor ex{&pm, settings};
     return ex.execute(expr);
 }
 
 std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings& settings)
 {
-    Executor ex{&pm, &settings};
+    Executor ex{&pm, settings};
     return ex.execute(scope);
+}
+
+static std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                        const Settings& settings,
+                                                        bool cpp,
+                                                        std::unordered_map<nonneg int, const Token*>& lookupVarId)
+{
+    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
+    {
+        const std::string code = "return " + returnValue + ";";
+        if (!tokenList->createTokensFromBuffer(code.data(), code.size()))
+            return nullptr;
+    }
+
+    // TODO: put in a helper?
+    // combine operators, set links, etc..
+    std::stack<Token*> lpar;
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "[!<>=] =")) {
+            tok2->str(tok2->str() + "=");
+            tok2->deleteNext();
+        } else if (tok2->str() == "(")
+            lpar.push(tok2);
+        else if (tok2->str() == ")") {
+            if (lpar.empty())
+                return nullptr;
+            Token::createMutualLinks(lpar.top(), tok2);
+            lpar.pop();
+        }
+    }
+    if (!lpar.empty())
+        return nullptr;
+
+    // set varids
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (!startsWith(tok2->str(), "arg"))
+            continue;
+        nonneg int const id = strToInt<nonneg int>(tok2->str().c_str() + 3);
+        tok2->varId(id);
+        lookupVarId[id] = tok2;
+    }
+
+    // Evaluate expression
+    tokenList->createAst();
+    Token* expr = tokenList->front()->astOperand1();
+    ValueFlow::valueFlowConstantFoldAST(expr, settings);
+    return {tokenList, expr};
 }
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
@@ -1766,15 +1883,15 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
                                          bool cpp)
 {
     thread_local static std::unordered_map<std::string,
-                                           std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
+                                           std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>&, const Settings&)>>
     functions = {};
     if (functions.count(returnValue) == 0) {
 
         std::unordered_map<nonneg int, const Token*> lookupVarId;
-        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, cpp, &lookupVarId);
+        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, cpp, lookupVarId);
 
         functions[returnValue] =
-            [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
+            [lookupVarId, expr](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs, const Settings& settings) {
             if (!expr)
                 return ValueFlow::Value::unknown();
             ProgramMemory pm{};
@@ -1786,7 +1903,7 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
             return execute(expr.get(), pm, settings);
         };
     }
-    return functions.at(returnValue)(args);
+    return functions.at(returnValue)(args, settings);
 }
 
 void execute(const Token* expr,

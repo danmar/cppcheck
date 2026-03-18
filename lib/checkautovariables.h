@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "tokenize.h"
 
 #include <string>
 #include <set>
@@ -34,6 +33,7 @@ class Settings;
 class Token;
 class ErrorLogger;
 class Variable;
+class Tokenizer;
 
 namespace ValueFlow {
     class Value;
@@ -55,12 +55,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckAutoVariables checkAutoVariables(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkAutoVariables.assignFunctionArg();
-        checkAutoVariables.checkVarLifetime();
-        checkAutoVariables.autoVariables();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** assign function argument */
     void assignFunctionArg();
@@ -80,7 +75,7 @@ private:
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
-    void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
+    void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val, bool isStatic = false);
     void errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val, const Token* tempTok);
     void errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
@@ -90,21 +85,7 @@ private:
     void errorUselessAssignmentArg(const Token *tok);
     void errorUselessAssignmentPtrArg(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckAutoVariables c(nullptr,settings,errorLogger);
-        c.errorAutoVariableAssignment(nullptr, false);
-        c.errorReturnReference(nullptr, ErrorPath{}, false);
-        c.errorDanglingReference(nullptr, nullptr, ErrorPath{});
-        c.errorReturnTempReference(nullptr, ErrorPath{}, false);
-        c.errorDanglingTempReference(nullptr, ErrorPath{}, false);
-        c.errorInvalidDeallocation(nullptr, nullptr);
-        c.errorUselessAssignmentArg(nullptr);
-        c.errorUselessAssignmentPtrArg(nullptr);
-        c.errorReturnDanglingLifetime(nullptr, nullptr);
-        c.errorInvalidLifetime(nullptr, nullptr);
-        c.errorDanglngLifetime(nullptr, nullptr);
-        c.errorDanglingTemporaryLifetime(nullptr, nullptr, nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Auto Variables";

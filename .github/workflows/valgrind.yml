@@ -7,6 +7,7 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+      - '2.*'
     tags:
       - '2.*'
   pull_request:
@@ -20,10 +21,12 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2.11
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ github.workflow }}-${{ runner.os }}
 
@@ -38,12 +41,12 @@ jobs:
       - name: Build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXFLAGS="-O1 -g -w -DHAVE_BOOST" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS="-Werror -O1 -g" CPPOPTS="-DHAVE_BOOST" HAVE_RULES=yes MATCHCOMPILER=yes CPPCHK_GLIBCXX_DEBUG=
 
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXFLAGS="-O1 -g -w -DHAVE_BOOST" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS="-Werror -O1 -g" CPPOPTS="-DHAVE_BOOST" HAVE_RULES=yes MATCHCOMPILER=yes CPPCHK_GLIBCXX_DEBUG= testrunner
 
       - name: Run valgrind
         run: |
@@ -55,7 +58,7 @@ jobs:
         #env:
         #  DEBUGINFOD_URLS: https://debuginfod.ubuntu.com
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Logs

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have popen() and pclose()
+#endif
+
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
@@ -28,9 +32,12 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
+#include "path.h"
+#include "sarifreport.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
+#include "timer.h"
 #include "utils.h"
 
 #if defined(HAS_THREADING_MODEL_THREAD)
@@ -48,6 +55,7 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <unordered_set>
@@ -59,14 +67,14 @@
 #endif
 
 #ifdef USE_WINDOWS_SEH
-#include "cppcheckexecutorseh.h"
+#include "sehwrapper.h"
 #endif
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-#if !defined(WIN32) && !defined(__MINGW32__)
+#if !defined(_WIN32) && !defined(__MINGW32__)
 #include <sys/wait.h> // WIFEXITED and friends
 #endif
 
@@ -88,7 +96,7 @@ namespace {
 
         void printRaw(const std::string &message) override
         {
-            std::cout << message << std::endl;
+            std::cout << message << std::endl; // TODO: should not append newline
         }
     };
 
@@ -97,13 +105,20 @@ namespace {
     public:
         explicit StdLogger(const Settings& settings)
             : mSettings(settings)
+            , mGuidelineMapping(createGuidelineMapping(settings.reportType))
         {
             if (!mSettings.outputFile.empty()) {
                 mErrorOutput = new std::ofstream(settings.outputFile);
             }
+            if (!mSettings.buildDir.empty()) {
+                mCheckersFile = Path::join(settings.buildDir, "checkers.txt");
+            }
         }
 
         ~StdLogger() override {
+            if (mSettings.outputFormat == Settings::OutputFormat::sarif) {
+                reportErr(mSarifReport.serialize(mSettings.cppcheckCfgProductName));
+            }
             delete mErrorOutput;
         }
 
@@ -120,13 +135,53 @@ namespace {
          */
         void reportErr(const std::string &errmsg);
 
+        void reportMetric(const std::string &metric) override
+        {
+            mFileMetrics.push_back(metric);
+        }
+
+        void reportMetrics()
+        {
+            if (!mFileMetrics.empty()) {
+                auto &out = mErrorOutput ? *mErrorOutput : std::cerr;
+                out << "    <metrics>" << std::endl;
+                for (const auto &metric : mFileMetrics) {
+                    out << "        " << metric << std::endl;
+                }
+                out << "    </metrics>" << std::endl;
+            }
+        }
+
         /**
          * @brief Write the checkers report
          */
-        void writeCheckersReport();
+        void writeCheckersReport(const Suppressions& supprs);
 
         bool hasCriticalErrors() const {
             return !mCriticalErrors.empty();
+        }
+
+        const std::string& getCtuInfo() const {
+            return mCtuInfo;
+        }
+
+        void readActiveCheckers() {
+            if (mCheckersFile.empty())
+                return;
+
+            std::ifstream fin(mCheckersFile);
+            if (fin.is_open())
+            {
+                std::set<std::string> activeCheckers;
+                std::string line;
+                // cppcheck-suppress accessMoved - FP
+                while (std::getline(fin, line))
+                {
+                    // cppcheck-suppress accessMoved - FP
+                    activeCheckers.emplace(std::move(line));
+                }
+                mActiveCheckers = std::move(activeCheckers);
+            }
         }
 
     private:
@@ -141,10 +196,10 @@ namespace {
         /** xml output of errors */
         void reportErr(const ErrorMessage &msg) override;
 
-        void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
+        void reportProgress(const std::string &filename, const char stage[], std::size_t value) override;
 
         /**
-         * Pointer to current settings; set while check() is running for reportError().
+         * Reference to current settings; set while check() is running for reportError().
          */
         const Settings& mSettings;
 
@@ -170,23 +225,43 @@ namespace {
         std::set<std::string> mActiveCheckers;
 
         /**
-         * True if there are critical errors
+         * List of critical errors
          */
         std::string mCriticalErrors;
+
+        /**
+         * CTU information
+         */
+        std::string mCtuInfo;
+
+        /**
+         * SARIF report generator
+         */
+        SarifReport mSarifReport;
+
+        /**
+         * Coding standard guideline mapping
+         */
+        std::map<std::string, std::string> mGuidelineMapping;
+
+        /**
+         * File metrics
+         */
+        std::vector<std::string> mFileMetrics;
+
+        /**
+         * The file the cached active checkers are stored in
+         */
+        std::string mCheckersFile;
     };
 }
-
-// TODO: do not directly write to stdout
-
-#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
-/*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
-#endif
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     Settings settings;
     CmdLineLoggerStd logger;
-    CmdLineParser parser(logger, settings, settings.supprs);
+    Suppressions supprs;
+    CmdLineParser parser(logger, settings, supprs);
     if (!parser.fillSettingsFromArgs(argc, argv)) {
         return EXIT_FAILURE;
     }
@@ -194,124 +269,217 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
+    Timer realTimeClock("", settings.showtime, nullptr, Timer::Type::OVERALL);
+
     settings.loadSummaries();
 
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
 
-    settings.setMisraRuleTexts(executeCommand);
-
-    const int ret = check_wrapper(settings);
+    const int ret = check_wrapper(settings, supprs);
 
     return ret;
 }
 
-int CppCheckExecutor::check_wrapper(const Settings& settings)
+int CppCheckExecutor::check_wrapper(const Settings& settings, Suppressions& supprs)
 {
 #ifdef USE_WINDOWS_SEH
-    if (settings.exceptionHandling)
-        return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, settings);
+    if (settings.exceptionHandling) {
+        CALL_WITH_SEH_WRAPPER(check_internal(settings, supprs));
+    }
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     if (settings.exceptionHandling)
-        register_signal_handler();
+        register_signal_handler(settings.exceptionOutput);
 #endif
-    return check_internal(settings);
+    return check_internal(settings, supprs);
 }
 
-bool CppCheckExecutor::reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
-    const auto& suppr = suppressions.getSuppressions();
-    if (std::any_of(suppr.begin(), suppr.end(), [](const SuppressionList::Suppression& s) {
-        return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == SuppressionList::Suppression::NO_LINE;
+/**
+ * Get list of unmatchedSuppression errors
+ * @param unmatched list of unmatched suppressions
+ * @param filters a list of (globbed) IDs to filter out
+ * @return vector of unmatchedSuppression errors
+ */
+static std::vector<ErrorMessage> getUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, const std::vector<std::string>& filters)
+{
+    std::vector<ErrorMessage> errors;
+
+    // Report unmatched suppressions
+    for (const SuppressionList::Suppression &s : unmatched) {
+        // check if this unmatched suppression is suppressed
+        bool suppressed = false;
+        for (const SuppressionList::Suppression &s2 : unmatched) {
+            if (s2.errorId == "unmatchedSuppression") {
+                if ((s2.fileName.empty() || s2.fileName == "*" || s2.fileName == s.fileName) &&
+                    (s2.lineNumber == SuppressionList::Suppression::NO_LINE || s2.lineNumber == s.lineNumber)) {
+                    suppressed = true;
+                    break;
+                }
+            }
+        }
+
+        if (suppressed)
+            continue;
+
+        const bool skip = std::any_of(filters.cbegin(), filters.cend(), [&s](const std::string& filter) {
+            return matchglob(filter, s.errorId);
+        });
+        if (skip)
+            continue;
+
+        std::list<ErrorMessage::FileLocation> callStack;
+        if (!s.fileName.empty()) {
+            callStack.emplace_back(s.fileName, s.lineNumber == -1 ? 0 : s.lineNumber, 0); // TODO: set column - see #13810 / get rid of s.lineNumber == -1 hack
+        }
+        const std::string unmatchedSuppressionId = s.isPolyspace ? "unmatchedPolyspaceSuppression" : "unmatchedSuppression";
+        errors.emplace_back(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, unmatchedSuppressionId, Certainty::normal);
+    }
+
+    return errors;
+}
+
+bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, const SuppressionList& suppressions, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
+    // the two inputs may only be used exclusively
+    assert(!(!files.empty() && !fileSettings.empty()));
+
+    // bail out if there is a suppression of unmatchedSuppression which matches any file
+    auto suppr = suppressions.getSuppressions();
+    if (std::any_of(suppr.cbegin(), suppr.cend(), [](const SuppressionList::Suppression& s) {
+        return s.errorId == "unmatchedSuppression" && (s.fileName.empty() || s.fileName == "*") && s.lineNumber == SuppressionList::Suppression::NO_LINE;
     }))
         return false;
 
-    bool err = false;
-    if (settings.useSingleJob()) {
-        // the two inputs may only be used exclusively
-        assert(!(!files.empty() && !fileSettings.empty()));
+    SuppressionList supprlist;
 
-        for (std::list<FileWithDetails>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
-            err |= SuppressionList::reportUnmatchedSuppressions(
-                suppressions.getUnmatchedLocalSuppressions(i->path(), unusedFunctionCheckEnabled), errorLogger);
+    const bool doUnusedFunctionOnly = Settings::unusedFunctionOnly();
+    // ignore all other suppressions if we use the unusedFunction hack
+    for (auto&& s : suppr)
+    {
+        // TODO: checkersReport should not be reported - see #13387
+        if (doUnusedFunctionOnly && s.errorId != "unusedFunction" && s.errorId != "checkersReport")
+            continue;
+        supprlist.addSuppression(std::move(s));
+    }
+
+    const auto reportErrorsFn = [&](const std::string& sourcefile, std::size_t fsFileId, const std::vector<ErrorMessage>& errors) -> bool {
+        if (errors.empty())
+            return false;
+
+        // TODO: what if sourcefile is empty?
+
+        AnalyzerInformation analyzerInfo;
+        // FIXME: this is a horrible hack
+        // we need to "re-open" the file so we can add the unmatchedSuppression findings.
+        // we cannot keep it open conditionally because the whole program analysis reads the XML.
+        // re-ordering the code is also not an option because the unmatched suppression reporting needs to be run after all other checks.
+        analyzerInfo.reopen(settings.buildDir, sourcefile, /*cfgname*/ "", fsFileId);
+
+        for (const auto& errmsg : errors) {
+            analyzerInfo.reportErr(errmsg);
+            errorLogger.reportErr(errmsg);
         }
+        return true;
+    };
 
-        for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
-            err |= SuppressionList::reportUnmatchedSuppressions(
-                suppressions.getUnmatchedLocalSuppressions(i->filename(), unusedFunctionCheckEnabled), errorLogger);
+    bool err = false;
+
+    for (auto i = files.cbegin(); i != files.cend(); ++i) {
+        const std::vector<ErrorMessage> errors = getUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(*i), settings.unmatchedSuppressionFilters);
+        err |= reportErrorsFn(i->spath(), i->fsFileId(), errors);
+    }
+
+    for (auto i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
+        const std::vector<ErrorMessage> errors = getUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(i->file), settings.unmatchedSuppressionFilters);
+        err |= reportErrorsFn(i->file.spath(), i->file.fsFileId(), errors);
+    }
+
+    if (settings.inlineSuppressions) {
+        const std::vector<ErrorMessage> errors = getUnmatchedSuppressions(supprlist.getUnmatchedInlineSuppressions(), settings.unmatchedSuppressionFilters);
+        for (const auto& errmsg : errors) {
+            std::string sourcefile;
+            if (!errmsg.callStack.empty())
+                sourcefile = errmsg.callStack.cbegin()->getfile(false); // TODO: simplify path?
+            err |= reportErrorsFn(sourcefile, 0, {errmsg});
         }
     }
-    err |= SuppressionList::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
+
+    const std::vector<ErrorMessage> errors = getUnmatchedSuppressions(supprlist.getUnmatchedGlobalSuppressions(), settings.unmatchedSuppressionFilters);
+    for (const auto& errmsg : errors) {
+        std::string sourcefile;
+        if (!errmsg.callStack.empty())
+            sourcefile = errmsg.callStack.cbegin()->getfile(false); // TODO: simplify path?
+        err |= reportErrorsFn(sourcefile, 0, {errmsg});
+    }
     return err;
 }
 
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(const Settings& settings) const
+int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& supprs) const
 {
     StdLogger stdLogger(settings);
+    TimerResults timerResults;
 
     if (settings.reportProgress >= 0)
         stdLogger.resetLatestProgressOutputTime();
 
-    if (settings.xml) {
-        stdLogger.reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
+    if (settings.outputFormat == Settings::OutputFormat::xml) {
+        stdLogger.reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName, settings.xml_version));
     }
 
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
-        for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
+        for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->path());
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, mFileSettings);
+
+        stdLogger.readActiveCheckers();
     }
 
     if (!settings.checkersReportFilename.empty())
         std::remove(settings.checkersReportFilename.c_str());
 
-    CppCheck cppcheck(stdLogger, true, executeCommand);
-    cppcheck.settings() = settings; // this is a copy
-    auto& suppressions = cppcheck.settings().supprs.nomsg;
+    CppCheck cppcheck(settings, supprs, stdLogger, &timerResults, true, executeCommand);
 
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, stdLogger);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, supprs, stdLogger, &timerResults);
         returnValue = executor.check();
     } else {
 #if defined(HAS_THREADING_MODEL_THREAD)
         if (settings.executor == Settings::ExecutorType::Thread) {
-            ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
+            ThreadExecutor executor(mFiles, mFileSettings, settings, supprs, stdLogger, &timerResults, CppCheckExecutor::executeCommand);
             returnValue = executor.check();
         }
 #endif
 #if defined(HAS_THREADING_MODEL_FORK)
         if (settings.executor == Settings::ExecutorType::Process) {
-            ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
+            ProcessExecutor executor(mFiles, mFileSettings, settings, supprs, stdLogger, &timerResults, CppCheckExecutor::executeCommand);
             returnValue = executor.check();
         }
 #endif
     }
 
-    returnValue |= cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
+    // TODO: is this run again instead of using previously cached results?
+    returnValue |= cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings, stdLogger.getCtuInfo());
 
-    if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, suppressions, settings.checks.isEnabled(Checks::unusedFunction), mFiles, mFileSettings, stdLogger);
+    if ((settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) && !supprs.nomsg.getSuppressions().empty()) {
+        const bool err = reportUnmatchedSuppressions(settings, supprs.nomsg, mFiles, mFileSettings, stdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
 
-    if (!settings.checkConfiguration) {
-        cppcheck.tooManyConfigsError(emptyString,0U);
+    stdLogger.writeCheckersReport(supprs);
+
+    if (settings.outputFormat == Settings::OutputFormat::xml) {
+        if (settings.xml_version == 3)
+            stdLogger.reportMetrics();
+        stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
-    if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
-        stdLogger.writeCheckersReport();
-
-    if (settings.xml) {
-        stdLogger.reportErr(ErrorMessage::getXMLFooter());
-    }
-
-    if (settings.safety && (stdLogger.hasCriticalErrors() || returnValue != 0))
+    if (settings.safety && stdLogger.hasCriticalErrors())
         return EXIT_FAILURE;
 
     if (returnValue)
@@ -319,17 +487,32 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     return EXIT_SUCCESS;
 }
 
-void StdLogger::writeCheckersReport()
+void StdLogger::writeCheckersReport(const Suppressions& supprs)
 {
-    CheckersReport checkersReport(mSettings, mActiveCheckers);
-
-    bool suppressed = false;
-    for (const SuppressionList::Suppression& s : mSettings.supprs.nomsg.getSuppressions()) {
-        if (s.errorId == "checkersReport")
-            suppressed = true;
+    if (!mCheckersFile.empty())
+    {
+        std::ofstream fout(mCheckersFile);
+        for (const auto& c : mActiveCheckers)
+        {
+            fout << c << std::endl;
+        }
     }
 
-    if (!suppressed) {
+    const bool summary = mSettings.safety || mSettings.severity.isEnabled(Severity::information);
+    const bool xmlReport = mSettings.outputFormat == Settings::OutputFormat::xml && mSettings.xml_version == 3;
+    const bool textReport = !mSettings.checkersReportFilename.empty();
+
+    if (!summary && !xmlReport && !textReport)
+        return;
+
+    CheckersReport checkersReport(mSettings, mActiveCheckers);
+
+    const auto& suppressions = supprs.nomsg.getSuppressions();
+    const bool summarySuppressed = std::any_of(suppressions.cbegin(), suppressions.cend(), [](const SuppressionList::Suppression& s) {
+        return s.errorId == "checkersReport";
+    });
+
+    if (summary && !summarySuppressed) {
         ErrorMessage msg;
         msg.severity = Severity::information;
         msg.id = "checkersReport";
@@ -342,15 +525,31 @@ void StdLogger::writeCheckersReport()
             what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
         else
             what = "There was critical errors";
-        msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
+        if (!xmlReport && !textReport)
+            what += " (use --checkers-report=<filename> to see details)";
+        msg.setmsg("Active checkers: " + what);
 
         reportErr(msg);
     }
 
-    if (!mSettings.checkersReportFilename.empty()) {
+    if (textReport) {
         std::ofstream fout(mSettings.checkersReportFilename);
         if (fout.is_open())
             fout << checkersReport.getReport(mCriticalErrors);
+    }
+
+    if (xmlReport) {
+        reportErr("    </errors>\n");
+        if (mSettings.safety)
+            reportErr("    <safety/>\n");
+        if (mSettings.inlineSuppressions)
+            reportErr("    <inline-suppr/>\n");
+        if (!suppressions.empty()) {
+            std::ostringstream suppressionsXml;
+            supprs.nomsg.dump(suppressionsXml);
+            reportErr(suppressionsXml.str());
+        }
+        reportErr(checkersReport.getXmlReport(mCriticalErrors));
     }
 }
 
@@ -383,7 +582,7 @@ void StdLogger::reportErr(const std::string &errmsg)
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
-        std::cerr << ansiToOEM(errmsg, !mSettings.xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, mSettings.outputFormat != Settings::OutputFormat::xml) << std::endl;
     }
 }
 
@@ -428,6 +627,11 @@ void StdLogger::reportErr(const ErrorMessage &msg)
         return;
     }
 
+    if (msg.severity == Severity::internal && msg.id == "ctuinfo") {
+        mCtuInfo += msg.shortMessage() + "\n";
+        return;
+    }
+
     if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
         if (!mCriticalErrors.empty())
             mCriticalErrors += ", ";
@@ -439,33 +643,27 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     if (msg.severity == Severity::internal)
         return;
 
-    // TODO: we generate a different message here then we log below
+    ErrorMessage msgCopy = msg;
+    msgCopy.guideline = getGuideline(msgCopy.id, mSettings.reportType,
+                                     mGuidelineMapping, msgCopy.severity);
+    msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
+
     // TODO: there should be no need for verbose and default messages here
+    const std::string msgStr =
+        msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
+
     // Alert only about unique errors
-    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
+    if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
         return;
 
-    if (mSettings.xml)
-        reportErr(msg.toXML());
-    else
-        reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
+    if (mSettings.outputFormat == Settings::OutputFormat::sarif) {
+        mSarifReport.addFinding(std::move(msgCopy));
+    } else if (mSettings.outputFormat == Settings::OutputFormat::xml) {
+        reportErr(msgCopy.toXML());
+    } else {
+        reportErr(msgStr);
+    }
 }
-
-#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
-void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
-{
-    mExceptionOutput = exceptionOutput;
-#if defined(USE_UNIX_SIGNAL_HANDLING)
-    set_signal_handler_output(mExceptionOutput);
-#endif
-}
-
-// cppcheck-suppress unusedFunction - only used by USE_WINDOWS_SEH code
-FILE* CppCheckExecutor::getExceptionOutput()
-{
-    return mExceptionOutput;
-}
-#endif
 
 /**
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
@@ -492,9 +690,10 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
             joinedArgs += arg;
     }
 
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+    std::string cmd = exe + " " + joinedArgs + " " + redirect;
 
 #ifdef _WIN32
+    cmd = "\"" + cmd + "\"";
     FILE* p = _popen(cmd.c_str(), "r");
 #else
     FILE *p = popen(cmd.c_str(), "r");
@@ -512,6 +711,9 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
 
 #ifdef _WIN32
     const int res = _pclose(p);
+#elif defined(__APPLE__) && defined(__MACH__)
+    // the W* macros cast to int* on macOS
+    int res = pclose(p);
 #else
     const int res = pclose(p);
 #endif
@@ -521,7 +723,7 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
         //std::cout << "pclose() errno " << std::to_string(err) << std::endl;
         return res;
     }
-#if !defined(WIN32) && !defined(__MINGW32__)
+#if !defined(_WIN32) && !defined(__MINGW32__)
     if (WIFEXITED(res)) {
         return WEXITSTATUS(res);
     }

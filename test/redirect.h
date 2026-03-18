@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2024 Cppcheck team.
+// Copyright (C) 2007-2025 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ public:
         std::cerr.rdbuf(_err.rdbuf()); // assign streambuf to cerr
     }
 
+    // TODO: if an assert failed previously this will mask that failure
     /** Revert cout and cerr behaviour */
     ~RedirectOutputError() noexcept(false) {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
@@ -51,7 +52,7 @@ public:
         {
             const std::string s = _out.str();
             if (!s.empty())
-                throw std::runtime_error("unconsumed stdout: " + s); // cppcheck-suppress exceptThrowInDestructor - FP #11031
+                throw std::runtime_error("unconsumed stdout: " + s);
         }
 
         {

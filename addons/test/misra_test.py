@@ -1,22 +1,16 @@
-# Running the test with Python 2:
-# Be sure to install pytest version 4.6.4 (newer should also work)
-# Command in cppcheck directory:
-# python -m pytest addons/test/test-misra.py
-#
 # Running the test with Python 3:
 # Command in cppcheck directory:
-# PYTHONPATH=./addons python3 -m pytest addons/test/test-misra.py
+# PYTHONPATH=./addons python3 -m pytest addons/test/misra_test.py
 
-import os
 import pytest
 import re
 import sys
-import tempfile
+import os
 
 from .util import dump_create, dump_remove, convert_json_output
+from addons.misra import C11_STDLIB_IDENTIFIERS, C99_STDLIB_IDENTIFIERS,C90_STDLIB_IDENTIFIERS, isStdLibId, isKeyword
 
-
-TEST_SOURCE_FILES = ['./addons/test/misra/misra-test.c']
+TEST_SOURCE_FILES = [os.path.join('addons','test','misra','misra-test.c')]
 
 
 def remove_misra_config(s:str):
@@ -36,6 +30,7 @@ def checker():
     return MisraChecker(settings)
 
 
+# FIXME: files are generates in the source tree so it will cause issues if tests are run with xdist.
 @pytest.fixture
 def test_files():
     for f in TEST_SOURCE_FILES:
@@ -50,6 +45,8 @@ def test_loadRuleTexts_structure(checker):
     assert(checker.ruleTexts.get(101, None) is None)
     assert(checker.ruleTexts[102].text == "Rule text.")
     assert(checker.ruleTexts.get(103, None) is None)
+    assert(checker.ruleTexts[201].text == "Rule text for 2.1.")
+    assert(checker.ruleTexts.get(202, None) is None)
 
 
 def test_loadRuleTexts_empty_lines(checker):
@@ -64,7 +61,7 @@ def test_loadRuleTexts_mutiple_lines(checker):
     assert(checker.ruleTexts[102].text == "Multiple lines text.")
     assert(checker.ruleTexts[103].text == "Multiple lines text.")
     assert(checker.ruleTexts[104].text == "Should")
-    assert(checker.ruleTexts[105].text == "Should")
+    assert(checker.ruleTexts[105].text == "Should starts from lowercase letter.")
     assert(checker.ruleTexts[106].text == "Can contain empty lines.")
 
 
@@ -121,7 +118,6 @@ def test_rules_suppression(checker, capsys):
 
     for src in test_sources:
         re_suppressed= r"\[%s\:[0-9]+\]" % src
-        dump_remove(src)
         dump_create(src, "--suppressions-list=addons/test/misra/suppressions.txt","--inline-suppr")
         checker.parseDump(src + ".dump")
         captured = capsys.readouterr().err
@@ -175,3 +171,74 @@ def test_read_ctu_info_line(checker):
     assert checker.read_ctu_info_line('{"summary":"123"}') is None
     assert checker.read_ctu_info_line('{"data":123}') is None
     assert checker.read_ctu_info_line('{"summary":"123","data":123}') is not None
+
+def test_platform(checker):
+    test_file = os.path.join('addons','test','misra','misra-test.c')
+    dump_create(test_file, "--language=c++")
+    checker.parseDump(test_file + ".dump")
+    assert checker.is_cpp is True
+
+    dump_create(test_file, "--language=c")
+    checker.parseDump(test_file + ".dump")
+    assert checker.is_cpp is False
+
+def test_std99_identifiers():
+    for headerfile in C90_STDLIB_IDENTIFIERS:
+        for identifier in C90_STDLIB_IDENTIFIERS[headerfile]:
+            assert identifier in C99_STDLIB_IDENTIFIERS[headerfile], f"{identifier} of C90 not found in C99_STDLIB_IDENTIFIERS"
+
+def test_stdC11_identifiers():
+    for headerfile in C90_STDLIB_IDENTIFIERS:
+        for identifier in C90_STDLIB_IDENTIFIERS[headerfile]:
+            assert identifier in C99_STDLIB_IDENTIFIERS[headerfile], f"{identifier} of C90 not found in C11_STDLIB_IDENTIFIERS"
+    for headerfile in C99_STDLIB_IDENTIFIERS:
+        for identifier in C99_STDLIB_IDENTIFIERS[headerfile]:
+            assert identifier in C11_STDLIB_IDENTIFIERS[headerfile], f"{identifier} of C99 not found in C11_STDLIB_IDENTIFIERS"
+
+def test_isStdLibId():
+    # Check that Identifiers from C90 are correctly classified
+    assert isStdLibId("assert", 'c89') is True
+    assert isStdLibId("assert", 'c99') is True
+    assert isStdLibId("assert", 'c11') is True
+    assert isStdLibId("assert", 'c23') is True
+
+    # Check that Identifiers from C99 are correctly classified
+    assert isStdLibId("UINT32_C", 'c89') is False
+    assert isStdLibId("UINT32_C", 'c99') is True
+    assert isStdLibId("UINT32_C", 'c11') is True
+    assert isStdLibId("UINT32_C", 'c23') is True
+
+    # Check that Identifiers from C11 are correctly classified
+    assert isStdLibId("sprintf_s", 'c89') is False
+    assert isStdLibId("sprintf_s", 'c99') is False
+    assert isStdLibId("sprintf_s", 'c11') is True
+    assert isStdLibId("sprintf_s", 'c23') is True
+
+    # Function Defaulting to C99
+    assert isStdLibId("assert") is True
+    assert isStdLibId("UINT32_C") is True
+    assert isStdLibId("sprintf_s") is False
+
+def test_isKeyword():
+    # Check that Keywords from C90 are correctly classified
+    assert isKeyword("if", 'c89') is True
+    assert isKeyword("if", 'c99') is True
+    assert isKeyword("if", 'c11') is True
+    assert isKeyword("if", 'c23') is True
+
+    # Check that Keywords from C99 are correctly classified
+    assert isKeyword("inline", 'c89') is False
+    assert isKeyword("inline", 'c99') is True
+    assert isKeyword("inline", 'c11') is True
+    assert isKeyword("inline", 'c23') is True
+
+    # Check that Keywords from C11 are correctly classified
+    assert isKeyword("static_assert", 'c89') is False
+    assert isKeyword("static_assert", 'c99') is False
+    assert isKeyword("static_assert", 'c11') is True
+    assert isKeyword("static_assert", 'c23') is True
+
+    # Function Defaulting to C99
+    assert isKeyword("if") is True
+    assert isKeyword("inline") is True
+    assert isKeyword("static_assert") is False

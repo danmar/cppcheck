@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,19 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "mathlib.h"
 
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <functional>
-#include <list>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+FORCE_WARNING_CLANG_PUSH("-Wpadded")
 
 class Token;
 
@@ -39,17 +42,19 @@ namespace ValueFlow
 {
     class CPPCHECKLIB Value {
     public:
-        using ErrorPathItem = std::pair<const Token *, std::string>;
-        using ErrorPath = std::list<ErrorPathItem>;
-        enum class Bound { Upper, Lower, Point };
+        enum class Bound : std::uint8_t { Upper, Lower, Point };
 
-        explicit Value(long long val = 0, Bound b = Bound::Point) :
+        explicit Value(MathLib::bigint val = 0, Bound b = Bound::Point) :
             bound(b),
+            safe(false),
+            conditional(false),
+            macro(false),
+            defaultArg(false),
             intvalue(val),
             varvalue(val),
             wideintvalue(val)
         {}
-        Value(const Token* c, long long val, Bound b = Bound::Point);
+        Value(const Token* c, MathLib::bigint val, Bound b = Bound::Point);
 
         static Value unknown() {
             Value v;
@@ -195,7 +200,7 @@ namespace ValueFlow
 
         std::string toString() const;
 
-        enum class ValueType {
+        enum class ValueType : std::uint8_t {
             INT,
             TOK,
             FLOAT,
@@ -264,57 +269,27 @@ namespace ValueFlow
         /** The value bound  */
         Bound bound = Bound::Point;
 
-        /** int value (or sometimes bool value?) */
-        long long intvalue{};
-
-        /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
-        const Token* tokvalue{};
-
-        /** float value */
-        double floatValue{};
-
-        /** For calculated values - variable value that calculated value depends on */
-        long long varvalue{};
-
-        /** Condition that this value depends on */
-        const Token* condition{};
-
-        ErrorPath errorPath;
-
-        ErrorPath debugPath;
-
-        /** For calculated values - varId that calculated value depends on */
-        nonneg int varId{};
-
         /** value relies on safe checking */
-        bool safe{};
+        // cppcheck-suppress premium-misra-cpp-2023-12.2.1
+        bool safe : 1;
 
         /** Conditional value */
-        bool conditional{};
+        bool conditional : 1;
 
         /** Value is is from an expanded macro */
-        bool macro{};
+        bool macro : 1;
 
         /** Is this value passed as default parameter to the function? */
-        bool defaultArg{};
+        bool defaultArg : 1;
 
-        int indirect{};
+        long long : 4; // padding
 
         /** kind of moved  */
-        enum class MoveKind { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
+        enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
 
-        /** Path id */
-        MathLib::bigint path{};
+        enum class LifetimeScope : std::uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
 
-        /** int value before implicit truncation */
-        long long wideintvalue{};
-
-        std::vector<std::string> subexpressions;
-
-        // Set to where a lifetime is captured by value
-        const Token* capturetok{};
-
-        enum class LifetimeKind {
+        enum class LifetimeKind : std::uint8_t {
             // Pointer points to a member of lifetime
             Object,
             // A member of object points to the lifetime
@@ -327,15 +302,8 @@ namespace ValueFlow
             Address
         } lifetimeKind = LifetimeKind::Object;
 
-        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
-
-        static const char* toString(MoveKind moveKind);
-        static const char* toString(LifetimeKind lifetimeKind);
-        static const char* toString(LifetimeScope lifetimeScope);
-        static const char* toString(Bound bound);
-
         /** How known is this value */
-        enum class ValueKind {
+        enum class ValueKind : std::uint8_t {
             /** This value is possible, other unlisted values may also be possible */
             Possible,
             /** Only listed values are possible */
@@ -345,6 +313,56 @@ namespace ValueFlow
             /** Listed values are impossible */
             Impossible
         } valueKind = ValueKind::Possible;
+
+        std::int8_t indirect{}; // TODO: can we reduce the size?
+
+        /** int value (or sometimes bool value?) */
+        MathLib::bigint intvalue{};
+
+        /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
+        const Token* tokvalue{};
+
+        /** float value */
+        double floatValue{};
+
+        /** For calculated values - variable value that calculated value depends on */
+        MathLib::bigint varvalue{};
+
+        /** Condition that this value depends on */
+        const Token* condition{};
+
+        ErrorPath errorPath;
+
+        ErrorPath debugPath; // TODO: make lighter by default
+
+        /** For calculated values - varId that calculated value depends on */
+        nonneg int varId{};
+
+        enum class UnknownFunctionReturn : std::uint8_t {
+            no,             // not unknown function return
+            outOfMemory,    // out of memory
+            outOfResources, // out of resource
+            other           // other
+        };
+        UnknownFunctionReturn unknownFunctionReturn{UnknownFunctionReturn::no};
+
+        long long : 24; // padding
+
+        /** Path id */
+        MathLib::bigint path{};
+
+        /** int value before implicit truncation */
+        MathLib::bigint wideintvalue{};
+
+        std::vector<std::string> subexpressions;
+
+        // Set to where a lifetime is captured by value
+        const Token* capturetok{};
+
+        RET_NONNULL static const char* toString(MoveKind moveKind);
+        RET_NONNULL static const char* toString(LifetimeKind lifetimeKind);
+        RET_NONNULL static const char* toString(LifetimeScope lifetimeScope);
+        RET_NONNULL static const char* toString(Bound bound);
 
         void setKnown() {
             valueKind = ValueKind::Known;
@@ -412,5 +430,7 @@ namespace ValueFlow
         };
     };
 }
+
+FORCE_WARNING_CLANG_POP
 
 #endif // vfvalueH
