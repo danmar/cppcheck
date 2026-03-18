@@ -903,10 +903,10 @@ static void valueFlowSameExpressions(TokenList& tokenlist, const Settings& setti
 
         long long val;
 
-        if (Token::Match(tok, "==|>=|<=|/")) {
+        if (Token::Match(tok, "==|>=|<=|/|/=")) {
             val = 1;
         }
-        else if (Token::Match(tok, "!=|>|<|%|-")) {
+        else if (Token::Match(tok, "!=|>|<|%|%=|-|-=|^|^=")) {
             val = 0;
         }
         else
