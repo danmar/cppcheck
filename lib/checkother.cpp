@@ -4429,7 +4429,7 @@ void CheckOther::checkModuloOfOne()
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->astOperand2() || !tok->astOperand1())
             continue;
-        if (tok->str() != "%")
+        if (tok->str() != "%" && tok->str() != "%=")
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
             continue;
