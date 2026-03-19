@@ -3830,8 +3830,8 @@ private:
                            "explicit B ( int & i ) ; } ; "
                            "struct S2 : B { "
                            "explicit S2 ( int & i ) : B ( i ) { } "
-                           "} ;"
-                           " }";
+                           "} ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
