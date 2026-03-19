@@ -198,6 +198,7 @@ void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonne
     mTokensFrontBack->back->column(column);
     mTokensFrontBack->back->fileIndex(fileno);
     mTokensFrontBack->back->flags(tok->flags());
+    mTokensFrontBack->back->tokType(tok->tokType());
 }
 
 void TokenList::addtoken(const Token *tok, const Token *locationTok)
@@ -219,6 +220,7 @@ void TokenList::addtoken(const Token *tok, const Token *locationTok)
     mTokensFrontBack->back->linenr(locationTok->linenr());
     mTokensFrontBack->back->column(locationTok->column());
     mTokensFrontBack->back->fileIndex(locationTok->fileIndex());
+    mTokensFrontBack->back->tokType(tok->tokType());
 }
 
 void TokenList::addtoken(const Token *tok)
@@ -242,6 +244,7 @@ void TokenList::addtoken(const Token *tok)
     mTokensFrontBack->back->linenr(tok->linenr());
     mTokensFrontBack->back->column(tok->column());
     mTokensFrontBack->back->fileIndex(tok->fileIndex());
+    mTokensFrontBack->back->tokType(tok->tokType());
 }
 
 
