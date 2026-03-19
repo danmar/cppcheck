@@ -13284,6 +13284,13 @@ private:
               "    if (j % c) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n"
+              "    int i = 0;\n"
+              "    i %= 1;\n"
+              "    (void)i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:7]: (style) Modulo of one is always equal to zero [moduloofone]\n", errout_str());
     }
 
     void sameExpressionPointers() {
