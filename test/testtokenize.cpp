@@ -3829,7 +3829,7 @@ private:
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
-        
+
         {
             const char code[] = "template <typename Fn, typename... Args>\n" // #14612
                                 "void f(Fn && fn, Args&&... args) {\n"
