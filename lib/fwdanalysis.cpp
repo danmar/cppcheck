@@ -413,6 +413,8 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
 static bool isSimpleIndexExpression(const Token* tok)
 {
     const Token* idx = tok->astOperand2();
+    if (!idx)
+        return false;
     if (idx->isIncDecOp())
         idx = idx->astOperand1();
     return idx->variable() && idx->variable()->scope() == tok->scope();
