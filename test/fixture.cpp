@@ -23,6 +23,7 @@
 #include "library.h"
 #include "options.h"
 #include "redirect.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -88,6 +89,7 @@ TestFixture::TestFixture(const char * const _name)
     : classname(_name)
 {}
 
+TestFixture::~TestFixture() = default;
 
 bool TestFixture::prepareTest(const char testname[])
 {
@@ -101,12 +103,14 @@ bool TestFixture::prepareTest(const char testname[])
         // Tests will be executed - prepare them
         mTestname = testname;
         ++countTests;
+        std::string fullTestName =  classname + "::" + mTestname;
         if (quiet_tests) {
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
             std::fflush(stdout);
         } else {
-            std::cout << classname << "::" << mTestname << std::endl;
+            std::cout << fullTestName << std::endl;
         }
+        mTimer.reset(new Timer(fullTestName, ShowTime::TOP5_SUMMARY, timerResults));
         return !dry_run;
     }
     return false;
@@ -115,6 +119,10 @@ bool TestFixture::prepareTest(const char testname[])
 void TestFixture::teardownTest()
 {
     teardownTestInternal();
+
+    // TODO: print more detailed data
+    if (mTimer)
+        mTimer->stop();
 
     {
         const std::string s = errout_str();
@@ -381,6 +389,7 @@ void TestFixture::processOptions(const options& args)
     quiet_tests = args.quiet();
     dry_run = args.dry_run();
     exename = args.exe();
+    timerResults = args.timer_results();
 }
 
 std::size_t TestFixture::runTests(const options& args)
@@ -405,10 +414,12 @@ std::size_t TestFixture::runTests(const options& args)
                     continue;
             }
 
-            TestFixture* fixture = test->create();
-            fixture->processOptions(args);
-            fixture->run(testname);
-        }
+        TestFixture* fixture;
+        Timer::run(test->classname + " - create", ShowTime::TOP5_SUMMARY, args.timer_results(), [&](){
+            fixture = test->create();
+        });
+        fixture->processOptions(args);
+        fixture->run(testname);
     }
 
     if (args.summary() && !args.dry_run()) {

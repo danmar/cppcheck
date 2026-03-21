@@ -16,6 +16,9 @@
 
 #include "options.h"
 
+#include "timer.h"
+
+// TODO: bailout on unknown arguments
 options::options(int argc, const char* const argv[])
     : mWhichTests(argv + 1, argv + argc)
     ,mQuiet(mWhichTests.count("-q") != 0)
@@ -25,6 +28,9 @@ options::options(int argc, const char* const argv[])
     ,mExcludeTests(mWhichTests.count("-x") != 0)
     ,mExe(argv[0])
 {
+    if (mArgs.count("-t") != 0)
+        mTimerResults.reset(new TimerResults);
+
     for (auto it = mWhichTests.cbegin(); it != mWhichTests.cend();) {
         if (!it->empty() && (((*it)[0] == '-') || (it->find("::") != std::string::npos && mWhichTests.count(it->substr(0, it->find("::"))))))
             it = mWhichTests.erase(it);
@@ -35,6 +41,12 @@ options::options(int argc, const char* const argv[])
     if (mWhichTests.empty()) {
         mWhichTests.insert("");
     }
+}
+
+options::~options()
+{
+    if (mTimerResults)
+        mTimerResults->showResults(ShowTime::TOP5_FILE);
 }
 
 bool options::quiet() const
@@ -70,4 +82,9 @@ const std::string& options::exe() const
 bool options::exclude_tests() const
 {
     return mExcludeTests;
+}
+
+TimerResultsIntf* options::timer_results() const
+{
+    return mTimerResults.get();
 }
