@@ -8340,7 +8340,7 @@ private:
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("void requires(const char*);\n"
                                                    "void f() { requires(\"abc\"); }\n",
                                                    dinit(TokenizeOptions, $.cpp = true, $.cppstd = Standards::CPP20)),
-                                                   AST);
+                              AST);
     }
 
     void cppcast() {
