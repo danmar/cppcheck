@@ -5805,6 +5805,36 @@ private:
                "    bool b = x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
+
+        code = "int f(int a) {\n"
+               "    int x = a ^ a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "int f(int a) {\n"
+               "    int x = a /= a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "int f(int a) {\n"
+               "    int x = a -= a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "int f(int a) {\n"
+               "    int x = a %= a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "int f(int a) {\n"
+               "    int x = a ^= a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowUninit() {
