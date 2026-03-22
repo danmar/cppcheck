@@ -1058,10 +1058,12 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             else
                 compileUnaryOp(tok, state, compileExpression);
             tok = tok2->link()->next();
-        } else if (Token::simpleMatch(tok->previous(), "requires {")
-                   || (Token::simpleMatch(tok->previous(), ")")
+        } else if ((Token::simpleMatch(tok->tokAt(-1), "requires {") && tok->tokAt(-1)->isKeyword())
+                   || (Token::simpleMatch(tok->tokAt(-1), ")")
                        && tok->linkAt(-1)
-                       && Token::simpleMatch(tok->linkAt(-1)->previous(), "requires ("))) {
+                       && Token::simpleMatch(tok->linkAt(-1)->tokAt(-1), "requires (") && tok->linkAt(-1)->tokAt(-1)->isKeyword())) {
+            if (!tok->link())
+                throw InternalError(tok, "Syntax error, token has no link.", InternalError::AST);
             tok->astOperand1(state.op.top());
             state.op.pop();
             state.op.push(tok);
