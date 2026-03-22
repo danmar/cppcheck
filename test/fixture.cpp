@@ -97,19 +97,22 @@ bool TestFixture::prepareTest(const char testname[])
     prepareTestInternal();
 
     // Check if tests should be executed
-    if (testToRun.empty() || testToRun == testname) {
-        // Tests will be executed - prepare them
-        mTestname = testname;
-        ++countTests;
-        if (quiet_tests) {
-            std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
-            std::fflush(stdout);
-        } else {
-            std::cout << classname << "::" << mTestname << std::endl;
-        }
-        return !dry_run;
+    if (!testsToRun.empty()) {
+        const bool match = testsToRun.count(testname);
+        if ((match && exclude_tests) || (!match && !exclude_tests))
+            return false;
     }
-    return false;
+
+    // Tests will be executed - prepare them
+    mTestname = testname;
+    ++countTests;
+    if (quiet_tests) {
+        std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
+        std::fflush(stdout);
+    } else {
+        std::cout << classname << "::" << mTestname << std::endl;
+    }
+    return !dry_run;
 }
 
 void TestFixture::teardownTest()
@@ -350,9 +353,9 @@ void TestFixture::printHelp()
         "    -x                   Exclude the specified tests.\n";
 }
 
-void TestFixture::run(const std::string &str)
+void TestFixture::run(const std::set<std::string> &tests)
 {
-    testToRun = str;
+    testsToRun = tests;
     try {
         if (quiet_tests) {
             std::cout << '\n' << classname << ':';
@@ -380,6 +383,7 @@ void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
     dry_run = args.dry_run();
+    exclude_tests = args.exclude_tests();
     exename = args.exe();
 }
 
@@ -388,27 +392,27 @@ std::size_t TestFixture::runTests(const options& args)
     countTests = 0;
     errmsg.str("");
 
+    const auto& which_tests = args.which_tests();
+    const auto exclude_tests = args.exclude_tests();
+
     // TODO: bail out when given class/test is not found?
-    for (std::string classname : args.which_test()) {
-        std::string testname;
-        const std::string::size_type pos = classname.find("::");
-        if (pos != std::string::npos) {
-            // TODO: excluding indiviual tests is not supported yet
-            testname = classname.substr(pos + 2);
-            classname.erase(pos);
+    for (TestInstance * test : TestRegistry::theInstance().tests())
+    {
+        std::set<std::string> tests;
+        if (!which_tests.empty()) {
+            const auto it = which_tests.find(test->classname);
+            const bool match = it != which_tests.cend();
+            if (match && exclude_tests && it->second.empty()) // only bailout when the whole fixture is excluded
+                continue;
+            if (!match && !exclude_tests)
+                continue;
+            if (match)
+                tests = it->second;
         }
 
-        for (TestInstance * test : TestRegistry::theInstance().tests()) {
-            if (!classname.empty()) {
-                const bool match = test->classname == classname;
-                if ((match && args.exclude_tests()) || (!match && !args.exclude_tests()))
-                    continue;
-            }
-
-            TestFixture* fixture = test->create();
-            fixture->processOptions(args);
-            fixture->run(testname);
-        }
+        TestFixture* fixture = test->create();
+        fixture->processOptions(args);
+        fixture->run(tests);
     }
 
     if (args.summary() && !args.dry_run()) {

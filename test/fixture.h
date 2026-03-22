@@ -34,6 +34,7 @@
 #include <exception>
 #include <list>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -56,9 +57,10 @@ private:
 
 protected:
     std::string exename;
-    std::string testToRun;
+    std::set<std::string> testsToRun;
     bool quiet_tests{};
     bool dry_run{};
+    bool exclude_tests{};
     bool mNewTemplate{};
 
     virtual void run() = 0;
@@ -290,7 +292,7 @@ private:
     {
         (void) metric;
     }
-    void run(const std::string &str);
+    void run(const std::set<std::string> &tests);
 
 public:
     static void printHelp();

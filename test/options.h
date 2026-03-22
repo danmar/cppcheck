@@ -17,6 +17,7 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -39,8 +40,8 @@ public:
     bool dry_run() const;
     /** Exclude provided lists of tests. */
     bool exclude_tests() const;
-    /** Which test should be run. Empty string means 'all tests' */
-    const std::set<std::string>& which_test() const;
+    /** Which tests should be run. */
+    const std::map<std::string, std::set<std::string>>& which_tests() const;
 
     const std::string& exe() const;
 
@@ -49,7 +50,8 @@ public:
     options& operator =(const options&) = delete;
 
 private:
-    std::set<std::string> mWhichTests;
+    std::set<std::string> mArgs;
+    std::map<std::string, std::set<std::string>> mWhichTests;
     const bool mQuiet;
     const bool mHelp;
     const bool mSummary;

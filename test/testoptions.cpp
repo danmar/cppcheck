@@ -51,21 +51,28 @@ private:
     void which_test() const {
         const char* argv[] = {"./test_runner", "TestClass"};
         options args(getArrayLength(argv), argv);
-        ASSERT(std::set<std::string> {"TestClass"} == args.which_test());
+        const std::map<std::string, std::set<std::string>> expected{
+            { "TestClass", {} }
+        };
+        ASSERT(expected == args.which_tests());
     }
 
 
     void which_test_method() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod"};
         options args(getArrayLength(argv), argv);
-        ASSERT(std::set<std::string> {"TestClass::TestMethod"} == args.which_test());
+        const std::map<std::string, std::set<std::string>> expected{
+            { "TestClass", {"TestMethod"} }
+        };
+        ASSERT(expected == args.which_tests());
     }
 
 
     void no_test_method() const {
         const char* argv[] = {"./test_runner"};
         options args(getArrayLength(argv), argv);
-        ASSERT(std::set<std::string> {""} == args.which_test());
+        const std::map<std::string, std::set<std::string>> expected{};
+        ASSERT(expected == args.which_tests());
     }
 
 
@@ -105,22 +112,28 @@ private:
     void multiple_testcases() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "TestClass::AnotherTestMethod"};
         options args(getArrayLength(argv), argv);
-        std::set<std::string> expected {"TestClass::TestMethod", "TestClass::AnotherTestMethod"};
-        ASSERT(expected == args.which_test());
+        const std::map<std::string, std::set<std::string>> expected{
+            { "TestClass", { "TestMethod" , "AnotherTestMethod" } }
+        };
+        ASSERT(expected == args.which_tests());
     }
 
     void multiple_testcases_ignore_duplicates() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "TestClass"};
         options args(getArrayLength(argv), argv);
-        std::set<std::string> expected {"TestClass"};
-        ASSERT(expected == args.which_test());
+        const std::map<std::string, std::set<std::string>> expected{
+            { "TestClass", {} }
+        };
+        ASSERT(expected == args.which_tests());
     }
 
     void invalid_switches() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-a", "-v", "-q"};
         options args(getArrayLength(argv), argv);
-        std::set<std::string> expected {"TestClass::TestMethod"};
-        ASSERT(expected == args.which_test());
+        const std::map<std::string, std::set<std::string>> expected {
+            { "TestClass", { "TestMethod" } }
+        };
+        ASSERT(expected == args.which_tests());
         ASSERT_EQUALS(true, args.quiet());
     }
 
