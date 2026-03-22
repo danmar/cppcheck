@@ -20,26 +20,33 @@
 
 // TODO: bailout on unknown arguments
 options::options(int argc, const char* const argv[])
-    : mWhichTests(argv + 1, argv + argc)
-    ,mQuiet(mWhichTests.count("-q") != 0)
-    ,mHelp(mWhichTests.count("-h") != 0 || mWhichTests.count("--help"))
-    ,mSummary(mWhichTests.count("-n") == 0)
-    ,mDryRun(mWhichTests.count("-d") != 0)
-    ,mExcludeTests(mWhichTests.count("-x") != 0)
+    : mArgs(argv + 1, argv + argc)
+    ,mQuiet(mArgs.count("-q") != 0)
+    ,mHelp(mArgs.count("-h") != 0 || mArgs.count("--help"))
+    ,mSummary(mArgs.count("-n") == 0)
+    ,mDryRun(mArgs.count("-d") != 0)
+    ,mExcludeTests(mArgs.count("-x") != 0)
     ,mExe(argv[0])
 {
     if (mArgs.count("-t") != 0)
         mTimerResults.reset(new TimerResults);
 
-    for (auto it = mWhichTests.cbegin(); it != mWhichTests.cend();) {
-        if (!it->empty() && (((*it)[0] == '-') || (it->find("::") != std::string::npos && mWhichTests.count(it->substr(0, it->find("::"))))))
-            it = mWhichTests.erase(it);
-        else
-            ++it;
-    }
-
-    if (mWhichTests.empty()) {
-        mWhichTests.insert("");
+    for (const auto& arg : mArgs) {
+        if (arg.empty())
+            continue; // empty argument
+        if (arg[0] == '-')
+            continue; // command-line switch
+        const auto pos = arg.find("::");
+        if (pos == std::string::npos) {
+            mWhichTests[arg] = {}; // run whole fixture
+            continue;
+        }
+        const std::string fixture = arg.substr(0, pos);
+        const auto it = mWhichTests.find(fixture);
+        if (it != mWhichTests.cend() && it->second.empty())
+            continue; // whole fixture is already included
+        const std::string test = arg.substr(pos+2);
+        mWhichTests[fixture].emplace(test); // run individual test
     }
 }
 
@@ -69,7 +76,7 @@ bool options::dry_run() const
     return mDryRun;
 }
 
-const std::set<std::string>& options::which_test() const
+const std::map<std::string, std::set<std::string>>& options::which_tests() const
 {
     return mWhichTests;
 }
