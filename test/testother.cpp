@@ -4775,6 +4775,18 @@ private:
               "    strcpy(r.c, p->c_str());\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7:21]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n", errout_str());
+
+        check("struct S {\n" // #14559
+              "    int gc() const;\n"
+              "    int gnc();\n"
+              "};\n"
+              "int f1(S* s) {\n"
+              "    return h(s ? s->gc() : 1);\n"
+              "}\n"
+              "int f2(S* s) {\n"
+              "    return h(s ? s->gnc() : 1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5:11]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n", errout_str());
     }
 
     void constArray() {

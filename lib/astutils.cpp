@@ -2628,7 +2628,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
     if (!tok->isMutableExpr())
         return false;
 
-    if (indirect == 0 && isConstVarExpression(tok))
+    if (isConstVarExpression(tok))
         return false;
 
     const Token *tok2 = tok;
@@ -3370,7 +3370,7 @@ bool isConstVarExpression(const Token *tok, const std::function<bool(const Token
     if (!tok)
         return false;
     if (tok->str() == "?" && tok->astOperand2() && tok->astOperand2()->str() == ":") // ternary operator
-        return isConstVarExpression(tok->astOperand2()->astOperand1()) && isConstVarExpression(tok->astOperand2()->astOperand2()); // left and right of ":"
+        return isConstVarExpression(tok->astOperand2()->astOperand1()) || isConstVarExpression(tok->astOperand2()->astOperand2()); // left and right of ":"
     if (skipPredicate && skipPredicate(tok))
         return false;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
