@@ -103,14 +103,14 @@ static void skipEnumBody(T *&tok)
 /**
  * is tok the start brace { of a class, struct, union, or enum
  */
-static bool isClassStructUnionEnumStart(const Token * tok)
+static const Token* isClassStructUnionEnumStart(const Token* tok)
 {
     if (!Token::Match(tok->previous(), "class|struct|union|enum|%name%|>|>> {"))
-        return false;
+        return nullptr;
     const Token * tok2 = tok->previous();
     while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|)|;"))
         tok2 = tok2->previous();
-    return Token::Match(tok2, "class|struct|union|enum") && !Token::simpleMatch(tok2->tokAt(-1), "->");
+    return (Token::Match(tok2, "class|struct|union|enum") && !Token::simpleMatch(tok2->tokAt(-1), "->")) ? tok2 : nullptr;
 }
 
 //---------------------------------------------------------------------------
@@ -1028,6 +1028,13 @@ bool Tokenizer::isFunctionPointer(const Token* tok) {
     return Token::Match(tok, "%name% ) (");
 }
 
+static bool matchCurrentType(const std::string& typeStr, const std::map<int, std::string>& types)
+{
+    return std::any_of(types.begin(), types.end(), [&](const std::pair<int, std::string>& element) {
+        return typeStr == element.second;
+    });
+}
+
 void Tokenizer::simplifyTypedef()
 {
     // Simplify global typedefs that are not redefined with the fast 1-pass simplification.
@@ -1050,12 +1057,19 @@ void Tokenizer::simplifyTypedef()
 
     int indentlevel = 0;
     std::map<std::string, TypedefSimplifier> typedefs;
+    std::map<int, std::string> inType;
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (!tok->isName()) {
-            if (tok->str()[0] == '{')
+            if (tok->str()[0] == '{') {
                 ++indentlevel;
-            else if (tok->str()[0] == '}')
+                if (const Token* typeStart = isClassStructUnionEnumStart(tok)) {
+                    inType.emplace(indentlevel, typeStart->strAt(1));
+                }
+            }
+            else if (tok->str()[0] == '}') {
+                inType.erase(indentlevel);
                 --indentlevel;
+            }
             continue;
         }
 
@@ -1072,7 +1086,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         auto it = typedefs.find(tok->str());
-        if (it != typedefs.end() && it->second.canReplace(tok)) {
+        if (it != typedefs.end() && it->second.canReplace(tok) && !matchCurrentType(tok->str(), inType)) {
             std::set<std::string> r;
             std::string originalname;
             while (it != typedefs.end() && r.insert(tok->str()).second) {

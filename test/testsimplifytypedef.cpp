@@ -230,6 +230,7 @@ private:
         TEST_CASE(simplifyTypedef157);
         TEST_CASE(simplifyTypedef158);
         TEST_CASE(simplifyTypedef159);
+        TEST_CASE(simplifyTypedef160);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3809,6 +3810,28 @@ private:
         const char code[] = "typedef void (*const func_t)();\n" // #14387
                             "func_t g() { return nullptr; }\n";
         const char exp[] = "void * const g ( ) { return nullptr ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyTypedef160() {
+        const char code[] = "struct S1 {};\n"
+                            "typedef struct S1 S2;\n"
+                            "namespace N {\n"
+                            "    struct B {\n"
+                            "        explicit B(int& i);\n"
+                            "    };\n"
+                            "    struct S2 : B {\n"
+                            "        explicit S2(int& i) : B(i) {}\n"
+                            "    };\n"
+                            "}\n";
+        const char exp[] = "struct S1 { } ; "
+                           "namespace N { "
+                           "struct B { "
+                           "explicit B ( int & i ) ; } ; "
+                           "struct S2 : B { "
+                           "explicit S2 ( int & i ) : B ( i ) { } "
+                           "} ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
