@@ -51,7 +51,22 @@ jobs:
       - name: Run valgrind
         run: |
           ec=0
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log || ec=1
+          # these tests are excluded because they take too long to run
+          excluded_tests=TestSuppressions::suppressionsSettingsProcessesFiles \
+            TestSuppressions::suppressionsSettingsProcessesFS \
+            TestProcessExecutorFiles::many_threads_showtime \
+            TestProcessExecutorFiles::many_threads \
+            TestProcessExecutorFS::many_threads_plist \
+            TestProcessExecutorFiles::many_threads_plist \
+            TestProcessExecutorFS::many_threads_showtime \
+            TestProcessExecutorFS::many_threads \
+            TestIO::testScanfArgument \
+            TestProcessExecutorFS::one_error_several_files \
+            TestProcessExecutorFiles::one_error_several_files \
+            TestCondition::alwaysTrue \
+            TestIO::testPrintfArgumentVariables \
+            TestLeakAutoVarRecursiveCountLimit::recursiveCountLimit
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner -x $excluded_tests 9>memcheck.log || ec=1
           cat memcheck.log
           exit $ec
         # TODO: debuginfod.ubuntu.com is currently not responding to any requests causing it to run into a 40(!) minute timeout
