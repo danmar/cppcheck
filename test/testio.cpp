@@ -44,6 +44,7 @@ private:
         TEST_CASE(fileIOwithoutPositioning);
         TEST_CASE(seekOnAppendedFile);
         TEST_CASE(fflushOnInputStream);
+        TEST_CASE(ftellCompatibility);
         TEST_CASE(incompatibleFileOpen);
 
         TEST_CASE(testScanf1); // Scanf without field limiters
@@ -703,6 +704,21 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str()); // #6566
     }
+
+    void ftellCompatibility() {
+
+        check("void foo() {\n"
+              "     FILE *f = fopen(\"\", \"rt\");\n"
+              "     if (f)\n"
+              "     {\n"
+              "         fseek(f, 0, SEEK_END);\n"
+              "         (void)ftell(f);\n"
+              "         fclose(f);\n"
+              "     }\n"
+              "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A, $.portability = true));
+        ASSERT_EQUALS("[test.cpp:6:16]: (portability) For a text stream, its file position indicator contains unspecified information. See Section 7.21.9.4p2 of the C11 standard [ftellTextModeFile]\n", errout_str());
+    }
+
 
     void fflushOnInputStream() {
         check("void foo()\n"
