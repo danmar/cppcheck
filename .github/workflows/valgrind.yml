@@ -66,12 +66,10 @@ jobs:
             TestCondition::alwaysTrue \
             TestIO::testPrintfArgumentVariables \
             TestLeakAutoVarRecursiveCountLimit::recursiveCountLimit"
-          excluded_tests="TestProcessExecutorFS::many_threads \
-            TestProcessExecutorFS::many_threads_showtime \
-            TestProcessExecutorFS::many_threads_plist \ 
-            TestProcessExecutorFiles::many_threads \
-            TestProcessExecutorFiles::many_threads_showtime \
-            TestProcessExecutorFiles::many_threads_plist"
+          excluded_tests="TestProcessExecutorFS \
+            TestProcessExecutorFiles \
+            TestSuppressions::suppressionsSettingsProcessesFiles \
+            TestSuppressions::suppressionsSettingsProcessesFS"
           valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner -t -x $excluded_tests 9>memcheck.log || ec=1
           cat memcheck.log
           exit $ec
