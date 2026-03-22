@@ -52,7 +52,7 @@ jobs:
         run: |
           ec=0
           # these tests are excluded because they take too long to run
-          excluded_tests=TestSuppressions::suppressionsSettingsProcessesFiles \
+          excluded_tests="TestSuppressions::suppressionsSettingsProcessesFiles \
             TestSuppressions::suppressionsSettingsProcessesFS \
             TestProcessExecutorFiles::many_threads_showtime \
             TestProcessExecutorFiles::many_threads \
@@ -65,7 +65,7 @@ jobs:
             TestProcessExecutorFiles::one_error_several_files \
             TestCondition::alwaysTrue \
             TestIO::testPrintfArgumentVariables \
-            TestLeakAutoVarRecursiveCountLimit::recursiveCountLimit
+            TestLeakAutoVarRecursiveCountLimit::recursiveCountLimit"
           excluded_tests=
           valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner -t -x $excluded_tests 9>memcheck.log || ec=1
           cat memcheck.log
