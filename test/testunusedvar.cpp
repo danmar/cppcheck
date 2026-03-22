@@ -271,6 +271,8 @@ private:
         TEST_CASE(globalData);
 
         TEST_CASE(structuredBinding); // #13269
+
+        TEST_CASE(pointerCast); // #14535
     }
 
     struct FunctionVariableUsageOptions
@@ -7305,6 +7307,15 @@ private:
         functionVariableUsage("int main()\n"
                               "{\n"
                               "    [[maybe_unused]] auto [a2, b3] = std::make_pair(42, 0.42);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void pointerCast() { // #14535
+        functionVariableUsage("void f(int* p)\n"
+                              "{\n"
+                              "    int* p2 = p;\n"
+                              "    ((int *)(p2))[0] = 0; // remove cast for warning to disappear\n"
                               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
