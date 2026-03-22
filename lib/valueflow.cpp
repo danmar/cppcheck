@@ -504,7 +504,7 @@ static std::vector<const Token*> evaluateType(const Token* start, const Token* e
                     return {};
                 result.insert(result.end(), inner.begin(), inner.end());
             } else {
-                // We cant evaluate the decltype so bail
+                // We can't evaluate the decltype so bail
                 return {};
             }
             tok = tok->linkAt(1);

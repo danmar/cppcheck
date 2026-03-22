@@ -2693,7 +2693,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
         if (isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1))
             return true;
     } else {
-        // If its already const then it cant be modified
+        // If its already const then it can't be modified
         if (vt && vt->isConst(indirect))
             return false;
     }

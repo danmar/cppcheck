@@ -125,7 +125,7 @@ private:
     /** @brief Check that the override keyword is used when overriding virtual functions */
     void checkOverride();
 
-    /** @brief Check that the overriden function is not identical to the base function */
+    /** @brief Check that the overridden function is not identical to the base function */
     void checkUselessOverride();
 
     /** @brief Check that large members are returned by reference from getter function */

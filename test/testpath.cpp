@@ -315,7 +315,7 @@ private:
         ASSERT_EQUALS(Standards::Language::CPP, Path::identify("/mnt/c/foo/index.cpp", false));
         ASSERT_EQUALS(Standards::Language::CPP, Path::identify("/mnt/c/foo/index.Cpp", false));
 
-        // TODO: check for case-insenstive filesystem instead
+        // TODO: check for case-insensitive filesystem instead
         // In unix .C is considered C++
 #if !defined(_WIN32) && !(defined(__APPLE__) && defined(__MACH__))
         ASSERT_EQUALS(Standards::Language::CPP, Path::identify("index.C", false));

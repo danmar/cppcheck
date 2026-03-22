@@ -144,7 +144,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 string(LENGTH "${FILESDIR}" _filesdir_len)
 # override FILESDIR if it is set or empty
 if(FILESDIR OR ${_filesdir_len} EQUAL 0)
-# TODO: verify that it is an abolute path?
+# TODO: verify that it is an absolute path?
     set(FILESDIR_DEF                   ${FILESDIR})
 else()
     set(FILESDIR_DEF                   ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME} CACHE STRING "Cppcheck files directory")

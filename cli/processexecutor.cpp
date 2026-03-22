@@ -449,7 +449,7 @@ unsigned int ProcessExecutor::check()
         }
     }
 
-    // TODO: wee need to get the timing information from the subprocess
+    // TODO: we need to get the timing information from the subprocess
     if (mTimerResults && (mSettings.showtime == ShowTime::SUMMARY || mSettings.showtime == ShowTime::TOP5_SUMMARY))
         mTimerResults->showResults(mSettings.showtime);
 
