@@ -8329,8 +8329,8 @@ private:
     void cppKeywordInCSource() {
         ASSERT_NO_THROW(tokenizeAndStringify("int throw() {}", dinit(TokenizeOptions, $.cpp = false)));
 
-        const char* code = "void requires(const char*);\n" // #14613
-                           "void f() { requires(\"abc\"); }\n";
+        const char code[] = "void requires(const char*);\n" // #14613
+                            "void f() { requires(\"abc\"); }\n";
         ASSERT_NO_THROW(tokenizeAndStringify(code, dinit(TokenizeOptions, $.cpp = false)));
         ASSERT_NO_THROW(tokenizeAndStringify(code, dinit(TokenizeOptions, $.cpp = true, $.cppstd = Standards::CPP17)));
         ASSERT_THROW_INTERNAL(tokenizeAndStringify(code, dinit(TokenizeOptions, $.cpp = true, $.cppstd = Standards::CPP20)), AST);
