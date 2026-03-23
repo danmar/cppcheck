@@ -1777,7 +1777,7 @@ private:
         ASSERT_THROW_INTERNAL(checkCode("e U U,i"), SYNTAX);
     }
     void garbageCode231() {
-        ASSERT_THROW_INTERNAL(checkCode("char char* [] = {"a" "b"}"), SYNTAX);
+        ASSERT_THROW_INTERNAL(checkCode("char char* [] = {\"a\" \"b\"}"), SYNTAX);
     }
 
 
