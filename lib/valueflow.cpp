@@ -7212,7 +7212,7 @@ struct ValueFlowPassRunner {
             values = getTotalValues();
             const std::string passnum = std::to_string(state.settings.vfOptions.maxIterations - n + 1);
             if (std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
-                ProgressReporter progressReporter(state.errorLogger, state.settings.reportProgress >= 0, state.tokenlist.getSourceFilePath(), std::string("ValueFlow::") + pass->name() + (' ' + passnum));
+                ProgressReporter progressReporter(state.errorLogger, state.settings.reportProgress, state.tokenlist.getSourceFilePath(), std::string("ValueFlow::") + pass->name() + (' ' + passnum));
                 return run(pass);
             }))
                 return true;
