@@ -788,7 +788,7 @@ def test_addon_misc(tmpdir):
         f.write("""
 extern void f()
 {
-    char char* [] = {"a" "b"}
+    const char* c[] = {"a" "b"};
 }
         """)
 
