@@ -8765,6 +8765,8 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
             }
         }
+        else if (tok->isStandardType() && tok->next() && tok->str() == tok->strAt(1) && tok->str() != "long")
+            syntaxError(tok);
     }
 
     // invalid struct declaration
