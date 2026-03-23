@@ -299,6 +299,8 @@ public:
     }
 
     ~ProgressReporter() {
+        if (mReportProgressInterval < 0)
+            return;
         mErrorLogger.reportProgress(mFilename, mStage.c_str(), 100);
     }
 
