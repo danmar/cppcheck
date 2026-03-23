@@ -8329,18 +8329,11 @@ private:
     void cppKeywordInCSource() {
         ASSERT_NO_THROW(tokenizeAndStringify("int throw() {}", dinit(TokenizeOptions, $.cpp = false)));
 
-        ASSERT_NO_THROW(tokenizeAndStringify("void requires(const char*);\n" // #14613
-                                             "void f() { requires(\"abc\"); }\n",
-                                             dinit(TokenizeOptions, $.cpp = false)));
-
-        ASSERT_NO_THROW(tokenizeAndStringify("void requires(const char*);\n"
-                                             "void f() { requires(\"abc\"); }\n",
-                                             dinit(TokenizeOptions, $.cpp = true, $.cppstd = Standards::CPP17)));
-
-        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void requires(const char*);\n"
-                                                   "void f() { requires(\"abc\"); }\n",
-                                                   dinit(TokenizeOptions, $.cpp = true, $.cppstd = Standards::CPP20)),
-                              AST);
+        const char* code = "void requires(const char*);\n" // #14613
+                           "void f() { requires(\"abc\"); }\n";
+        ASSERT_NO_THROW(tokenizeAndStringify(code, dinit(TokenizeOptions, $.cpp = false)));
+        ASSERT_NO_THROW(tokenizeAndStringify(code, dinit(TokenizeOptions, $.cpp = true, $.cppstd = Standards::CPP17)));
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code, dinit(TokenizeOptions, $.cpp = true, $.cppstd = Standards::CPP20)), AST);
     }
 
     void cppcast() {
