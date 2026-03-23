@@ -258,7 +258,7 @@ private:
         TEST_CASE(garbageCode227);
         TEST_CASE(garbageCode228);
         TEST_CASE(garbageCode229);
-        TEST_CASE(garbageCode230);        
+        TEST_CASE(garbageCode230);
         TEST_CASE(garbageCode231);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
