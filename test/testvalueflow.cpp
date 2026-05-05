@@ -7486,6 +7486,16 @@ private:
                "    if (s.empty()) {}\n"
                "}";
         ASSERT(!isKnownContainerSizeValue(tokenValues(code, "s ."), 0).empty());
+
+        code = "void g(std::map<int, int>* p) {\n" // #14721
+               "    (*p)[1] = 2;\n"
+               "}\n"
+               "void f() {\n"
+               "    std::map<int, int> m;\n"
+               "    g(&m);\n"
+               "    if (m.empty()) {}\n"
+               "}\n";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "m ."), 0).empty());
     }
 
     void valueFlowContainerElement()
