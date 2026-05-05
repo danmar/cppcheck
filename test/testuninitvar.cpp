@@ -7935,6 +7935,12 @@ private:
                        "    (*fp[0])();\n"
                        "}");
         ASSERT_EQUALS("", errout_str());
+
+        checkUninitVar("void f() {\n" // #14708
+                       "    int a[1], b[1];\n"
+                       "    int* c[2]{ a, b };\n"
+                       "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void isVariableUsageDerefValueflow()
