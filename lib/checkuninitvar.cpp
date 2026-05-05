@@ -1262,8 +1262,6 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library&
         const Token *parent = valueExpr->astParent();
         while (Token::simpleMatch(parent, ","))
             parent = parent->astParent();
-        if (Token::simpleMatch(parent, "{"))
-            return valueExpr;
         const int use = isFunctionParUsage(valueExpr, library, pointer, alloc, indirect);
         return (use>0) ? valueExpr : nullptr;
     }
