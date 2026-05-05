@@ -6221,6 +6221,8 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
         return true;
     if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
         return tok->valueType()->container->stdAssociativeLike;
+    if (Token::simpleMatch(tok->astParent(), "*") && indirect > 0)
+        return isContainerSizeChanged(tok->astParent(), indirect - 1, settings, depth + 1);
     const Library::Container::Action action = astContainerAction(tok, settings.library);
     switch (action) {
     case Library::Container::Action::RESIZE:
