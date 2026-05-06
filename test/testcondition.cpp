@@ -2682,6 +2682,12 @@ private:
         check("void f1(const std::string &s) { if(s.empty()) if(42 < s.size()) {}}");
         ASSERT_EQUALS("[test.cpp:1:43] -> [test.cpp:1:53]: (warning) Opposite inner 'if' condition leads to a dead code block. [oppositeInnerCondition]\n", errout_str());
 
+        check("void f(const std::string& s, int n) {\n" // #14716
+              "    if (s.size() < n)\n"
+              "        if (s.empty()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
         // TODO: These are identical condition since size cannot be negative
         check("void f1(const std::string &s) { if(s.size() <= 0) if(s.empty()) {}}");
         ASSERT_EQUALS("", errout_str());
