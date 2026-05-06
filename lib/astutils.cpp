@@ -1816,7 +1816,7 @@ static bool isZeroBoundCond(const Token * const cond, bool reverse)
 
     const Token* op = reverse ? cond->astOperand1() : cond->astOperand2();
     if (!op->hasKnownIntValue())
-        return false;
+        return true;
 
     // Assume unsigned
     const bool isZero = op->getKnownIntValue() == 0;
