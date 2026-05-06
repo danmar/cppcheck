@@ -154,7 +154,7 @@ namespace {
         void writeToPipe(PipeSignal type, const std::string &data) const
         {
             if (mDebug)
-                std::cout << "writeToPipe - " << static_cast<unsigned int>(type) << " - " << data << std::endl;
+                std::cout << "writeToPipe - " << static_cast<char>(type) << " - " << data << std::endl;
 
             {
                 const auto t = static_cast<char>(type);
