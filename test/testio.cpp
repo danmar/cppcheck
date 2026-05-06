@@ -3371,7 +3371,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-        check("enum E : uint8_t { E0 }; \n"
+        check("enum E : uint8_t { E0 }; \n" // #7959
               "void f(E e) {\n"
               "    printf(\"%hhu\", e);\n"
               "}");
