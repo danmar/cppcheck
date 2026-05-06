@@ -1539,9 +1539,9 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings &settings,
                 if (element && isStdVectorOrString()) { // isStdVectorOrString sets type token if true
                     element = false;    // not really an array element
                 } else if (variableInfo->isEnumType()) {
-                    if (variableInfo->type() && variableInfo->type()->classScope && variableInfo->type()->classScope->enumType)
+                    if (variableInfo->type() && variableInfo->type()->classScope && variableInfo->type()->classScope->enumType && variableInfo->type()->classScope->enumType->isStandardType())
                         typeToken = variableInfo->type()->classScope->enumType;
-                    else {
+                    else if (!variableInfo->type()->classScope->enumType) {
                         tempToken = new Token(tok1);
                         tempToken->str("int");
                         typeToken = tempToken;
