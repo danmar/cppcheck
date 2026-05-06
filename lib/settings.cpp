@@ -770,3 +770,18 @@ bool Settings::unusedFunctionOnly()
     const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
     return unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
 }
+
+bool Settings::collectLogCheckers(bool* summary, bool* xmlReport, bool* textReport) const
+{
+    const bool s = safety || severity.isEnabled(Severity::information);
+    if (summary)
+        *summary = s;
+    const bool x = outputFormat == Settings::OutputFormat::xml && xml_version == 3;
+    if (xmlReport)
+        *xmlReport = x;
+    const bool t = !checkersReportFilename.empty();
+    if (textReport)
+        *textReport = t;
+
+    return s || x || t;
+}

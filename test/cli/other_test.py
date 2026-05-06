@@ -4636,9 +4636,8 @@ def test_dui_include_absolute_missing(tmp_path):  # #14675
     ]
 
 
-@pytest.mark.xfail(strict=True)  # TODO: should not report logChecker when not required
 @pytest.mark.skipif(sys.platform == 'win32', reason="requires ProcessExecutor")
-def test_ipc_log_checker(tmp_path):
+def test_ipc(tmp_path):
     test_file = tmp_path / 'test.c'
     with open(test_file, "w") as f:
         f.write('void f() {}')
@@ -4648,6 +4647,7 @@ def test_ipc_log_checker(tmp_path):
         '--debug-ipc',
         '-j2',
         '--executor=process',
+        '--no-cppcheck-build-dir',
         str(test_file)
     ]
 

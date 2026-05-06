@@ -596,6 +596,8 @@ public:
 
     static bool unusedFunctionOnly();
 
+    bool collectLogCheckers(bool* summary = nullptr, bool* xmlReport = nullptr, bool* textReport = nullptr) const;
+
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
