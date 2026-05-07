@@ -4119,6 +4119,15 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+
+        code = "double f(double d, bool b) {\n" // #14734
+               "    double s = 0.0;\n"
+               "    if (b)\n"
+               "        s += d;\n"
+               "    return s > 0.0 ? s : 0.0;\n"
+               "}\n";
+        auto values = tokenValues(code, "s :", ValueFlow::Value::ValueType::FLOAT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowForwardLambda() {
