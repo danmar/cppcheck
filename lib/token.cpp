@@ -1816,7 +1816,7 @@ void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std:
                 outs += "      <value ";
                 switch (value.valueType) {
                 case ValueFlow::Value::ValueType::INT:
-                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED) {
+                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED && value.toString() != "!<=-1") {
                         outs += "intvalue=\"";
                         outs += MathLib::toString(static_cast<MathLib::biguint>(value.intvalue));
                         outs += '\"';
