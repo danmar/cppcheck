@@ -4830,6 +4830,15 @@ private:
                       "[test.cpp:5:20]: note: Assignment 'f=fopen(notexist,t)', assigned value is 0\n"
                       "[test.cpp:6:8]: note: Calling function foo, 1st argument is null\n"
                       "[test.cpp:2:13]: note: Dereferencing argument f that is null\n", errout_str());
+
+        ctu("void g(std::optional<int>& o) {\n" // #14728
+            "    *o = 1;\n"
+            "}\n"
+            "void f() {\n"
+            "    std::optional<int> x = 0;\n"
+            "    g(x);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
