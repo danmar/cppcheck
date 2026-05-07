@@ -4970,7 +4970,7 @@ void Tokenizer::setVarIdPass1()
                         decl = false;
                 } else if (cpp && Token::Match(prev2, "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
                     if (tok2->link() != tok2->next() && // add value-initialized variable T x{};
-                        (Token::Match(prev2, "do|try|else") || Token::Match(prev2->tokAt(-2), "struct|class|:")))
+                        (Token::Match(prev2, "do|try|else") || Token::simpleMatch(prev2->tokAt(-2), ":")))
                         continue;
                 } else
                     decl = false;
