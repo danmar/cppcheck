@@ -3066,6 +3066,11 @@ private:
                                "        int j{i};\n"
                                "    }\n"
                                "};"));
+
+        ASSERT_EQUALS("1: struct Sx { int i@1 ; } ;\n" // #14733
+                      "2: struct Sx sx@2 { 0 } ;\n",
+                      tokenize("struct Sx { int i; };\n"
+                               "struct Sx sx{ 0 }; \n"));
     }
 
     void varid_inheritedMembers() {
