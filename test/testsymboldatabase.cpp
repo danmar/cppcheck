@@ -633,7 +633,7 @@ private:
 
         TEST_CASE(userDefinedLiteral);
 
-        TEST_CASE(dumpValueNegative);  // dumping negative impossible value
+        TEST_CASE(dumpValueNegative);  // #14735 - dumping negative impossible value for unsigned expression
     }
 
     void array() {
