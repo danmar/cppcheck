@@ -675,7 +675,7 @@ static ValueFlow::Value evaluate(const Token* op, const ValueFlow::Value& lhs, c
     // If not the same type then one must be int
     if (lhs.valueType != rhs.valueType && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
-    const bool compareOp = contains({"==", "!=", "<", ">", ">=", "<="}, opStr);
+    const bool compareOp = op->isComparisonOp();
     // Comparison must be the same type
     if (compareOp && lhs.valueType != rhs.valueType)
         return ValueFlow::Value::unknown();
