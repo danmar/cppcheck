@@ -469,6 +469,8 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             continue;
         }
         if (cond->str() == "==" || cond->str() == "<=" || cond->str() == ">=") {
+            if (!cond->next)
+                break;
             if (cond->next->number) {
                 const simplecpp::Token *dtok = cond->previous;
                 if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
@@ -477,6 +479,8 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             continue;
         }
         if (cond->op == '<' || cond->op == '>') {
+            if (!cond->next)
+                break;
             if (cond->next->number) {
                 const simplecpp::Token *dtok = cond->previous;
                 if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end()) {
