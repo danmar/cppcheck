@@ -4658,3 +4658,95 @@ def test_ipc(tmp_path):
         'handleRead - 5 - 0'
     ]
     assert stderr.splitlines() == []
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason="requires ProcessExecutor")
+def test_ipc_suppressions(tmp_path):
+    test1_file = tmp_path / 'test1.c'
+    with open(test1_file, "w") as f:
+        f.write('void f() {}')
+
+    test2_file = tmp_path / 'test2.c'
+    with open(test2_file, "w") as f:
+        f.write('void f() {}')
+
+    test3_file = tmp_path / 'test3.c'
+    with open(test3_file, "w") as f:
+        f.write('void f() {}')
+
+    args = [
+        '-q',
+        '--debug-ipc',
+        '-j2',
+        '--executor=process',
+        '--no-cppcheck-build-dir',
+        '--suppress=id0:test1.c',
+        str(tmp_path)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    # sort the lines since the order is not fixed
+    stdout_exp = [
+        'writeToPipe - 4 - id0:test1.c;0;1;0;',
+        'handleRead - 4 - id0:test1.c;0;1;0;',
+        'writeToPipe - 5 - 0',
+        'handleRead - 5 - 0',
+        'writeToPipe - 5 - 0',
+        'handleRead - 5 - 0',
+        'writeToPipe - 5 - 0',
+        'handleRead - 5 - 0'
+    ]
+    stdout_exp.sort()
+    stdout_lines = stdout.splitlines()
+    stdout_lines.sort()
+    assert stdout_lines == stdout_exp
+    assert stderr.splitlines() == []
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason="requires ProcessExecutor")
+def test_ipc_inline_suppressions(tmp_path):
+    test1_file = tmp_path / 'test1.c'
+    with open(test1_file, "w") as f:
+        f.write('void f() {} // cppcheck-suppress id1')
+
+    test2_file = tmp_path / 'test2.c'
+    with open(test2_file, "w") as f:
+        f.write('void f() {} // cppcheck-suppress id2')
+
+    test3_file = tmp_path / 'test3.c'
+    with open(test3_file, "w") as f:
+        f.write('void f() {} // cppcheck-suppress id3')
+
+    args = [
+        '-q',
+        '--debug-ipc',
+        '-j2',
+        '--executor=process',
+        '--no-cppcheck-build-dir',
+        '--inline-suppr',
+        str(tmp_path)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    # sort the lines since the order is not fixed
+    stdout_exp = [
+        f'writeToPipe - 3 - id1:{test1_file}:1;13;1;0;',
+        f'handleRead - 3 - id1:{test1_file}:1;13;1;0;',
+        'writeToPipe - 5 - 0',
+        'handleRead - 5 - 0',
+        f'writeToPipe - 3 - id2:{test2_file}:1;13;1;0;',
+        f'handleRead - 3 - id2:{test2_file}:1;13;1;0;',
+        'writeToPipe - 5 - 0',
+        'handleRead - 5 - 0',
+        f'writeToPipe - 3 - id3:{test3_file}:1;13;1;0;',
+        f'handleRead - 3 - id3:{test3_file}:1;13;1;0;',
+        'writeToPipe - 5 - 0',
+        'handleRead - 5 - 0'
+    ]
+    stdout_exp.sort()
+    stdout_lines = stdout.splitlines()
+    stdout_lines.sort()
+    assert stdout_lines == stdout_exp
+    assert stderr.splitlines() == []

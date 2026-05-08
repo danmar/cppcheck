@@ -342,6 +342,12 @@ unsigned int ProcessExecutor::check()
         return v + p.size();
     });
 
+    // pass unmodified suppressions to forked process so we only transfer back the actual changes done by the fork
+    // and do not see the changes which have already been transferred back
+    Suppressions supprs;
+    supprs.nomsg.addSuppressions(mSuppressions.nomsg.getSuppressions());
+    supprs.nofail.addSuppressions(mSuppressions.nofail.getSuppressions());
+
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
@@ -383,10 +389,9 @@ unsigned int ProcessExecutor::check()
                 // reset so we do not have the data which has already been transferred back
                 if (mTimerResults)
                     mTimerResults->reset();
-                // TODO: how to "reset" mSuppressions?
 
                 PipeWriter pipewriter(pipes[1], mSettings.debugipc);
-                CppCheck fileChecker(mSettings, mSuppressions, pipewriter, mTimerResults, false, mExecuteCommand);
+                CppCheck fileChecker(mSettings, supprs, pipewriter, mTimerResults, false, mExecuteCommand);
                 unsigned int resultOfCheck = 0;
 
                 if (iFileSettings != mFileSettings.end()) {
@@ -396,7 +401,7 @@ unsigned int ProcessExecutor::check()
                     resultOfCheck = fileChecker.check(*iFile);
                 }
 
-                pipewriter.writeSuppr(mSuppressions.nomsg);
+                pipewriter.writeSuppr(supprs.nomsg);
 
                 pipewriter.writeTimer(mTimerResults);
 
