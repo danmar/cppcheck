@@ -1151,6 +1151,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mLogger.printError("invalid --premium option '" + (p2.empty() ? p : p2) + "'.");
                 return Result::Fail;
             }
+            if (p2 == "cert-c-int-precision") {
+                int tmp;
+                if (!parseNumberArg(argv[i], 31, tmp, true))
+                    return Result::Fail;
+            }
             mSettings.premiumArgs += "--" + p;
             if (isCodingStandard) {
                 // All checkers related to the coding standard should be enabled. The coding standards

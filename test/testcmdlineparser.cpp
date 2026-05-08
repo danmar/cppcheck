@@ -1621,6 +1621,14 @@ private:
         ASSERT_EQUALS("--cert-c-int-precision=12", settings->premiumArgs);
     }
 
+    void premiumOptionsCertCIntPrecisionInvalid() {
+        REDIRECT;
+        asPremium();
+        const char * const argv[] = {"cppcheck", "--premium-cert-c-int-precision=abc", "file.c"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--premium-cert-c-int-precision=' is not valid - not an integer (invalid_argument).\n", logger->str());
+    }
+
     void premiumOptionsLicenseFile() {
         REDIRECT;
         asPremium();
