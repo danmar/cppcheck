@@ -3548,6 +3548,12 @@ private:
                       "3: void ( * a@2 [ 1 ] ) ( int * ) = { 0 } ;\n"
                       "4: }\n",
                       tokenize(code4));
+
+        const char code5[] = "int *p;\n"
+                             "void (*a[1])(int* p) = { 0 } ;\n";
+        ASSERT_EQUALS("1: int * p@1 ;\n"
+                      "2: void ( * a@2 [ 1 ] ) ( int * ) = { 0 } ;\n"
+                      , tokenize(code5));
     }
 
     void varid_alignas() {
