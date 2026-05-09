@@ -2238,13 +2238,6 @@ bool Token::addValue(const ValueFlow::Value &value)
         return false; // TODO: add bailout message
 
     if (mImpl->mValues) {
-        // Don't handle more than 10 values for performance reasons
-        // TODO: add setting?
-        if (mImpl->mValues->size() >= 10U) {
-            debugMsg("maxTokenValueBailout", "exceeded maximum amount of values per token");
-            return false;
-        }
-
         // if value already exists, don't add it again
         auto it = mImpl->mValues->begin();
         for (; it != mImpl->mValues->end(); ++it) {
@@ -2276,6 +2269,13 @@ bool Token::addValue(const ValueFlow::Value &value)
 
         // Add value
         if (it == mImpl->mValues->end()) {
+            // Don't handle more than 10 values for performance reasons
+            // TODO: add setting?
+            if (mImpl->mValues->size() >= 10U) {
+                debugMsg("maxTokenValueBailout", "exceeded maximum amount of values per token");
+                return false;
+            }
+
             ValueFlow::Value v(value);
             if (v.varId == 0)
                 v.varId = mImpl->mVarId;
