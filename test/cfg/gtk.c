@@ -585,3 +585,14 @@ void g_tree_test() {
     printf("%p\n", tree2);
     // cppcheck-suppress memleak
 }
+
+void gtk_widget_destroy_test() {
+    GtkWidget *widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_show(widget);
+    // cppcheck-suppress memleak
+
+    widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_show(widget);
+    // cppcheck-suppress mismatchAllocDealloc
+    g_object_unref(widget);
+}
