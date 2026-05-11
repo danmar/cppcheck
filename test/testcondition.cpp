@@ -5174,6 +5174,15 @@ private:
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:11:14]: (style) Condition 'p->i==o' is always true [knownConditionTrueFalse]\n",
                            errout_str());
+
+        check("void f(int x) {\n" // #12320
+              "    int a = 0, b = 0, c = 0;\n"
+              "    a = x;\n"
+              "    if (a) b = x;\n"
+              "    if (b) c = x;\n"
+              "    if (c) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueInfer() {
