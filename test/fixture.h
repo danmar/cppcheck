@@ -21,6 +21,7 @@
 #define fixtureH
 
 #include "check.h"
+#include "checks.h"
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
@@ -138,7 +139,7 @@ protected:
     template<typename T>
     static T& getCheck()
     {
-        for (Check *check : Check::instances()) {
+        for (Check *check : CheckInstances::get()) {
             //cppcheck-suppress useStlAlgorithm
             if (T* c = dynamic_cast<T*>(check))
                 return *c;

@@ -45,11 +45,6 @@
 
 //---------------------------------------------------------------------------
 
-// Register CheckIO..
-namespace {
-    CheckIO instance;
-}
-
 // CVE ID used:
 static const CWE CWE119(119U);  // Improper Restriction of Operations within the Bounds of a Memory Buffer
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality

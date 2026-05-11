@@ -65,6 +65,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/checknullpointer.o \
               $(libcppdir)/checkother.o \
               $(libcppdir)/checkpostfixoperator.o \
+              $(libcppdir)/checks.o \
               $(libcppdir)/checksizeof.o \
               $(libcppdir)/checkstl.o \
               $(libcppdir)/checkstring.o \
@@ -230,6 +231,9 @@ $(libcppdir)/checkother.o: ../lib/checkother.cpp ../lib/addoninfo.h ../lib/astut
 $(libcppdir)/checkpostfixoperator.o: ../lib/checkpostfixoperator.cpp ../lib/addoninfo.h ../lib/check.h ../lib/checkers.h ../lib/checkpostfixoperator.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/regex.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkpostfixoperator.cpp
 
+$(libcppdir)/checks.o: ../lib/checks.cpp ../lib/check.h ../lib/check64bit.h ../lib/checkassert.h ../lib/checkautovariables.h ../lib/checkbool.h ../lib/checkbufferoverrun.h ../lib/checkclass.h ../lib/checkcondition.h ../lib/checkexceptionsafety.h ../lib/checkfunctions.h ../lib/checkinternal.h ../lib/checkio.h ../lib/checkleakautovar.h ../lib/checkmemoryleak.h ../lib/checknullpointer.h ../lib/checkother.h ../lib/checkpostfixoperator.h ../lib/checks.h ../lib/checksizeof.h ../lib/checkstl.h ../lib/checkstring.h ../lib/checktype.h ../lib/checkuninitvar.h ../lib/checkunusedvar.h ../lib/checkvaarg.h ../lib/config.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/standards.h ../lib/vfvalue.h
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checks.cpp
+
 $(libcppdir)/checksizeof.o: ../lib/checksizeof.cpp ../lib/addoninfo.h ../lib/check.h ../lib/checkers.h ../lib/checksizeof.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/regex.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checksizeof.cpp
 
@@ -260,7 +264,7 @@ $(libcppdir)/clangimport.o: ../lib/clangimport.cpp ../lib/clangimport.h ../lib/c
 $(libcppdir)/color.o: ../lib/color.cpp ../lib/color.h ../lib/config.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/color.cpp
 
-$(libcppdir)/cppcheck.o: ../lib/cppcheck.cpp ../externals/picojson/picojson.h ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/analyzerinfo.h ../lib/check.h ../lib/checkers.h ../lib/checkunusedfunctions.h ../lib/clangimport.h ../lib/color.h ../lib/config.h ../lib/cppcheck.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/filesettings.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/regex.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/version.h ../lib/vfvalue.h
+$(libcppdir)/cppcheck.o: ../lib/cppcheck.cpp ../externals/picojson/picojson.h ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/analyzerinfo.h ../lib/check.h ../lib/checkers.h ../lib/checks.h ../lib/checkunusedfunctions.h ../lib/clangimport.h ../lib/color.h ../lib/config.h ../lib/cppcheck.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/filesettings.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/regex.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/version.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/cppcheck.cpp
 
 $(libcppdir)/ctu.o: ../lib/ctu.cpp ../externals/tinyxml2/tinyxml2.h ../lib/astutils.h ../lib/check.h ../lib/config.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h ../lib/xml.h

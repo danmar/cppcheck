@@ -17,6 +17,7 @@
  */
 
 #include "check.h"
+#include "checks.h"
 #include "fixture.h"
 
 #include <list>
@@ -28,23 +29,11 @@ public:
 
 private:
     void run() override {
-        TEST_CASE(instancesSorted);
         TEST_CASE(classInfoFormat);
     }
 
-    void instancesSorted() const {
-        const auto& checks = Check::instances();
-        for (auto i = checks.cbegin(); i != checks.cend(); ++i) {
-            auto j = i;
-            ++j;
-            if (j != checks.cend()) {
-                ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
-            }
-        }
-    }
-
     void classInfoFormat() const {
-        for (const Check * const c : Check::instances()) {
+        for (const Check * const c : CheckInstances::get()) {
             const std::string info = c->classInfo();
             if (!info.empty()) {
                 ASSERT('\n' != info[0]);         // No \n in the beginning

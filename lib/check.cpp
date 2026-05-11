@@ -26,34 +26,15 @@
 #include "tokenize.h"
 #include "vfvalue.h"
 
-#include <algorithm>
 #include <cctype>
 #include <iostream>
-#include <stdexcept>
 #include <utility>
 
 //---------------------------------------------------------------------------
 
-Check::Check(const std::string &aname)
-    : mName(aname)
-{
-    {
-        const auto it = std::find_if(instances().begin(), instances().end(), [&](const Check *i) {
-            return i->name() == aname;
-        });
-        if (it != instances().end())
-            throw std::runtime_error("'" + aname + "' instance already exists");
-    }
-
-    // make sure the instances are sorted
-    const auto it = std::find_if(instances().begin(), instances().end(), [&](const Check* i) {
-        return i->name() > aname;
-    });
-    if (it == instances().end())
-        instances_internal().push_back(this);
-    else
-        instances_internal().insert(it, this);
-}
+Check::Check(std::string aname)
+    : mName(std::move(aname))
+{}
 
 void Check::writeToErrorList(const ErrorMessage &errmsg)
 {
@@ -86,24 +67,6 @@ bool Check::wrongData(const Token *tok, const char *str)
     if (mSettings->daca)
         reportError(tok, Severity::debug, "DacaWrongData", "Wrong data detected by condition " + std::string(str));
     return true;
-}
-
-std::list<Check *> &Check::instances_internal()
-{
-#ifdef __SVR4
-    // Under Solaris, destructors are called in wrong order which causes a segmentation fault.
-    // This fix ensures pointer remains valid and reachable until program terminates.
-    static std::list<Check *> *_instances= new std::list<Check *>;
-    return *_instances;
-#else
-    static std::list<Check *> _instances;
-    return _instances;
-#endif
-}
-
-const std::list<Check *> &Check::instances()
-{
-    return instances_internal();
 }
 
 std::string Check::getMessageId(const ValueFlow::Value &value, const char id[])

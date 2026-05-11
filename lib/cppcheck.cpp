@@ -21,6 +21,7 @@
 #include "addoninfo.h"
 #include "analyzerinfo.h"
 #include "check.h"
+#include "checks.h"
 #include "checkunusedfunctions.h"
 #include "clangimport.h"
 #include "color.h"
@@ -1338,7 +1339,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
         const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
 
         // call all "runChecks" in all registered Check classes
-        for (Check * const c : Check::instances()) {
+        for (Check * const c : CheckInstances::get()) {
             if (Settings::terminated())
                 return;
 
@@ -1387,7 +1388,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
         }
 
         if (!doUnusedFunctionOnly) {
-            for (const Check * const c : Check::instances()) {
+            for (const Check * const c : CheckInstances::get()) {
                 if (Check::FileInfo * const fi = c->getFileInfo(tokenizer, mSettings, currentConfig)) {
                     if (analyzerInformation)
                         analyzerInformation->setFileInfo(c->name(), fi->toString());
@@ -1712,7 +1713,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     s.addEnabled("all");
 
     // call all "getErrorMessages" in all registered Check classes
-    for (const Check * const c : Check::instances())
+    for (const Check * const c : CheckInstances::get())
         c->getErrorMessages(&errorlogger, &s);
 
     CheckUnusedFunctions::getErrorMessages(errorlogger);
@@ -1830,7 +1831,7 @@ bool CppCheck::analyseWholeProgram()
             }
         }
 
-        for (Check * const c : Check::instances())
+        for (Check * const c : CheckInstances::get())
             errors |= c->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
     }
 
@@ -1861,7 +1862,7 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
             ctuFileInfo.loadFromXml(e);
             return;
         }
-        for (const Check *check : Check::instances()) {
+        for (const Check *check : CheckInstances::get()) {
             if (checkattr == check->name()) {
                 if (Check::FileInfo* fi = check->loadFileInfoFromXml(e)) {
                     fi->file0 = filesTxtInfo.sourceFile;
@@ -1878,7 +1879,7 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     }
     else {
         // Analyse the tokens
-        for (Check * const c : Check::instances())
+        for (Check * const c : CheckInstances::get())
             c->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
     }
 

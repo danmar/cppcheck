@@ -34,12 +34,6 @@
 //---------------------------------------------------------------------------
 
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckPostfixOperator instance;
-}
-
-
 // CWE ids used
 static const CWE CWE398(398U);   // Indicator of Poor Code Quality
 

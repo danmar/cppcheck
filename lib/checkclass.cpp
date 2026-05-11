@@ -43,11 +43,6 @@
 
 //---------------------------------------------------------------------------
 
-// Register CheckClass..
-namespace {
-    CheckClass instance;
-}
-
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE404(404U);  // Improper Resource Shutdown or Release
 static const CWE CWE665(665U);  // Improper Initialization

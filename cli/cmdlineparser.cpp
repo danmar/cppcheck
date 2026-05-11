@@ -20,6 +20,7 @@
 
 #include "addoninfo.h"
 #include "check.h"
+#include "checks.h"
 #include "checkers.h"
 #include "color.h"
 #include "config.h"
@@ -359,7 +360,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         if (std::strcmp(argv[i], "--doc") == 0) {
             std::ostringstream doc;
             // Get documentation..
-            for (const Check * const c : Check::instances()) {
+            for (const Check * const c : CheckInstances::get()) {
                 const std::string& name(c->name());
                 const std::string info(c->classInfo());
                 if (!name.empty() && !info.empty())

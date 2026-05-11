@@ -36,11 +36,6 @@
 // CWE ids used
 static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    Check64BitPortability instance;
-}
-
 static bool is32BitIntegerReturn(const Function* func, const Settings* settings)
 {
     if (settings->platform.sizeof_pointer != 8)

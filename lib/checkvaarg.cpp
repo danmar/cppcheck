@@ -31,14 +31,6 @@
 #include <vector>
 
 //---------------------------------------------------------------------------
-
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckVaarg instance;
-}
-
-
-//---------------------------------------------------------------------------
 // Ensure that correct parameter is passed to va_start()
 //---------------------------------------------------------------------------
 

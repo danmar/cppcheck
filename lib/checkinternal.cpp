@@ -31,12 +31,6 @@
 #include <set>
 #include <vector>
 
-// Register this check class (by creating a static instance of it).
-// Disabled in release builds
-namespace {
-    CheckInternal instance;
-}
-
 void CheckInternal::checkTokenMatchPatterns()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();

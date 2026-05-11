@@ -47,11 +47,6 @@
 static const CWE CWE_NULL_POINTER_DEREFERENCE(476U);
 static const CWE CWE_INCORRECT_CALCULATION(682U);
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckNullPointer instance;
-}
-
 //---------------------------------------------------------------------------
 
 static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsigned int arg)

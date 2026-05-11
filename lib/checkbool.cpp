@@ -32,11 +32,6 @@
 #include <vector>
 //---------------------------------------------------------------------------
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckBool instance;
-}
-
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE571(571U);  // Expression is Always True
 static const CWE CWE587(587U);  // Assignment of a Fixed Address to a Pointer

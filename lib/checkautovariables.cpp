@@ -39,12 +39,6 @@
 
 //---------------------------------------------------------------------------
 
-
-// Register this check class into cppcheck by creating a static instance of it..
-namespace {
-    CheckAutoVariables instance;
-}
-
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE562(562U);  // Return of Stack Variable Address
 static const CWE CWE590(590U);  // Free of Memory not on the Heap

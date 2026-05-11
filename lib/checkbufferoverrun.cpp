@@ -50,13 +50,6 @@
 
 //---------------------------------------------------------------------------
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckBufferOverrun instance;
-}
-
-//---------------------------------------------------------------------------
-
 // CWE ids used:
 static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
 static const CWE CWE170(170U);  // Improper Null Termination

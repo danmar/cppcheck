@@ -36,11 +36,6 @@
 
 //---------------------------------------------------------------------------
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckString instance;
-}
-
 // CWE ids used:
 static const CWE CWE570(570U);   // Expression is Always False
 static const CWE CWE571(571U);   // Expression is Always True

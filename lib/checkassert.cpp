@@ -39,11 +39,6 @@
 // CWE ids used
 static const CWE CWE398(398U);   // Indicator of Poor Code Quality
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckAssert instance;
-}
-
 void CheckAssert::assertWithSideEffects()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))

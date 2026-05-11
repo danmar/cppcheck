@@ -52,11 +52,6 @@ static const CWE CWE571(571U);   // Expression is Always True
 
 //---------------------------------------------------------------------------
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckCondition instance;
-}
-
 bool CheckCondition::diag(const Token* tok, bool insert)
 {
     if (!tok)

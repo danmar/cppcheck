@@ -50,11 +50,6 @@
 // CWE ids used:
 static const CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckUninitVar instance;
-}
-
 //---------------------------------------------------------------------------
 
 // get ast parent, skip possible address-of and casts

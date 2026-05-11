@@ -49,11 +49,6 @@
 
 //---------------------------------------------------------------------------
 
-// Register this check class (by creating a static instance of it)
-namespace {
-    CheckOther instance;
-}
-
 static const CWE CWE128(128U);   // Wrap-around Error
 static const CWE CWE131(131U);   // Incorrect Calculation of Buffer Size
 static const CWE CWE197(197U);   // Numeric Truncation Error
