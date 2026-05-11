@@ -4120,6 +4120,11 @@ private:
               "    std::string _s;\n"
               "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::optional<int>& o) {\n"
+              "    *o = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {
