@@ -80,7 +80,8 @@ private:
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
-        TEST_CASE(uninitvar_ternaryexpression); // #4683
+        TEST_CASE(uninitvar_ternaryexpression1); // #4683
+        TEST_CASE(uninitvar_ternaryexpression2); // #14729
         TEST_CASE(uninitvar_pointertoarray);
         TEST_CASE(uninitvar_cpp11ArrayInit); // #7010
         TEST_CASE(uninitvar_rangeBasedFor); // #7078
@@ -5447,7 +5448,7 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void uninitvar_ternaryexpression() { // #4683
+    void uninitvar_ternaryexpression1() { // #4683
         checkUninitVar("struct B { int asd; };\n"
                        "int f() {\n"
                        "    int a=0;\n"
@@ -5458,6 +5459,14 @@ private:
                        "    }\n"
                        "    return a ? b->asd : 0;\n"
                        "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void uninitvar_ternaryexpression2() { // #14729
+        checkUninitVar("void f(bool b, int i) {\n"
+                       "    int *p = (int*) malloc(4);\n"
+                       "    int *q = b ? p : &i;\n"
+                       "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
