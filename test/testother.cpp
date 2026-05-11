@@ -4121,6 +4121,22 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout_str());
 
+        check("void f(int& r) {\n" // #9761
+              "    o1 = r;\n"
+              "}\n"
+              "boost::optional<int&> o2;\n"
+              "void g(int& r) {\n"
+              "    o2 = r;\n"
+              "}\n"
+              "struct T {\n"
+              "    int* p;\n"
+              "    T& operator=(int& rhs) { p = &rhs; return *this; }\n"
+              "};\n"
+              "void h(T& t, int& r) {\n"
+              "    t = r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
         check("void f(std::optional<int>& o) {\n"
               "    *o = 1;\n"
               "}\n");

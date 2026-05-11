@@ -1769,9 +1769,13 @@ void CheckOther::checkConstVariable()
             //Is it the right side of an initialization of a non-const reference
             bool usedInAssignment = false;
             for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (Token::Match(tok, "& %var% = %varid%", var->declarationId())) {
-                    const Variable* refvar = tok->next()->variable();
-                    if (refvar && !refvar->isConst() && refvar->nameToken() == tok->next()) {
+                if (Token::Match(tok, "%name% = %varid%", var->declarationId())) {
+                    const Variable* refvar = tok->variable();
+                    if (tok->strAt(-1) == "&" && refvar && !refvar->isConst() && refvar->nameToken() == tok) {
+                        usedInAssignment = true;
+                        break;
+                    }
+                    if (!tok->valueType() || tok->valueType()->type == ValueType::Type::RECORD) {
                         usedInAssignment = true;
                         break;
                     }
