@@ -418,7 +418,7 @@ void CheckIO::fcloseInLoopConditionError(const Token *tok, const std::string &va
 {
     reportError(tok, Severity::warning,
                 "fcloseInLoopCondition",
-                "fclose() should not be used as a loop condition.\n"
+                "fclose() used as loop condition may skip loop body or double-close file handle.\n"
                 "fclose() closes '" + varname + "' each time it is evaluated. On success the loop body might never execute, on failure fclose() might be called again on the already-closed file handle.",
                 CWE910, Certainty::normal);
 }
