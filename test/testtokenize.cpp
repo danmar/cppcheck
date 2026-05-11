@@ -439,6 +439,7 @@ private:
         TEST_CASE(astcompound);
         TEST_CASE(astfuncdecl);
         TEST_CASE(astarrayinit);
+        TEST_CASE(astbracedinit);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7533,6 +7534,12 @@ private:
     void astarrayinit() { // #11738
         ASSERT_EQUALS("a2[12,{", testAst("int a[2]{ 1, 2 };"));
         ASSERT_EQUALS("a2[2[ 12, 34,{", testAst("int a[2][2]{ { 1, 2 }, { 3, 4 } };"));
+    }
+
+    void astbracedinit() {
+        ASSERT_EQUALS("ab{", testAst("int &a { b };", AstStyle::Simple, ListSimplification::Full));
+        ASSERT_EQUALS("a0{", testAst("int &&a { 0 };", AstStyle::Simple, ListSimplification::Full));
+        ASSERT_EQUALS("anullptr{", testAst("int *a { nullptr };", AstStyle::Simple, ListSimplification::Full));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
