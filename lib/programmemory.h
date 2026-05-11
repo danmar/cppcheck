@@ -102,7 +102,7 @@ private:
 };
 
 struct CPPCHECKLIB ProgramMemory {
-    using Map = std::unordered_map<ExprIdToken, ValueFlow::Value, ExprIdToken::Hash>;
+    using Map = std::map<ExprIdToken, ValueFlow::Value>;
 
     ProgramMemory() : mValues(new Map()) {}
 
