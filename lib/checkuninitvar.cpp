@@ -383,7 +383,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
         return isVariableUsed(tok->astOperand1(),var) || isVariableUsed(tok->astOperand2(),var);
     if (tok->varId() != var.declarationId())
         return false;
-    if (!var.isArray())
+    if (!var.isArray() && !var.isPointer())
         return true;
 
     const Token *parent = tok->astParent();
