@@ -1025,7 +1025,12 @@ namespace {
 }
 
 bool Tokenizer::isFunctionPointer(const Token* tok) {
-    return Token::Match(tok, "%name% ) (");
+    if (!Token::Match(tok, "%name%"))
+        return false;
+    tok = tok->next();
+    while (Token::Match(tok, "["))
+        tok = tok->link()->next();
+    return Token::simpleMatch(tok, ") (");
 }
 
 static bool matchCurrentType(const Token* tok, std::map<int, std::string>& types)
