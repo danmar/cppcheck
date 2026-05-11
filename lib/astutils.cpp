@@ -3114,6 +3114,8 @@ static const Token* findExpressionChangedImpl(const Token* expr,
                     if (vt->type == ValueType::ITERATOR)
                         ++indirect;
                 }
+                if (indirect == 0 && tok2->astParent() && tok2->astParent()->isUnaryOp("*"))
+                    ++indirect;
                 for (int i = 0; i <= indirect; ++i) {
                     if (isExpressionChangedAt(tok, tok2, i, global, settings, depth))
                         return true;
