@@ -6522,21 +6522,21 @@ private:
             tokenizer.createLinks2();
             tokenizer.simplifyCAlternativeTokens();
             tokenizer.list.front()->assignIndexes();
+
+            // set varid..
+            for (Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
+                if (tok->str() == "var")
+                    tok->varId(1);
+            }
+
+            // Create AST..
+            tokenizer.prepareTernaryOpForAST();
+            tokenizer.list.createAst();
+
+            tokenizer.list.validateAst(false);
         } else { // Full
             tokenizer.simplifyTokens1("");
         }
-
-        // set varid..
-        for (Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
-            if (tok->str() == "var")
-                tok->varId(1);
-        }
-
-        // Create AST..
-        tokenizer.prepareTernaryOpForAST();
-        tokenizer.list.createAst();
-
-        tokenizer.list.validateAst(false);
 
         // Basic AST validation
         for (const Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
