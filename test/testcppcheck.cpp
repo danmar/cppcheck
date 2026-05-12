@@ -84,6 +84,7 @@ private:
         TEST_CASE(checkPlistOutput);
         TEST_CASE(premiumResultsCache);
         TEST_CASE(purgedConfiguration);
+        TEST_CASE(cmdFileName);
     }
 
     void getErrorMessages() const {
@@ -620,6 +621,18 @@ private:
         auto it = errorLogger.errmsgs.cbegin();
         ASSERT_EQUALS("test.cpp:0:0: information: The configuration 'X=X' was not checked because its code equals another one. [purgedConfiguration]",
                       it->toString(false, templateFormat, ""));
+    }
+
+    void cmdFileName() const {
+        ASSERT_EQUALS("x", CppCheck::cmdFileName("x"));
+        ASSERT_EQUALS("\" \"", CppCheck::cmdFileName(" "));
+        ASSERT_EQUALS("\"\t\"", CppCheck::cmdFileName("\t"));
+        ASSERT_EQUALS("\";\"", CppCheck::cmdFileName(";"));
+        ASSERT_EQUALS("\">\"", CppCheck::cmdFileName(">"));
+        ASSERT_EQUALS("\"<\"", CppCheck::cmdFileName("<"));
+        ASSERT_EQUALS("\"|\"", CppCheck::cmdFileName("|"));
+        ASSERT_EQUALS("\"`\"", CppCheck::cmdFileName("`"));
+        ASSERT_EQUALS("\"$\"", CppCheck::cmdFileName("$"));
     }
 
     // TODO: test suppressions
