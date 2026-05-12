@@ -1939,6 +1939,8 @@ void CheckOther::checkConstPointer()
             const Token* gparent = parent->astParent();
             while (Token::simpleMatch(gparent, "[") && parent != gparent->astOperand2() && parent->str() == gparent->str())
                 gparent = gparent->astParent();
+            while (Token::Match(gparent, "[?:]"))
+                gparent = gparent->astParent();
             if (deref == MEMBER) {
                 if (!gparent)
                     continue;
