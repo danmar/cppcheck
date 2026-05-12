@@ -740,6 +740,8 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
         binop->astOperand1(state.op.top());
         state.op.pop();
     }
+    if (!state.op.empty() && state.op.top() == binop)
+        throw InternalError(tok, "Syntax Error: Infinite loop when creating AST.", InternalError::AST);
     state.op.push(binop);
 }
 
