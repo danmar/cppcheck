@@ -6567,8 +6567,19 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
                                 funcTok = funcTok->next();
                                 continue;
                             }
+                            if (Token::simpleMatch(funcTok, "<")) {
+                                funcTok = funcTok->findClosingBracket();
+                                if (funcTok) {
+                                    funcTok = funcTok->next();
+                                } else {
+                                    break;
+                                }
+                                continue;
+                            }
                             break;
                         }
+                        if (!funcTok)
+                            break;
                         if (!Token::Match(funcTok, "%name% (")) {
                             tok = funcTok;
                             continue;
