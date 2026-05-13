@@ -1937,7 +1937,7 @@ void CheckOther::checkConstPointer()
             continue;
         if (deref != NONE) {
             const Token* gparent = parent->astParent();
-            while (Token::simpleMatch(gparent, "[") && parent != gparent->astOperand2() && parent->str() == gparent->str())
+            while (Token::simpleMatch(gparent, "[") && parent != gparent->astOperand2())
                 gparent = gparent->astParent();
             while (Token::Match(gparent, "[?:]"))
                 gparent = gparent->astParent();
