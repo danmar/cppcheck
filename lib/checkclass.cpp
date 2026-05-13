@@ -375,7 +375,7 @@ void CheckClass::constructors()
 
                 const Variable& var = *usage.var;
                 if (diagVars.count(&var) == 0)
-                    uninitVarError(scope->bodyStart, false, FunctionType::eConstructor, var.scope()->className, var.name(), false, false, true);
+                    uninitVarError(var.nameToken(), false, FunctionType::eConstructor, var.scope()->className, var.name(), false, false, true);
             }
         }
     }
