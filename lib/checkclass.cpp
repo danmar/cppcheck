@@ -351,6 +351,7 @@ void CheckClass::constructors()
 
             // Variables with default initializers
             bool hasAnyDefaultInit = false;
+            bool hasAnySelfInit = false;
             for (Usage& usage : usageList) {
                 const Variable& var = *usage.var;
 
@@ -358,9 +359,11 @@ void CheckClass::constructors()
                 if (var.hasDefault()) {
                     usage.init = true;
                     hasAnyDefaultInit = true;
+                } else if (!hasAnySelfInit && isInitialized(usage, FunctionType::eConstructor)) {
+                    hasAnySelfInit = true;
                 }
             }
-            if (!hasAnyDefaultInit)
+            if (!hasAnyDefaultInit && !hasAnySelfInit)
                 continue;
 
             handleUnionMembers(usageList);

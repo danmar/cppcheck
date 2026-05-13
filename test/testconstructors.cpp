@@ -769,6 +769,19 @@ private:
               "    int a, b;\n"
               "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int i = 0; };\n" // #14697
+              "struct T {\n"
+              "    S s;\n"
+              "    int j;\n"
+              "};\n"
+              "struct U {\n"
+              "    std::string a;\n"
+              "    int k;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4:9]: (warning) Member variable 'T::j' has no initializer. [uninitMemberVarNoCtor]\n"
+                      "[test.cpp:8:9]: (warning) Member variable 'U::k' has no initializer. [uninitMemberVarNoCtor]\n",
+                      errout_str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
