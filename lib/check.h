@@ -66,17 +66,20 @@ protected:
     Check(std::string aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(std::move(aname)) {}
 
+private:
+    static std::list<Check *> &instances_internal();
+
 public:
     virtual ~Check() {
         if (!mTokenizer)
-            instances().remove(this);
+            instances_internal().remove(this);
     }
 
     Check(const Check &) = delete;
     Check& operator=(const Check &) = delete;
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
-    static std::list<Check *> &instances();
+    static const std::list<Check *> &instances();
 
     /** run checks, the token list is not simplified */
     virtual void runChecks(const Tokenizer &, ErrorLogger *) = 0;

@@ -50,9 +50,9 @@ Check::Check(const std::string &aname)
         return i->name() > aname;
     });
     if (it == instances().end())
-        instances().push_back(this);
+        instances_internal().push_back(this);
     else
-        instances().insert(it, this);
+        instances_internal().insert(it, this);
 }
 
 void Check::writeToErrorList(const ErrorMessage &errmsg)
@@ -88,7 +88,7 @@ bool Check::wrongData(const Token *tok, const char *str)
     return true;
 }
 
-std::list<Check *> &Check::instances()
+std::list<Check *> &Check::instances_internal()
 {
 #ifdef __SVR4
     // Under Solaris, destructors are called in wrong order which causes a segmentation fault.
@@ -99,6 +99,11 @@ std::list<Check *> &Check::instances()
     static std::list<Check *> _instances;
     return _instances;
 #endif
+}
+
+const std::list<Check *> &Check::instances()
+{
+    return instances_internal();
 }
 
 std::string Check::getMessageId(const ValueFlow::Value &value, const char id[])
