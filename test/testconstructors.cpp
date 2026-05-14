@@ -770,15 +770,30 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("struct S { int i = 0; };\n" // #14697
+        check("struct S {\n"
+              "    explicit S(int);\n"
+              "    S(const S&);\n"
+              "    int i;\n"
+              "};\n"
               "struct T {\n"
               "    S s;\n"
-              "    int j;\n"
-              "};\n"
-              "struct U {\n"
-              "    std::string a;\n"
-              "    int k;\n"
+              "    int j{};\n"
               "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        const char code[] = "struct S { int i = 0; };\n" // #14697
+                            "struct T {\n"
+                            "    S s;\n"
+                            "    int j;\n"
+                            "};\n"
+                            "struct U {\n"
+                            "    std::string a;\n"
+                            "    int k;\n"
+                            "};\n";
+        const Settings s = settingsBuilder(settings).cpp(Standards::CPP11).build();
+        check(code, s);
+        ASSERT_EQUALS("", errout_str());
+        check(code);
         ASSERT_EQUALS("[test.cpp:4:9]: (warning) Member variable 'T::j' has no initializer. [uninitMemberVarNoCtor]\n"
                       "[test.cpp:8:9]: (warning) Member variable 'U::k' has no initializer. [uninitMemberVarNoCtor]\n",
                       errout_str());

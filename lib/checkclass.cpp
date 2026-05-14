@@ -352,6 +352,7 @@ void CheckClass::constructors()
             // Variables with default initializers
             bool hasAnyDefaultInit = false;
             bool hasAnySelfInit = false;
+            const bool cpp14OrLater = mSettings->standards.cpp >= Standards::CPP14;
             for (Usage& usage : usageList) {
                 const Variable& var = *usage.var;
 
@@ -359,7 +360,7 @@ void CheckClass::constructors()
                 if (var.hasDefault()) {
                     usage.init = true;
                     hasAnyDefaultInit = true;
-                } else if (!hasAnySelfInit && isInitialized(usage, FunctionType::eConstructor)) {
+                } else if (cpp14OrLater && !hasAnySelfInit && isInitialized(usage, FunctionType::eConstructor)) {
                     hasAnySelfInit = true;
                 }
             }
@@ -374,6 +375,9 @@ void CheckClass::constructors()
                     continue;
 
                 const Variable& var = *usage.var;
+                if (var.typeScope() && var.typeScope()->numConstructors > 0)
+                    continue;
+                    
                 if (diagVars.count(&var) == 0)
                     uninitVarError(var.nameToken(), false, FunctionType::eConstructor, var.scope()->className, var.name(), false, false, true);
             }
