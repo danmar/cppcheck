@@ -22,6 +22,8 @@
 #define checkinternalH
 //---------------------------------------------------------------------------
 
+#ifdef CHECK_INTERNAL
+
 #include "check.h"
 #include "config.h"
 
@@ -93,4 +95,7 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
+
+#endif // CHECK_INTERNAL
+
 #endif // checkinternalH
