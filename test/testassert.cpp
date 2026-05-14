@@ -39,8 +39,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check..
-        runChecks<CheckAssert>(tokenizer, this);
+        CheckAssert check;
+        runChecks(check, tokenizer, this);
     }
 
     void run() override {

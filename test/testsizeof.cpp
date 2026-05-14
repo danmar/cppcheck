@@ -54,8 +54,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check...
-        runChecks<CheckSizeof>(tokenizer, this);
+        CheckSizeof check;
+        runChecks(check, tokenizer, this);
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
@@ -66,8 +66,8 @@ private:
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
-        // Check...
-        runChecks<CheckSizeof>(tokenizer, this);
+        CheckSizeof check;
+        runChecks(check, tokenizer, this);
     }
 
     void sizeofsizeof() {

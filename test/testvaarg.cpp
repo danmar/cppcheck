@@ -38,8 +38,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check..
-        runChecks<CheckVaarg>(tokenizer, this);
+        CheckVaarg check;
+        runChecks(check, tokenizer, this);
     }
 
     void run() override {

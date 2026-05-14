@@ -56,8 +56,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check..
-        runChecks<CheckInternal>(tokenizer, this);
+        CheckInternal check;
+        runChecks(check, tokenizer, this);
     }
 
     void simplePatternInTokenMatch() {

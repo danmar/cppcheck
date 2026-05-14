@@ -88,8 +88,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this, options.cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check...
-        runChecks<CheckBool>(tokenizer, this);
+        CheckBool check;
+        runChecks(check, tokenizer, this);
     }
 
 

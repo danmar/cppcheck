@@ -367,8 +367,8 @@ private:
         SimpleTokenizer tokenizer(*settings, *this, opt.cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check..
-        runChecks<CheckOther>(tokenizer, this);
+        CheckOther check;
+        runChecks(check, tokenizer, this);
     }
 
     struct CheckPOptions
@@ -384,8 +384,8 @@ private:
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
-        // Check..
-        runChecks<CheckOther>(tokenizer, this);
+        CheckOther check;
+        runChecks(check, tokenizer, this);
     }
 
     template<size_t size>
@@ -12314,8 +12314,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check..
-        runChecks<CheckOther>(tokenizer, this);
+        CheckOther check;
+        runChecks(check, tokenizer, this);
     }
 
     void testEvaluationOrder() {

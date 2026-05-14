@@ -199,7 +199,8 @@ private:
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        runChecks<CheckStl>(tokenizer, this);
+        CheckStl check;
+        runChecks(check, tokenizer, this);
     }
 
     // TODO: get rid of this
@@ -209,7 +210,8 @@ private:
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        runChecks<CheckStl>(tokenizer, this);
+        CheckStl check;
+        runChecks(check, tokenizer, this);
     }
 
 #define checkNormal(...) checkNormal_(__FILE__, __LINE__, __VA_ARGS__)
@@ -219,8 +221,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check..
-        runChecks<CheckStl>(tokenizer, this);
+        CheckStl check;
+        runChecks(check, tokenizer, this);
     }
 
     void outOfBounds() {
