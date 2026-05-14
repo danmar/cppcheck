@@ -44,7 +44,7 @@ private:
     }
 
     void classInfoFormat() const {
-        for (Check * const c : Check::instances()) {
+        for (const Check * const c : Check::instances()) {
             const std::string info = c->classInfo();
             if (!info.empty()) {
                 ASSERT('\n' != info[0]);         // No \n in the beginning
