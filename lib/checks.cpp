@@ -45,7 +45,9 @@
 class CheckInstancesImpl
 {
 private:
+/* *INDENT-OFF* */
 #define UPI(c) std::unique_ptr<c> m##c{new c}
+/* *INDENT-ON* */
     UPI(Check64BitPortability);
     UPI(CheckAssert);
     UPI(CheckAutoVariables);
