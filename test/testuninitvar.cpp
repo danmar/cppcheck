@@ -80,7 +80,8 @@ private:
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
-        TEST_CASE(uninitvar_ternaryexpression); // #4683
+        TEST_CASE(uninitvar_ternaryexpression1); // #4683
+        TEST_CASE(uninitvar_ternaryexpression2); // #14729
         TEST_CASE(uninitvar_pointertoarray);
         TEST_CASE(uninitvar_cpp11ArrayInit); // #7010
         TEST_CASE(uninitvar_rangeBasedFor); // #7078
@@ -2179,6 +2180,26 @@ private:
                        "    S* s = (S*)malloc(sizeof(S));\n"
                        "    sprintf(s->c, \"abc\");\n"
                        "    return s;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        checkUninitVar("int f() {\n" // #14719
+                       "    int* p = new int[]{ 1, 2 };\n"
+                       "    int i = p[0] + p[1];\n"
+                       "    delete[] p;\n"
+                       "    return i;\n"
+                       "}\n"
+                       "int g() {\n"
+                       "    int* p = new std::int32_t[]{ 1, 2 };\n"
+                       "    int i = p[0] + p[1];\n"
+                       "    delete[] p;\n"
+                       "    return i;\n"
+                       "}\n"
+                       "int h() {\n"
+                       "    int* p = new ::std::int32_t[]{ 1, 2 };\n"
+                       "    int i = p[0] + p[1];\n"
+                       "    delete[] p;\n"
+                       "    return i;\n"
                        "}\n");
         ASSERT_EQUALS("", errout_str());
     }
@@ -5427,7 +5448,7 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void uninitvar_ternaryexpression() { // #4683
+    void uninitvar_ternaryexpression1() { // #4683
         checkUninitVar("struct B { int asd; };\n"
                        "int f() {\n"
                        "    int a=0;\n"
@@ -5438,6 +5459,14 @@ private:
                        "    }\n"
                        "    return a ? b->asd : 0;\n"
                        "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void uninitvar_ternaryexpression2() { // #14729
+        checkUninitVar("void f(bool b, int i) {\n"
+                       "    int *p = (int*) malloc(4);\n"
+                       "    int *q = b ? p : &i;\n"
+                       "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -7913,6 +7942,12 @@ private:
         checkUninitVar("void f() {\n"
                        "    void (*fp[1]) (void) = {function1};\n"
                        "    (*fp[0])();\n"
+                       "}");
+        ASSERT_EQUALS("", errout_str());
+
+        checkUninitVar("void f() {\n" // #14708
+                       "    int a[1], b[1];\n"
+                       "    int* c[2]{ a, b };\n"
                        "}");
         ASSERT_EQUALS("", errout_str());
     }

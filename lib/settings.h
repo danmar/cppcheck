@@ -202,6 +202,9 @@ public:
     /** @brief Is --debug-ignore given? */
     bool debugignore{};
 
+    /** @brief Is --debug-ipc given? */
+    bool debugipc{};
+
     /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
     bool debuglookup{};
 
@@ -592,6 +595,8 @@ public:
     static ExecutorType defaultExecutor();
 
     static bool unusedFunctionOnly();
+
+    bool collectLogCheckers(bool* summary = nullptr, bool* xmlReport = nullptr, bool* textReport = nullptr) const;
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);

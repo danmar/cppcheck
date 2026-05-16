@@ -285,8 +285,8 @@ private:
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // call all "runChecks" in all registered Check classes
-        for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
-            (*it)->runChecks(tokenizer, this);
+        for (Check * const c : Check::instances()) {
+            c->runChecks(tokenizer, this);
         }
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
@@ -1343,6 +1343,8 @@ private:
                                         "{ return return { | { - name3 1 enum != >= 1 >= ++ { name6 | ; ++}}}}}}}"), UNKNOWN_MACRO);
         ASSERT_THROW_INTERNAL(checkCode("else return % name5 name2 - =name1 return enum | { - name3 1 enum != >= 1 >= ++ { { || "
                                         "{ return return { | { - name3 1 enum != >= 1 >= ++ { { || ; ++}}}}}}}}"), UNKNOWN_MACRO);
+
+        ASSERT_THROW_INTERNAL(checkCode("f(*p, requires(x));"), AST); // #14740
     }
 
     void templateSimplifierCrashes() {

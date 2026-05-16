@@ -383,7 +383,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
         return isVariableUsed(tok->astOperand1(),var) || isVariableUsed(tok->astOperand2(),var);
     if (tok->varId() != var.declarationId())
         return false;
-    if (!var.isArray())
+    if (!var.isArray() && !var.isPointer())
         return true;
 
     const Token *parent = tok->astParent();
@@ -784,12 +784,16 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 // standard or enum type: check if new initializes the allocated memory
                 if (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType()) {
                     // scalar new with initialization
-                    if (Token::Match(tok->next(), "= new %type% ("))
-                        return true;
-
                     // array new
-                    if (Token::Match(tok->next(), "= new %type% [") && Token::simpleMatch(tok->linkAt(4), "] ("))
-                        return true;
+                    if (Token::Match(tok->next(), "= new ::|%type%")) {
+                        const Token* initTok = tok->tokAt(4);
+                        while (Token::Match(initTok, "::|%type%"))
+                            initTok = initTok->next();
+                        if (Token::simpleMatch(initTok, "["))
+                            initTok = initTok->link()->next();
+                        if (Token::Match(initTok, "[({]"))
+                            return true;
+                    }
                 }
 
                 continue;
@@ -1258,8 +1262,6 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library&
         const Token *parent = valueExpr->astParent();
         while (Token::simpleMatch(parent, ","))
             parent = parent->astParent();
-        if (Token::simpleMatch(parent, "{"))
-            return valueExpr;
         const int use = isFunctionParUsage(valueExpr, library, pointer, alloc, indirect);
         return (use>0) ? valueExpr : nullptr;
     }

@@ -82,6 +82,10 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
         // cppcheck-suppress valueFlowBailout // TODO: caused by <pure/>?
         printf("%s", str);
     g_free(str);
+
+    // transfer none functions: return value should not be unreffed
+    const GApplication *app = g_application_get_default();
+    printf("%p\n", app);
 }
 
 void g_malloc_test()

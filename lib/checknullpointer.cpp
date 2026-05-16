@@ -187,6 +187,8 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         // declaration of function pointer
         if (tok->variable() && tok->variable()->nameToken() == tok)
             return false;
+        if ((tok->valueType() && tok->valueType()->pointer == 0) && !astIsIterator(tok) && !astIsSmartPointer(tok))
+            return false;
         if (!addressOf)
             return true;
     }

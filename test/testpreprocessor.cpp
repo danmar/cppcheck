@@ -343,6 +343,8 @@ private:
         TEST_CASE(getConfigsAndCodeIssue14317);
         TEST_CASE(getConfigsMostGeneralConfigIssue14317);
 
+        TEST_CASE(getConfigsInvalid); // #14732
+
         TEST_CASE(if_sizeof);
 
         TEST_CASE(invalid_ifs); // #5909
@@ -2713,6 +2715,33 @@ private:
                                 "#endif\n";
         // Test getConfigsStr()
         ASSERT_EQUALS("\nX\nY=Y\nZ\n", getConfigsStr(filedata));
+    }
+
+    void getConfigsInvalid() { // #14732
+        {
+            const char filedata[] = "#if<";
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if>";
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if==";
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if<=";
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if>=";
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if!";
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
+        }
     }
 
     void if_sizeof() { // #4071

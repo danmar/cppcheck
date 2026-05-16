@@ -1338,8 +1338,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
         const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
 
         // call all "runChecks" in all registered Check classes
-        // cppcheck-suppress shadowFunction - TODO: fix this
-        for (Check *check : Check::instances()) {
+        for (Check * const c : Check::instances()) {
             if (Settings::terminated())
                 return;
 
@@ -1357,8 +1356,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
                 return;
             }
 
-            Timer::run(check->name() + "::runChecks", mTimerResults, [&]() {
-                check->runChecks(tokenizer, &mErrorLogger);
+            Timer::run(c->name() + "::runChecks", mTimerResults, [&]() {
+                c->runChecks(tokenizer, &mErrorLogger);
             });
         }
     }
@@ -1388,11 +1387,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
         }
 
         if (!doUnusedFunctionOnly) {
-            // cppcheck-suppress shadowFunction - TODO: fix this
-            for (const Check *check : Check::instances()) {
-                if (Check::FileInfo * const fi = check->getFileInfo(tokenizer, mSettings, currentConfig)) {
+            for (const Check * const c : Check::instances()) {
+                if (Check::FileInfo * const fi = c->getFileInfo(tokenizer, mSettings, currentConfig)) {
                     if (analyzerInformation)
-                        analyzerInformation->setFileInfo(check->name(), fi->toString());
+                        analyzerInformation->setFileInfo(c->name(), fi->toString());
                     if (mSettings.useSingleJob())
                         mFileInfo.push_back(fi);
                     else
@@ -1714,8 +1712,8 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     s.addEnabled("all");
 
     // call all "getErrorMessages" in all registered Check classes
-    for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
-        (*it)->getErrorMessages(&errorlogger, &s);
+    for (const Check * const c : Check::instances())
+        c->getErrorMessages(&errorlogger, &s);
 
     CheckUnusedFunctions::getErrorMessages(errorlogger);
     Preprocessor::getErrorMessages(errorlogger, s);
@@ -1832,9 +1830,8 @@ bool CppCheck::analyseWholeProgram()
             }
         }
 
-        // cppcheck-suppress shadowFunction - TODO: fix this
-        for (Check *check : Check::instances())
-            errors |= check->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
+        for (Check * const c : Check::instances())
+            errors |= c->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
     }
 
     if (mUnusedFunctionsCheck)
@@ -1881,9 +1878,8 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     }
     else {
         // Analyse the tokens
-        // cppcheck-suppress shadowFunction - TODO: fix this
-        for (Check *check : Check::instances())
-            check->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
+        for (Check * const c : Check::instances())
+            c->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
     }
 
     for (Check::FileInfo *fi : fileInfoList)

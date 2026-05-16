@@ -3371,6 +3371,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
+        check("enum E : uint8_t { E0 }; \n" // #7959
+              "void f(E e) {\n"
+              "    printf(\"%hhu\", e);\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
+        check("enum E : uint8_t { E0 }; \n"
+              "void f(E e) {\n"
+              "    printf(\"%lu\", e);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'uint8_t'.\n",
+                           "",
+                           errout_str());
+
         check("void f() {\n"
               "    printf(\"%lu\", sizeof(char));\n"
               "}\n", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win64));

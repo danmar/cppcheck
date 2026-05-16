@@ -139,8 +139,6 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     setWindowTitle(title);
     loadSettings();
 
-    mUI->premiumLicense->setVisible(false);
-
     QStringList libs;
     // Search the std.cfg first since other libraries could depend on it
     QString stdLibraryFilename;
@@ -464,7 +462,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mToolClangTidy->setEnabled(false);
     }
     mUI->mEditTags->setText(projectFile->getTags().join(';'));
-    mUI->mEditLicenseFile->setText(projectFile->getLicenseFile());
     updatePathsAndDefines();
 }
 
@@ -552,7 +549,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setBughunting(mUI->mBughunting->isChecked());
     projectFile->setClangAnalyzer(mUI->mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI->mToolClangTidy->isChecked());
-    projectFile->setLicenseFile(mUI->mEditLicenseFile->text());
     projectFile->setTags(mUI->mEditTags->text().split(";", Qt::SkipEmptyParts));
 }
 

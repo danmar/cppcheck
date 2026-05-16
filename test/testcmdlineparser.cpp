@@ -498,6 +498,7 @@ private:
         TEST_CASE(noSafety);
         TEST_CASE(noSafetyOverride);
         TEST_CASE(debugAnalyzerinfo);
+        TEST_CASE(debugIpc);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -1618,6 +1619,14 @@ private:
         const char * const argv[] = {"cppcheck", "--premium-cert-c-int-precision=12", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS("--cert-c-int-precision=12", settings->premiumArgs);
+    }
+
+    void premiumOptionsCertCIntPrecisionInvalid() {
+        REDIRECT;
+        asPremium();
+        const char * const argv[] = {"cppcheck", "--premium-cert-c-int-precision=abc", "file.c"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--premium-cert-c-int-precision=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void premiumOptionsLicenseFile() {
@@ -3477,6 +3486,13 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-analyzerinfo", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugainfo);
+    }
+
+    void debugIpc() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-ipc", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugipc);
     }
 
     void ignorepaths1() {

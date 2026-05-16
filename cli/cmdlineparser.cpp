@@ -359,9 +359,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         if (std::strcmp(argv[i], "--doc") == 0) {
             std::ostringstream doc;
             // Get documentation..
-            for (const Check * it : Check::instances()) {
-                const std::string& name(it->name());
-                const std::string info(it->classInfo());
+            for (const Check * const c : Check::instances()) {
+                const std::string& name(c->name());
+                const std::string info(c->classInfo());
                 if (!name.empty() && !info.empty())
                     doc << "## " << name << " ##\n"
                         << info << "\n";
@@ -630,6 +630,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         // Show debug messages for ignored files
         else if (std::strcmp(argv[i], "--debug-ignore") == 0)
             mSettings.debugignore = true;
+
+        else if (std::strcmp(argv[i], "--debug-ipc") == 0)
+            mSettings.debugipc = true;
 
         // Show --debug output after the first simplifications
         else if (std::strcmp(argv[i], "--debug") == 0 ||
@@ -1147,6 +1150,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             if (!valid.count(p3) && !valid2.count(p2)) {
                 mLogger.printError("invalid --premium option '" + (p2.empty() ? p : p2) + "'.");
                 return Result::Fail;
+            }
+            if (p2 == "cert-c-int-precision") {
+                int tmp;
+                if (!parseNumberArg(argv[i], 31, tmp, true))
+                    return Result::Fail;
             }
             mSettings.premiumArgs += "--" + p;
             if (isCodingStandard) {

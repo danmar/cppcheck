@@ -684,7 +684,7 @@ void CheckCondition::multiCondition2()
                 if (!nonlocal && var) {
                     if (!(var->isLocal() || var->isArgument()))
                         nonlocal = true;
-                    else if ((var->isPointer() || var->isReference()) && !Token::Match(cond->astParent(), "%oror%|&&|!"))
+                    else if ((var->isPointer() || var->isReference() || var->isArray()) && !Token::Match(cond->astParent(), "%oror%|&&|!"))
                         // TODO: if var is pointer check what it points at
                         nonlocal = true;
                 }
@@ -2085,10 +2085,10 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     }
 }
 
-void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, MathLib::bigint value, bool result)
+void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparisonTok, const std::string &type, MathLib::bigint value, bool result)
 {
     reportError(
-        comparison,
+        comparisonTok,
         Severity::style,
         "compareValueOutOfTypeRangeError",
         "Comparing expression of type '" + type + "' against value " + MathLib::toString(value) + ". Condition is always " + bool_to_string(result) + ".",

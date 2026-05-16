@@ -33,18 +33,19 @@ private:
     }
 
     void instancesSorted() const {
-        for (auto i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
+        const auto& checks = Check::instances();
+        for (auto i = checks.cbegin(); i != checks.cend(); ++i) {
             auto j = i;
             ++j;
-            if (j != Check::instances().cend()) {
+            if (j != checks.cend()) {
                 ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
             }
         }
     }
 
     void classInfoFormat() const {
-        for (auto i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
-            const std::string info = (*i)->classInfo();
+        for (const Check * const c : Check::instances()) {
+            const std::string info = c->classInfo();
             if (!info.empty()) {
                 ASSERT('\n' != info[0]);         // No \n in the beginning
                 ASSERT('\n' == info.back());     // \n at end

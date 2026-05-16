@@ -37,6 +37,7 @@ public:
 
 private:
     const Settings settings = settingsBuilder().library("std.cfg").severity(Severity::warning).build();
+    const Settings settings_i = settingsBuilder(settings).certainty(Certainty::inconclusive).build();
 
     void run() override {
         mNewTemplate = true;
@@ -183,16 +184,25 @@ private:
     {
         bool inconclusive = false;
         bool cpp = true;
-        Standards::cstd_t cstd = Standards::CLatest;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).c(options.cstd).build();
+        const Settings& settings1 = options.inconclusive ? settings_i : settings;
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        // Check for null pointer dereferences..
+        runChecks<CheckNullPointer>(tokenizer, this);
+    }
+
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool cpp, const Settings& s) {
+        // Tokenize..
+        SimpleTokenizer tokenizer(s, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for null pointer dereferences..
@@ -1338,7 +1348,8 @@ private:
         check(code); // C++ file => nullptr means NULL
         ASSERT_EQUALS("[test.cpp:4:11]: (error) Null pointer dereference: i [nullPointer]\n", errout_str());
 
-        check(code, dinit(CheckOptions, $.cpp = false, $.cstd = Standards::C17)); // C17 file => nullptr does not mean NULL
+        const Settings s = settingsBuilder(settings).c(Standards::C17).build();
+        check(code, false, s); // C17 file => nullptr does not mean NULL
         ASSERT_EQUALS("", errout_str());
 
         check(code, dinit(CheckOptions, $.cpp = false));
@@ -4819,6 +4830,15 @@ private:
                       "[test.cpp:5:20]: note: Assignment 'f=fopen(notexist,t)', assigned value is 0\n"
                       "[test.cpp:6:8]: note: Calling function foo, 1st argument is null\n"
                       "[test.cpp:2:13]: note: Dereferencing argument f that is null\n", errout_str());
+
+        ctu("void g(std::optional<int>& o) {\n" // #14728
+            "    *o = 1;\n"
+            "}\n"
+            "void f() {\n"
+            "    std::optional<int> x = 0;\n"
+            "    g(x);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

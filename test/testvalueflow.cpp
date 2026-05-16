@@ -4119,6 +4119,15 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+
+        code = "double f(double d, bool b) {\n" // #14734
+               "    double s = 0.0;\n"
+               "    if (b)\n"
+               "        s += d;\n"
+               "    return s > 0.0 ? s : 0.0;\n"
+               "}\n";
+        auto values = tokenValues(code, "s :", ValueFlow::Value::ValueType::FLOAT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowForwardLambda() {
@@ -7486,6 +7495,16 @@ private:
                "    if (s.empty()) {}\n"
                "}";
         ASSERT(!isKnownContainerSizeValue(tokenValues(code, "s ."), 0).empty());
+
+        code = "void g(std::map<int, int>* p) {\n" // #14721
+               "    (*p)[1] = 2;\n"
+               "}\n"
+               "void f() {\n"
+               "    std::map<int, int> m;\n"
+               "    g(&m);\n"
+               "    if (m.empty()) {}\n"
+               "}\n";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "m ."), 0).empty());
     }
 
     void valueFlowContainerElement()
