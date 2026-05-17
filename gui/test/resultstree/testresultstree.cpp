@@ -274,7 +274,7 @@ void TestResultsTree::testReportType() const
     TestReport report("{id},{classification},{guideline}");
 
     int msgCount = 0;
-    auto createErrorItem = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem {
+    auto createErrorItemFn = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem {
         ++msgCount;
         ErrorItem errorItem;
         errorItem.errorPath << QErrorPathItem(ErrorMessage::FileLocation("file1.c", msgCount, 1));
@@ -287,8 +287,8 @@ void TestResultsTree::testReportType() const
     // normal report with 2 errors
     ResultsTree tree(nullptr);
     tree.updateSettings(false, false, false, false, false);
-    tree.addErrorItem(createErrorItem(Severity::style, "id1"));
-    tree.addErrorItem(createErrorItem(Severity::style, "unusedVariable")); // Misra C 2.8
+    tree.addErrorItem(createErrorItemFn(Severity::style, "id1"));
+    tree.addErrorItem(createErrorItemFn(Severity::style, "unusedVariable")); // Misra C 2.8
     tree.saveResults(&report);
     QCOMPARE(report.output, "id1,,\nunusedVariable,,");
 
@@ -298,7 +298,7 @@ void TestResultsTree::testReportType() const
     QCOMPARE(report.output, "unusedVariable,Advisory,2.8");
 
     // add "missingReturn" and check that it is added properly
-    tree.addErrorItem(createErrorItem(Severity::warning, "missingReturn")); // Misra C 17.4
+    tree.addErrorItem(createErrorItemFn(Severity::warning, "missingReturn")); // Misra C 17.4
     tree.saveResults(&report);
     QCOMPARE(report.output,
              "unusedVariable,Advisory,2.8\n"
@@ -341,7 +341,7 @@ void TestResultsTree::testGetGuidelineError() const
     TestReport report("{id},{classification},{guideline}");
 
     int msgCount = 0;
-    auto createErrorItem = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem {
+    auto createErrorItemFn = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem {
         ++msgCount;
         ErrorItem errorItem;
         errorItem.errorPath << QErrorPathItem(ErrorMessage::FileLocation("file1.c", msgCount, 1));
@@ -354,7 +354,7 @@ void TestResultsTree::testGetGuidelineError() const
     // normal report with 2 errors
     ResultsTree tree(nullptr);
     tree.setReportType(ReportType::misraC2012);
-    tree.addErrorItem(createErrorItem(Severity::error, "id1")); // error severity => guideline 1.3
+    tree.addErrorItem(createErrorItemFn(Severity::error, "id1")); // error severity => guideline 1.3
     tree.saveResults(&report);
     QCOMPARE(report.output, "id1,Required,1.3");
 }
