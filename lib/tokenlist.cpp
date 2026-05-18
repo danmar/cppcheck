@@ -1837,7 +1837,7 @@ static Token * createAstAtToken(Token *tok)
             }
             typetok = typetok->next();
         }
-        if (Token::Match(typetok, "%var% =") && typetok->varId())
+        if (Token::Match(typetok, "%var% [={]"))
             tok = typetok;
 
         // Do not create AST for function declaration
