@@ -545,7 +545,29 @@ private:
               "    FILE *a = fopen(\"aa\", \"r\");\n"
               "    while (fclose(a)) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3:5]: (error) Used file that is not opened. [useClosedFile]\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:12]: (warning) fclose() used as loop condition may skip loop body or double-close file handle. [fcloseInLoopCondition]\n", errout_str());
+
+        check("void foo() {\n"
+              "    FILE *a = fopen(\"aa\", \"r\");\n"
+              "    while (fclose(a)) {\n"
+              "         break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void foo() {\n"
+              "    FILE *a = fopen(\"aa\", \"r\");\n"
+              "    while (fclose(a)) {\n"
+              "        a = fopen(\"aa\", \"r\");\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void foo() {\n"
+              "    FILE *a = fopen(\"aa\", \"r\");\n"
+              "    do {} while (fclose(a));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3:18]: (warning) fclose() used as loop condition may skip loop body or double-close file handle. [fcloseInLoopCondition]\n", errout_str());
 
         // #6823
         check("void foo() {\n"
