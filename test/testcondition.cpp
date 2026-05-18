@@ -149,8 +149,8 @@ private:
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
-        // Run checks..
-        runChecks<CheckCondition>(tokenizer, this);
+        CheckCondition check;
+        runChecks(check, tokenizer, this);
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
@@ -162,8 +162,8 @@ private:
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
-        // Run checks..
-        runChecks<CheckCondition>(tokenizer, this);
+        CheckCondition check;
+        runChecks(check, tokenizer, this);
     }
 
     void assignAndCompare() {
@@ -527,7 +527,8 @@ private:
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        runChecks<CheckCondition>(tokenizer, this);
+        CheckCondition check;
+        runChecks(check, tokenizer, this);
     }
 
     void multicompare() {

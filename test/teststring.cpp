@@ -74,8 +74,8 @@ private:
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
-        // Check char variable usage..
-        runChecks<CheckString>(tokenizer, this);
+        CheckString check;
+        runChecks(check, tokenizer, this);
     }
 
     void stringLiteralWrite() {

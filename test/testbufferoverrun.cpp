@@ -56,8 +56,8 @@ private:
         SimpleTokenizer tokenizer(settings, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(tokenizer, this);
+        CheckBufferOverrun check;
+        runChecks(check, tokenizer, this);
     }
 
     // TODO: get rid of this
@@ -66,8 +66,8 @@ private:
         SimpleTokenizer tokenizer(settings0_i, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(tokenizer, this);
+        CheckBufferOverrun check;
+        runChecks(check, tokenizer, this);
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
@@ -79,8 +79,8 @@ private:
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
-        // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(tokenizer, this);
+        CheckBufferOverrun check;
+        runChecks(check, tokenizer, this);
     }
 
     void run() override {
@@ -5169,7 +5169,8 @@ private:
 
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
-        const Check& c = getCheck<CheckBufferOverrun>();
+        CheckBufferOverrun check;
+        const Check& c = getCheck(check);
         c.getErrorMessages(this, nullptr);
         // we are not interested in the output - just consume it
         ignore_errout();
@@ -5362,9 +5363,9 @@ private:
 
         CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
 
-        // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        Check& c = getCheck<CheckBufferOverrun>();
+        CheckBufferOverrun check;
+        Check& c = getCheck(check);
         fileInfo.push_back(c.getFileInfo(tokenizer, settings0, ""));
         c.analyseWholeProgram(*ctu, fileInfo, settings0, *this); // TODO: check result
         while (!fileInfo.empty()) {

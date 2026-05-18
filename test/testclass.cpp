@@ -9278,7 +9278,8 @@ private:
 
 
     void ctu(const std::vector<std::string> &code) {
-        Check &check = getCheck<CheckClass>();
+        CheckClass checkClass;
+        Check &check = getCheck(checkClass);
 
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
@@ -9330,8 +9331,8 @@ private:
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check..
-        const Check& c = getCheck<CheckClass>();
+        CheckClass check;
+        const Check& c = getCheck(check);
         Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1, "");
 
         delete fileInfo;

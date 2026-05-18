@@ -113,7 +113,8 @@ private:
             checkIO.checkWrongPrintfScanfArguments();
             return;
         }
-        runChecks<CheckIO>(tokenizer, this);
+        CheckIO check;
+        runChecks(check, tokenizer, this);
     }
 
     void coutCerrMisusage() {

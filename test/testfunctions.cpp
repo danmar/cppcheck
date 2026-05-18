@@ -132,7 +132,8 @@ private:
         SimpleTokenizer tokenizer(s, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        runChecks<CheckFunctions>(tokenizer, this);
+        CheckFunctions check;
+        runChecks(check, tokenizer, this);
     }
 
     void prohibitedFunctions_posix() {

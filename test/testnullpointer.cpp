@@ -190,23 +190,17 @@ private:
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
         const Settings& settings1 = options.inconclusive ? settings_i : settings;
-
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
-
-        // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(tokenizer, this);
+        check_(file, line, code, settings1, options.cpp);
     }
 
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], bool cpp, const Settings& s) {
+    void check_(const char* file, int line, const char (&code)[size], const Settings& s, bool cpp = true) {
         // Tokenize..
         SimpleTokenizer tokenizer(s, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(tokenizer, this);
+        CheckNullPointer check;
+        runChecks(check, tokenizer, this);
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
@@ -217,8 +211,8 @@ private:
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
-        // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(tokenizer, this);
+        CheckNullPointer check;
+        runChecks(check, tokenizer, this);
     }
 
 
@@ -1349,7 +1343,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4:11]: (error) Null pointer dereference: i [nullPointer]\n", errout_str());
 
         const Settings s = settingsBuilder(settings).c(Standards::C17).build();
-        check(code, false, s); // C17 file => nullptr does not mean NULL
+        check(code, s, false); // C17 file => nullptr does not mean NULL
         ASSERT_EQUALS("", errout_str());
 
         check(code, dinit(CheckOptions, $.cpp = false));
@@ -4698,9 +4692,9 @@ private:
 
         CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
 
-        // Check code..
+        CheckNullPointer check;
+        Check& c = getCheck(check);
         std::list<Check::FileInfo*> fileInfo;
-        Check& c = getCheck<CheckNullPointer>();
         fileInfo.push_back(c.getFileInfo(tokenizer, settings, ""));
         c.analyseWholeProgram(*ctu, fileInfo, settings, *this); // TODO: check result
         while (!fileInfo.empty()) {

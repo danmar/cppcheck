@@ -5580,7 +5580,8 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        Check& c = getCheck<CheckUninitVar>();
+        CheckUninitVar check;
+        Check& c = getCheck(check);
         fileInfo.push_back(c.getFileInfo(tokenizer, settings, ""));
         c.analyseWholeProgram(*ctu, fileInfo, settings, *this); // TODO: check result
         while (!fileInfo.empty()) {
