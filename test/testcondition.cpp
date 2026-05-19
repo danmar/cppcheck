@@ -6472,6 +6472,19 @@ private:
               "    if (INT_MAX > ll * 8) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("bool f(int a, int b) {\n" // #12896
+              "    if (a < INT_MIN && b > INT_MAX)\n"
+              "        return true;\n"
+              "    return false;\n"
+              "}\n"
+              "bool g(int x) {\n" // #6796
+              "    return (x > INT_MAX) ? true : false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:13]: (style) Comparing expression of type 'signed int' against value -2147483648. Condition is always false. [compareValueOutOfTypeRangeError]\n"
+                      "[test.cpp:2:28]: (style) Comparing expression of type 'signed int' against value 2147483647. Condition is always false. [compareValueOutOfTypeRangeError]\n"
+                      "[test.cpp:7:17]: (style) Comparing expression of type 'signed int' against value 2147483647. Condition is always false. [compareValueOutOfTypeRangeError]\n",
+                      errout_str());
     }
 
     void knownConditionCast() {
