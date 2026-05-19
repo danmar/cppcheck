@@ -4835,6 +4835,12 @@ private:
                       "[test.cpp:3:5]: (warning) Return value of std::remove_if() ignored. Elements remain in container. [uselessCallsRemove]\n"
                       "[test.cpp:4:5]: (warning) Return value of std::unique() ignored. Elements remain in container. [uselessCallsRemove]\n", errout_str());
 
+        check("void f(std::string& s) {\n" // #14764
+              "    auto it{ std::remove(s.begin(), s.end(), 'a') };\n"
+              "    s.erase(it, s.end());\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
         // #4431 - fp
         check("bool f() {\n"
               "    return x ? true : (y.empty());\n"
