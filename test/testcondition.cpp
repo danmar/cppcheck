@@ -6473,7 +6473,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("bool f(int a, int b) {\n" / #12896
+        check("bool f(int a, int b) {\n" // #12896
               "    if (a < INT_MIN && b > INT_MAX)\n"
               "        return true;\n"
               "    return false;\n"
