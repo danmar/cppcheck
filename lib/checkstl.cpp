@@ -2328,7 +2328,7 @@ void CheckStl::uselessCalls()
                        !tok->tokAt(4)->astParent() &&
                        tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
                 uselessCallsEmptyError(tok->next());
-            else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
+            else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument() && !tok->tokAt(4)->astParent())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));
             else if (printPerformance && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                 if (Token::Match(tok, "%var% = { %var% . begin ( ) ,") && tok->varId() == tok->tokAt(3)->varId())
