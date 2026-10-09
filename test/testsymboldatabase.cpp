@@ -1628,6 +1628,16 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->reference == Reference::None);
         }
+        { // pointer to member function returning a reference
+            GET_SYMBOL_DB("struct S { int& g(); };\n"
+                          "void foo(int& (S::*pm)()) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p);
+            ASSERT_EQUALS("pm", p->name());
+            ASSERT(!p->isReference());
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
         { // reference to function pointer
             GET_SYMBOL_DB("void foo(int (*&f)()) {}\n");
             const Variable* const p = db->getVariableFromVarId(1);
