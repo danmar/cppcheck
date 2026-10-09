@@ -1638,6 +1638,18 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->reference == Reference::None);
         }
+        { // parentheses that are no function declarator
+            GET_SYMBOL_DB("void foo(int& (r)) {}\n");
+            const Variable* const p = db->functionScopes.front()->function->getArgumentVar(0);
+            ASSERT(p);
+            ASSERT(p->isReference());
+        }
+        {
+            GET_SYMBOL_DB("void foo(int& UNUSED(r)) {}\n");
+            const Variable* const p = db->functionScopes.front()->function->getArgumentVar(0);
+            ASSERT(p);
+            ASSERT(p->isReference());
+        }
         { // reference to function pointer
             GET_SYMBOL_DB("void foo(int (*&f)()) {}\n");
             const Variable* const p = db->getVariableFromVarId(1);
