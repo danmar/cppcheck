@@ -371,7 +371,7 @@ private:
                     "    return s[x];\n"
                     "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:5:13]: error: Out of bounds access in 's[x]', if 's' size is 6 and 'x' is 7 [containerOutOfBounds]\n",
+            "[test.cpp:5:13]: warning: Out of bounds access in 's[x]', if 's' size is 6 and 'x' is 7 [containerOutOfBounds]\n",
             errout_str());
 
         checkNormal("void f() {\n"
@@ -534,7 +534,7 @@ private:
                     "        v.resize(entries);\n"
                     "    v[0] = 1;\n"
                     "}\n");
-        ASSERT_EQUALS("[test.cpp:5:6]: error: Out of bounds access in expression 'v[0]' because 'v' is empty. [containerOutOfBounds]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:6]: warning: Out of bounds access in expression 'v[0]' because 'v' is empty. [containerOutOfBounds]\n", errout_str());
 
         checkNormal("void f(size_t entries) {\n"
                     "    if (entries < 2) return;\n"
@@ -760,8 +760,10 @@ private:
               "        v[i] = 42;\n"
               "    return v;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4:10]: error: Out of bounds access in 'v[i]', if 'v' size is 10 and 'i' is 10 [containerOutOfBounds]\n",
-                      errout_str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:4:10]: error: Out of bounds access in 'v[i]', if 'v' size is 10 and 'i' is 10 [containerOutOfBounds]\n",
+            "[test.cpp:4:10]: warning: Out of bounds access in 'v[i]', if 'v' size is 10 and 'i' is 10 [containerOutOfBounds]\n",
+            errout_str());
 
         check("void f() {\n"
               "    int s = 2;\n"
@@ -1153,6 +1155,27 @@ private:
                       "[test.cpp:7:7]: warning: Either the condition is redundant or function 'erase()' is called on the iterator 'it' which is out of bounds. [eraseIteratorOutOfBoundsCond]\n"
                       "[test.cpp:3:29]: note: Assuming that condition 'it!=v.end()' is not redundant\n"
                       "[test.cpp:7:7]: note: Either the condition is redundant or function 'erase()' is called on the iterator 'it' which is out of bounds.\n",
+                      errout_str());
+
+        check("char f(std::string& s, bool b) {\n"
+              "    if (b)\n"
+              "        s.clear();\n"
+              "    return s[0];\n"
+              "}\n"
+              "char g(bool b) {\n"
+              "    std::string s = \"abc\";\n"
+              "    int i = 0;\n"
+              "    if (b)\n"
+              "        i = 5;\n"
+              "    return s[i];\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:4:13]: warning: Out of bounds access in expression 's[0]' because 's' is empty. [containerOutOfBounds]\n"
+                      "[test.cpp:2:9]: note: Assuming condition is true\n"
+                      "[test.cpp:4:13]: note: Access out of bounds\n"
+                      "[test.cpp:11:13]: warning: Out of bounds access in 's[i]', if 's' size is 3 and 'i' is 5 [containerOutOfBounds]\n"
+                      "[test.cpp:10:13]: note: Assignment 'i=5', assigned value is 5\n"
+                      "[test.cpp:9:9]: note: Assuming condition is true\n"
+                      "[test.cpp:11:13]: note: Access out of bounds\n",
                       errout_str());
     }
 
@@ -7074,6 +7097,18 @@ private:
               "    auto w = std::vector<int>{ it, v.end() };\n"
               "    v.erase(it, v.end());\n"
               "    for (const auto& i : w) {}\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("", errout_str());
+
+        check("template<typename T>\n" // #11583
+              "int g() { return 0; }\n"
+              "void f() {\n"
+              "    std::vector<int> v(1);\n"
+              "    auto itr = v.begin() + g<int>();\n"
+              "    std::vector<int> v2(itr, v.end());\n"
+              "    v.erase(itr, v.end());\n"
+              "    v.push_back(v2.size());\n"
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());

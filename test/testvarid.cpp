@@ -161,6 +161,7 @@ private:
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
+        TEST_CASE(varid_initListWithLambda);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
@@ -2715,6 +2716,30 @@ private:
                       "10: D < T ... > d@2 ;\n"
                       "11: } ;\n",
                       tokenize(code13));
+
+        const char code14[] = "struct S {\n" // #15062
+                              "    int x;\n"
+                              "    int* p;\n"
+                              "    S(int* p) : x(f(0, {0})), p(p) {}\n"
+                              "    S(int* p, int) : x(f(0, {{1}, 2})), p(p) {}\n"
+                              "};\n"
+                              "struct T {\n"
+                              "    int* p;\n"
+                              "    int g();\n"
+                              "};\n"
+                              "int T::g() { return *p; }\n";
+        ASSERT_EQUALS("1: struct S {\n"
+                      "2: int x@1 ;\n"
+                      "3: int * p@2 ;\n"
+                      "4: S ( int * p@3 ) : x@1 ( f ( 0 , { 0 } ) ) , p@2 ( p@3 ) { }\n"
+                      "5: S ( int * p@4 , int ) : x@1 ( f ( 0 , { { 1 } , 2 } ) ) , p@2 ( p@4 ) { }\n"
+                      "6: } ;\n"
+                      "7: struct T {\n"
+                      "8: int * p@5 ;\n"
+                      "9: int g ( ) ;\n"
+                      "10: } ;\n"
+                      "11: int T :: g ( ) { return * p@5 ; }\n",
+                      tokenize(code14));
     }
 
     void varid_initListWithBaseTemplate() {
@@ -2787,6 +2812,82 @@ private:
                       "3: int x@1 ;\n"
                       "4: } ;\n",
                       tokenize(code1));
+    }
+
+    void varid_initListWithLambda() {
+        const char code1[] = "struct S {\n"
+                             "    int x;\n"
+                             "    int* p;\n"
+                             "    S(int* p) : x([p] { return *p; }()), p(p) {}\n"
+                             "    S(int* p, int* q) : x([p](int* q) { return *p + *q; }(q)), p(q) {}\n"
+                             "    S(int* p, char) : x([p]() noexcept { int v = *p; return v; }()), p{p} {}\n"
+                             "};\n"
+                             "struct T {\n"
+                             "    int* p;\n"
+                             "    int g();\n"
+                             "};\n"
+                             "int T::g() { return *p; }\n";
+        ASSERT_EQUALS("1: struct S {\n"
+                      "2: int x@1 ;\n"
+                      "3: int * p@2 ;\n"
+                      "4: S ( int * p@3 ) : x@1 ( [ p@3 ] { return * p@3 ; } ( ) ) , p@2 ( p@3 ) { }\n"
+                      "5: S ( int * p@4 , int * q@5 ) : x@1 ( [ p@4 ] ( int * q@6 ) { return * p@4 + * q@6 ; } ( q@5 ) ) , p@2 ( q@5 ) { }\n"
+                      "6: S ( int * p@7 , char ) : x@1 ( [ p@7 ] ( ) noexcept ( true ) { int v@8 ; v@8 = * p@7 ; return v@8 ; } ( ) ) , p@2 { p@7 } { }\n"
+                      "7: } ;\n"
+                      "8: struct T {\n"
+                      "9: int * p@9 ;\n"
+                      "10: int g ( ) ;\n"
+                      "11: } ;\n"
+                      "12: int T :: g ( ) { return * p@9 ; }\n",
+                      tokenize(code1));
+
+        const char code2[] = "struct S {\n"
+                             "    int x;\n"
+                             "    int* p;\n"
+                             "    S(int* p) : x(*[p]() -> int* { return p; }()), p(p) {}\n"
+                             "};\n";
+        ASSERT_EQUALS("1: struct S {\n"
+                      "2: int x@1 ;\n"
+                      "3: int * p@2 ;\n"
+                      "4: S ( int * p@3 ) : x@1 ( * [ p@3 ] ( ) . int * { return p@3 ; } ( ) ) , p@2 ( p@3 ) { }\n"
+                      "5: } ;\n",
+                      tokenize(code2));
+
+        const char code3[] = "enum { N = 2 };\n" // no lambda
+                             "struct S {\n"
+                             "    int* q;\n"
+                             "    S(int b) : q(new int[2]{ N * b, 1 }) {}\n"
+                             "};\n"
+                             "struct T {\n"
+                             "    std::vector<int>** r;\n"
+                             "    T(std::vector<int>* c) : r(new std::vector<int>*[2]{ N * c, c }) {}\n"
+                             "};\n"
+                             "struct U {\n"
+                             "    int** r;\n"
+                             "    U(int* c) : r(new (std::nothrow) int*[2]{ N * c, c }) {}\n"
+                             "};\n"
+                             "struct V {\n"
+                             "    int** r;\n"
+                             "    V(int* c) : r(new decltype(c)*[2]{ N * c, c }) {}\n"
+                             "};\n";
+        ASSERT_EQUALS("1: enum Anonymous0 { N = 2 } ;\n"
+                      "2: struct S {\n"
+                      "3: int * q@1 ;\n"
+                      "4: S ( int b@2 ) : q@1 ( new int [ 2 ] { N * b@2 , 1 } ) { }\n"
+                      "5: } ;\n"
+                      "6: struct T {\n"
+                      "7: std :: vector < int > * * r@3 ;\n"
+                      "8: T ( std :: vector < int > * c@4 ) : r@3 ( new std :: vector < int > * [ 2 ] { N * c@4 , c@4 } ) { }\n"
+                      "9: } ;\n"
+                      "10: struct U {\n"
+                      "11: int * * r@5 ;\n"
+                      "12: U ( int * c@6 ) : r@5 ( new ( std :: nothrow ) int * [ 2 ] { N * c@6 , c@6 } ) { }\n"
+                      "13: } ;\n"
+                      "14: struct V {\n"
+                      "15: int * * r@7 ;\n"
+                      "16: V ( int * c@8 ) : r@7 ( new decltype ( c@8 ) * [ 2 ] { N * c@8 , c@8 } ) { }\n"
+                      "17: } ;\n",
+                      tokenize(code3));
     }
 
     void varid_operator() {

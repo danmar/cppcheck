@@ -2773,6 +2773,18 @@ private:
               "void S::func(S::F f) {}\n");
         ASSERT_EQUALS("", errout_str());
 
+        check("bool f(std::vector<std::vector<int>> v) {\n" // #12136
+              "    if (v.size() != 10U)\n"
+              "        return false;\n"
+              "    for (auto it = v.begin(); it != v.end(); ++it) {\n"
+              "        if (it->size() < 9U)\n"
+              "            return false;\n"
+              "        it->erase(it->begin(), it->begin() + 9U);\n"
+              "    }\n"
+              "    return true;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
         /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
@@ -11519,6 +11531,30 @@ private:
                       "[test.cpp:8:8]: style: Redundant initialization for 'i'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
                       "[test.cpp:7:12]: note: i is initialized\n"
                       "[test.cpp:8:8]: note: i is overwritten\n", errout_str());
+
+        check("int g();\n" // #15023
+              "int f1() {\n"
+              "    int i{ g() };\n"
+              "    i = 0;\n"
+              "    return i;\n"
+              "}\n"
+              "int f2() {\n"
+              "    int i(g());\n"
+              "    i = 0;\n"
+              "    return i;\n"
+              "}\n"
+              "int f3() {\n"
+              "    int i{ 1 };\n"
+              "    i = 0;\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:7]: style: Redundant initialization for 'i'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:3:10]: note: i is initialized\n"
+                      "[test.cpp:4:7]: note: i is overwritten\n"
+                      "[test.cpp:9:7]: style: Redundant initialization for 'i'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:8:10]: note: i is initialized\n"
+                      "[test.cpp:9:7]: note: i is overwritten\n",
+                      errout_str());
     }
 
     // cppcheck-suppress unusedPrivateFunction
@@ -12987,6 +13023,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4:9]: (warning) Access of moved variable 'p'. [accessMoved]\n"
                       "[test.cpp:5:9]: (warning) Access of moved variable 'p'. [accessMoved]\n", errout_str());
+
+        check("void h(std::unique_ptr<int>);\n" // #12436
+              "void g(int);\n"
+              "void f() {\n"
+              "    std::unique_ptr<int> p = std::make_unique<int>(5);\n"
+              "    int* w = p.get();\n"
+              "    h(std::move(p));\n"
+              "    g(*w);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5:10]: (style) Variable 'w' can be declared as pointer to const [constVariablePointer]\n", errout_str());
     }
 
     void moveAndAddressOf() {
