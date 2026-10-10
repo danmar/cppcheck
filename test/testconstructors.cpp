@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check class constructors..
-        CheckClass checkClass(&tokenizer, &settings1, this);
+        CheckClassImpl checkClass(&tokenizer, settings1, *this);
         checkClass.constructors();
     }
 
@@ -92,6 +92,7 @@ private:
         TEST_CASE(noConstructor13); // #9998
         TEST_CASE(noConstructor14); // #10770
         TEST_CASE(noConstructor15); // #5499
+        TEST_CASE(noConstructor16);
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
@@ -239,21 +240,21 @@ private:
               "{\n"
               "public:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
               "{\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:1:1]: (style) The class 'Fred' does not declare a constructor although it has private member variables which likely require initialization. [noConstructor]\n", errout_str());
 
         check("struct Fred\n"
               "{\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:1:1]: (style) The struct 'Fred' does not declare a constructor although it has private member variables which likely require initialization. [noConstructor]\n", errout_str());
     }
 
@@ -266,7 +267,7 @@ private:
               "    Fred(Fred const & other) : i(other.i) {}\n"
               "    Fred(Fred && other) : i(other.i) {}\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -276,7 +277,7 @@ private:
               "    Fred(Fred const & other) {i=other.i}\n"
               "    Fred(Fred && other) {i=other.i}\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -286,7 +287,7 @@ private:
               "    Fred(Fred const & other) {}\n"
               "    Fred(Fred && other) {}\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:5]: (warning) Member variable 'Fred::i' is not initialized in the copy constructor. [uninitMemberVar]\n"
                       "[test.cpp:6:5]: (warning) Member variable 'Fred::i' is not initialized in the move constructor. [uninitMemberVar]\n", errout_str());
@@ -297,7 +298,7 @@ private:
               "    Fred(Fred const & other) {}\n"
               "    Fred(Fred && other) {}\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:4:5]: (warning) Member variable 'Fred::i' is not initialized in the copy constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:5]: (warning) Member variable 'Fred::i' is not initialized in the move constructor. [uninitMemberVar]\n", errout_str());
@@ -311,7 +312,7 @@ private:
               "    int i;\n"
               "};\n"
               "Fred::Fred() :i(0)\n"
-              "{ }");
+              "{ }\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Fred\n"
@@ -320,7 +321,7 @@ private:
               "    int i;\n"
               "};\n"
               "Fred::Fred()\n"
-              "{ i = 0; }");
+              "{ i = 0; }\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Fred\n"
@@ -329,7 +330,7 @@ private:
               "    int i;\n"
               "};\n"
               "Fred::Fred()\n"
-              "{ }");
+              "{ }\n");
         ASSERT_EQUALS("[test.cpp:6:7]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -364,7 +365,7 @@ private:
               "    }\n"
               "private:\n"
               "    int mValue;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -374,7 +375,7 @@ private:
               "    A<T>(const T & t) { x = t.x; }\n"
               "private:\n"
               "    int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("template <class T> struct A {\n"
@@ -382,7 +383,7 @@ private:
               "    A<T>(const T & t) : x(t.x) { }\n"
               "private:\n"
               "    int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("template <class T> struct A {\n"
@@ -391,7 +392,7 @@ private:
               "private:\n"
               "    int x;\n"
               "    int y;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:2:5]: (warning) Member variable 'A::y' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:3:5]: (warning) Member variable 'A::y' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
@@ -400,14 +401,14 @@ private:
         check("class Fred;\n"
               "struct Fred {\n"
               "    int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void simple8() {
         check("struct Fred { int x; };\n"
               "class Barney { Fred fred; };\n"
-              "class Wilma { struct Betty { int x; } betty; };");
+              "class Wilma { struct Betty { int x; } betty; };\n");
         ASSERT_EQUALS("[test.cpp:2:1]: (style) The class 'Barney' does not declare a constructor although it has private member variables which likely require initialization. [noConstructor]\n"
                       "[test.cpp:3:1]: (style) The class 'Wilma' does not declare a constructor although it has private member variables which likely require initialization. [noConstructor]\n", errout_str());
     }
@@ -418,7 +419,7 @@ private:
               "    Fred() : x(0) { }\n"
               "private:\n"
               "    int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -428,7 +429,7 @@ private:
               "    Fred() = default;\n"
               "private:\n"
               "    int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'Fred::x' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct S {\n" // #9391
@@ -456,7 +457,7 @@ private:
               "    int b{1}, c{2};\n"
               "    int d, e{3};\n"
               "    int f{4}, g;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'Fred::d' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:3:5]: (warning) Member variable 'Fred::g' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
@@ -468,7 +469,7 @@ private:
               "    Fred() { Init(); }\n"
               "    void Init(int i = 0);\n"
               "};\n"
-              "void Fred::Init(int i) { x = i; }");
+              "void Fred::Init(int i) { x = i; }\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred {\n"
@@ -478,7 +479,7 @@ private:
               "    Fred() { Init(0); }\n"
               "    void Init(int i, int j = 0);\n"
               "};\n"
-              "void Fred::Init(int i, int j) { x = i; y = j; }");
+              "void Fred::Init(int i, int j) { x = i; y = j; }\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -486,7 +487,7 @@ private:
         check("class Fred {\n"
               "    int x=1;\n"
               "    int *y=0;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -499,7 +500,7 @@ private:
               "    {}\n"
               "private:\n"
               "    int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred : public Base<A, B> {"
@@ -510,7 +511,7 @@ private:
               "    {}\n"
               "private:\n"
               "    int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -589,7 +590,7 @@ private:
         check("class Fred\n"
               "{\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:1:1]: (style) The class 'Fred' does not declare a constructor although it has private member variables which likely require initialization. [noConstructor]\n", errout_str());
     }
 
@@ -601,7 +602,7 @@ private:
               "};\n"
               "\n"
               "void Fred::foobar()\n"
-              "{ }");
+              "{ }\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -610,7 +611,7 @@ private:
               "{\n"
               "private:\n"
               "    static int foobar;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -619,7 +620,7 @@ private:
               "{\n"
               "public:\n"
               "    int foobar;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -627,7 +628,7 @@ private:
         check("namespace Foo\n"
               "{\n"
               "    int i;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -641,14 +642,14 @@ private:
               "private:\n"
               "    cpucyclesT m_v;\n"
               "    bool m_b;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void noConstructor7() {
         // ticket #4391
         check("short bar;\n"
-              "class foo;");
+              "class foo;\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -656,7 +657,7 @@ private:
         // ticket #4404
         check("class LineSegment;\n"
               "class PointArray  { };\n"
-              "void* tech_ = NULL;");
+              "void* tech_ = NULL;\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -667,7 +668,7 @@ private:
               " CGreeting() : CGreetingBase<char>(), MessageSet(false) {}\n"
               "private:\n"
               " bool MessageSet;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -687,28 +688,28 @@ private:
               "    virtual ~A();\n"
               "private:\n"
               "    wxTimer *WxTimer1;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
 
     void noConstructor11() { // #3552
         check("class Fred { int x; };\n"
-              "union U { int y; Fred fred; };");
+              "union U { int y; Fred fred; };\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void noConstructor12() { // #8951
-        check("class Fred { int x{0}; };");
+        check("class Fred { int x{0}; };\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("class Fred { int x=0; };");
+        check("class Fred { int x=0; };\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("class Fred { int x[1]={0}; };"); // #8850
+        check("class Fred { int x[1]={0}; };\n"); // #8850
         ASSERT_EQUALS("", errout_str());
 
-        check("class Fred { int x[1]{0}; };");
+        check("class Fred { int x[1]{0}; };\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -758,19 +759,59 @@ private:
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'C::i2' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
+    void noConstructor16() {
+        check("struct S {\n" // #14546
+              "    int a = 0, b;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:2:16]: (warning) Member variable 'S::b' has no initializer. [uninitMemberVarNoCtor]\n", errout_str());
+
+        check("struct S {\n"
+              "    int a, b;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n"
+              "    explicit S(int);\n"
+              "    S(const S&);\n"
+              "    int i;\n"
+              "};\n"
+              "struct T {\n"
+              "    S s;\n"
+              "    int j{};\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        const char code[] = "struct S { int i = 0; };\n" // #14697
+                            "struct T {\n"
+                            "    S s;\n"
+                            "    int j;\n"
+                            "};\n"
+                            "struct U {\n"
+                            "    std::string a;\n"
+                            "    int k;\n"
+                            "};\n";
+        const Settings s = settingsBuilder(settings).cpp(Standards::CPP11).build();
+        check(code, s);
+        ASSERT_EQUALS("", errout_str());
+        check(code);
+        ASSERT_EQUALS("[test.cpp:4:9]: (warning) Member variable 'T::j' has no initializer. [uninitMemberVarNoCtor]\n"
+                      "[test.cpp:8:9]: (warning) Member variable 'U::k' has no initializer. [uninitMemberVarNoCtor]\n",
+                      errout_str());
+    }
+
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
     // ticket #3190 "SymbolDatabase: Parse of sub class constructor fails"
     void forwardDeclaration() {
         check("class foo;\n"
-              "int bar;");
+              "int bar;\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class foo;\n"
-              "class foo;");
+              "class foo;\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class foo{};\n"
-              "class foo;");
+              "class foo;\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -780,7 +821,7 @@ private:
               "    Fred()\n"
               "    { this->i = 0; }\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -795,7 +836,7 @@ private:
               "            i = 1;\n"
               "    }\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -814,7 +855,7 @@ private:
               "\n"
               "    const Fred & operator=(const Fred &fred)\n"
               "    { i = fred.i; return *this; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Fred {\n"
@@ -825,7 +866,7 @@ private:
               "\n"
               "    const Fred & operator=(const Fred &fred)\n"
               "    { i = fred.i; return *this; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct A\n"
@@ -840,7 +881,7 @@ private:
               "\n"
               "  int i;\n"
               "  int j;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -851,7 +892,7 @@ private:
               "    Fred() { i = 0; }\n"
               "    void operator=(const Fred &fred) { }\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:10]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
     }
 
@@ -863,7 +904,7 @@ private:
               "private:\n"
               "    void Init() { i = 0; }\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -880,7 +921,7 @@ private:
               "        }\n"
               "        return *this\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:6:12]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
 
         check("class Fred\n"
@@ -895,7 +936,7 @@ private:
               "        }\n"
               "        return *this\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:6:12]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
 
         check("class Fred\n"
@@ -910,7 +951,7 @@ private:
               "        }\n"
               "        return *this\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:6:12]: (warning) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
 
         check("class Fred\n"
@@ -925,7 +966,7 @@ private:
               "        }\n"
               "        return *this\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -940,7 +981,7 @@ private:
               "        Fred(rhs).swap(*this);\n"
               "        return *this;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -950,7 +991,7 @@ private:
               "    Fred & operator=(const Fred &rhs) {\n"
               "        return *this;\n"
               "    }\n"
-              "};",dinit(CheckOptions, $.inconclusive = true));
+              "};\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3:12]: (warning, inconclusive) Member variable 'Fred::data' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
 
         check("struct Fred {\n"
@@ -958,7 +999,7 @@ private:
               "    Fred & operator=(const Fred &rhs) {\n"
               "        return *this;\n"
               "    }\n"
-              "};",dinit(CheckOptions, $.inconclusive = true));
+              "};\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3:12]: (warning, inconclusive) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
 
         check("struct Fred {\n"
@@ -966,7 +1007,7 @@ private:
               "    Fred & operator=(const Fred &rhs) {\n"
               "        return *this;\n"
               "    }\n"
-              "};",dinit(CheckOptions, $.inconclusive = true));
+              "};\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3:12]: (warning, inconclusive) Member variable 'Fred::data' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
     }
 
@@ -1072,7 +1113,7 @@ private:
               "        int b;\n"
               "        Fred() { b = 0; }\n"
               "    };\n"
-              "}");
+              "}\n");
 
         ASSERT_EQUALS("", errout_str());
 
@@ -1092,7 +1133,7 @@ private:
               "        int b;\n"
               "        Fred() { b = 0; }\n"
               "    };\n"
-              "}");
+              "}\n");
 
         ASSERT_EQUALS("", errout_str());
 
@@ -1112,7 +1153,7 @@ private:
               "        int b;\n"
               "        Fred() { b = 0; }\n"
               "    };\n"
-              "}");
+              "}\n");
 
         ASSERT_EQUALS("", errout_str());
 
@@ -1134,7 +1175,7 @@ private:
               "            Fred() { b = 0; }\n"
               "        };\n"
               "    }\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("", errout_str());
 
@@ -1156,7 +1197,7 @@ private:
               "            Fred() { }\n"
               "        };\n"
               "    }\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("[test.cpp:7:13]: (warning) Member variable 'Fred::a' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:16:13]: (warning) Member variable 'Fred::b' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
@@ -1176,7 +1217,7 @@ private:
               "c::c()\n"
               "{\n"
               "    m_iMyInt1 = m_iMyInt2 = 0;\n"
-              "}");
+              "}\n");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -1209,7 +1250,7 @@ private:
               "void c::InitInt()\n"
               "{\n"
               "    m_iMyInt = 0;\n"
-              "}");
+              "}\n");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -1222,7 +1263,7 @@ private:
               "    Fred();\n"
               "};\n"
               "Fred::Fred() : s(NULL)\n"
-              "{ }");
+              "{ }\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Fred\n"
@@ -1231,7 +1272,7 @@ private:
               "    Fred();\n"
               "};\n"
               "Fred::Fred()\n"
-              "{ s = NULL; }");
+              "{ s = NULL; }\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Fred\n"
@@ -1240,7 +1281,7 @@ private:
               "    Fred();\n"
               "};\n"
               "Fred::Fred()\n"
-              "{ }");
+              "{ }\n");
         ASSERT_EQUALS("[test.cpp:6:7]: (warning) Member variable 'Fred::s' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -1252,7 +1293,7 @@ private:
               "private:\n"
               "    void update() const;\n"
               "    mutable int x;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1263,7 +1304,7 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "    static void *p;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1276,7 +1317,7 @@ private:
               "\n"
               "private:\n"
               "  std::map<int, double> * values_{};\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1294,7 +1335,7 @@ private:
               "    {\n"
               "        U.a = 0;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -1308,7 +1349,7 @@ private:
               "    Fred()\n"
               "    {\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:9:5]: (warning) Member variable 'Fred::U' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -1319,7 +1360,7 @@ private:
               "public:\n"
               "    A(int n) { }\n"
               "    A() : A(42) {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:5]: (warning) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -1328,7 +1369,7 @@ private:
               "public:\n"
               "    A(int n) { number = n; }\n"
               "    A() : A(42) {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A {\n"
@@ -1336,7 +1377,7 @@ private:
               "public:\n"
               "    A(int n) : A() { }\n"
               "    A() {}\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:5]: (warning, inconclusive) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -1345,7 +1386,7 @@ private:
               "public:\n"
               "    A(int n) : A() { }\n"
               "    A() { number = 42; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A {\n"
@@ -1353,7 +1394,7 @@ private:
               "public:\n"
               "    A(int n) { }\n"
               "    A() : A{42} {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:5]: (warning) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -1362,7 +1403,7 @@ private:
               "public:\n"
               "    A(int n) { number = n; }\n"
               "    A() : A{42} {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A {\n"
@@ -1370,7 +1411,7 @@ private:
               "public:\n"
               "    A(int n) : A{} { }\n"
               "    A() {}\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:5]: (warning, inconclusive) Member variable 'A::number' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -1379,7 +1420,7 @@ private:
               "public:\n"
               "    A(int n) : A{} { }\n"
               "    A() { number = 42; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #6675
@@ -1389,7 +1430,7 @@ private:
               "  int foo_;\n"
               "};\n"
               "Foo::Foo() : Foo(0) {}\n"
-              "Foo::Foo(int foo) : foo_(foo) {}");
+              "Foo::Foo(int foo) : foo_(foo) {}\n");
         ASSERT_EQUALS("", errout_str());
 
         // Noexcept ctors
@@ -1401,7 +1442,7 @@ private:
               "    A() noexcept;\n"
               "};\n"
               "\n"
-              "A::A() noexcept: A(0) {}");
+              "A::A() noexcept: A(0) {}\n");
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #8581
@@ -1411,7 +1452,7 @@ private:
               "public:\n"
               "    A(int a) : _a(a) {}\n"
               "    A(float a) : A(int(a)) {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #8258
@@ -1423,7 +1464,7 @@ private:
               "    int _a;\n"
               "    int _b;\n"
               "    F _f;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1447,7 +1488,7 @@ private:
               "    : a(true)\n"
               "    , b(0)\n"
               "{\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1462,7 +1503,7 @@ private:
               "public:\n"
               "  Derived() {}\n"
               "  void foo() override;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:9:3]: (warning) Member variable 'Base::x' is not initialized in the constructor. Maybe it should be initialized directly in the class Base? [uninitDerivedMemberVar]\n", errout_str());
 
         check("struct A {\n" // #3462
@@ -1549,7 +1590,7 @@ private:
               "class C : public S {\n"
               "public:\n"
               "    C() { all = 0; tick = 0; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
@@ -1565,7 +1606,7 @@ private:
               "class C : public S {\n"
               "public:\n"
               "    C() { flag1 = flag2 = 0; tick = 0; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
@@ -1581,7 +1622,7 @@ private:
               "class C : public S {\n"
               "public:\n"
               "    C() {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:13:5]: (warning) Member variable 'S::all' is not initialized in the constructor. Maybe it should be initialized directly in the class S? [uninitDerivedMemberVar]\n"
                       "[test.cpp:13:5]: (warning) Member variable 'S::flag1' is not initialized in the constructor. Maybe it should be initialized directly in the class S? [uninitDerivedMemberVar]\n"
                       "[test.cpp:13:5]: (warning) Member variable 'S::flag2' is not initialized in the constructor. Maybe it should be initialized directly in the class S? [uninitDerivedMemberVar]\n", errout_str());
@@ -1597,7 +1638,7 @@ private:
                   "    Fred();\n"
                   "};\n"
                   "Fred::Fred()\n"
-                  "{ }", s);
+                  "{ }\n", s);
             ASSERT_EQUALS("[test.cpp:7:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor. [uninitMemberVarPrivate]\n", errout_str());
         }
 
@@ -1610,7 +1651,7 @@ private:
                   "    Fred();\n"
                   "};\n"
                   "Fred::Fred()\n"
-                  "{ }", s);
+                  "{ }\n", s);
             ASSERT_EQUALS("", errout_str());
         }
     }
@@ -1632,7 +1673,7 @@ private:
               "public:\n"
               "    Fred() { };\n"
               "    Fred(const Fred &) { };\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -1642,7 +1683,7 @@ private:
               "public:\n"
               "    Fred() { };\n"
               "    Fred(const Fred &) { };\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:7:5]: (warning, inconclusive) Member variable 'Fred::var' is not assigned in the copy constructor. Should it be copied? [missingMemberCopy]\n", errout_str());
 
         check("class Fred\n"
@@ -1690,7 +1731,7 @@ private:
               "A::A(){}\n"
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
-              "A::B::C::D::D(int z){}");
+              "A::B::C::D::D(int z){}\n");
         // Note that the example code is not compilable. The A constructor must
         // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:20:4]: (warning) Member variable 'A::a' is not initialized in the constructor. [uninitMemberVar]\n"
@@ -1720,7 +1761,7 @@ private:
               "A::A(){}\n"
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
-              "A::B::C::D::D(const A::B::C::D & d){}");
+              "A::B::C::D::D(const A::B::C::D & d){}\n");
         // Note that the example code is not compilable. The A constructor must
         // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:20:4]: (warning) Member variable 'A::a' is not initialized in the constructor. [uninitMemberVar]\n"
@@ -1751,7 +1792,7 @@ private:
               "A::A(){}\n"
               "A::B::B(int x){}\n"
               "A::B::C::C(int y){}\n"
-              "A::B::C::D::D(const A::B::C::D::E & e){}");
+              "A::B::C::D::D(const A::B::C::D::E & e){}\n");
         // Note that the example code is not compilable. The A constructor must
         // explicitly initialize A::b. A warning for A::b is not necessary.
         ASSERT_EQUALS("[test.cpp:21:4]: (warning) Member variable 'A::a' is not initialized in the constructor. [uninitMemberVar]\n"
@@ -1773,7 +1814,7 @@ private:
               "    A(const A&){}\n"
               "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class B\n"
@@ -1788,7 +1829,7 @@ private:
               "    A(const A&){}\n"
               "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class B\n"
@@ -1805,7 +1846,7 @@ private:
               "    A(const A&){}\n"
               "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class B\n"
@@ -1821,7 +1862,7 @@ private:
               "    A(const A&){}\n"
               "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A : public std::vector<int>\n"
@@ -1837,7 +1878,7 @@ private:
               "    B(const B&){}\n"
               "    B(B &&){}\n"
               "    const B& operator=(const B&){return *this;}\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:11:5]: (warning, inconclusive) Member variable 'B::a' is not assigned in the copy constructor. Should it be copied? [missingMemberCopy]\n"
                       "[test.cpp:12:5]: (warning, inconclusive) Member variable 'B::a' is not assigned in the move constructor. Should it be moved? [missingMemberCopy]\n"
                       "[test.cpp:13:14]: (warning, inconclusive) Member variable 'B::a' is not assigned a value in 'B::operator='. [operatorEqVarError]\n",
@@ -1857,7 +1898,7 @@ private:
               "    A(const A&){}\n"
               "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:13:5]: (warning) Member variable 'A::m_SemVar' is not initialized in the move constructor. [uninitMemberVar]\n", errout_str());
 
         check("class B\n"
@@ -1875,7 +1916,7 @@ private:
               "    A(const A&){}\n"
               "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
@@ -1885,7 +1926,7 @@ private:
               "    A(){}\n"
               "    A(const A&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1903,7 +1944,7 @@ private:
               "    A(){}\n"
               "    A(const A&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("class B\n"
@@ -1920,7 +1961,7 @@ private:
               "    A(){}\n"
               "    A(const A&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:12:5]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:13:5]: (warning) Member variable 'A::m_SemVar' is not initialized in the copy constructor. [uninitMemberVar]\n"
                       "[test.cpp:14:14]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='. [operatorEqVarError]\n", errout_str());
@@ -1931,14 +1972,14 @@ private:
               "    B b;\n"
               "    A() {}\n"
               "    A(const A& rhs) {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {\n"
               "    B b;\n"
               "    A() {}\n"
               "    A(const A& rhs) {}\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4:5]: (warning, inconclusive) Member variable 'A::b' is not assigned in the copy constructor. Should it be copied? [missingMemberCopy]\n", errout_str());
     }
 
@@ -1954,7 +1995,7 @@ private:
               "}\n"
               "void S::Set(const T& val) {\n"
               "    t = val;\n"
-              "}", dinit(CheckOptions, $.inconclusive = true));
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1963,7 +2004,7 @@ private:
               "  Foo(int m) { this->setMember(m); }\n"
               "  void setMember(int m) { member = m; }\n"
               "  int member;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1975,7 +2016,7 @@ private:
               "public:\n"
               "    Fred() : var(0) {}\n"
               "    ~Fred() {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1983,7 +2024,7 @@ private:
         check("class something {\n"
               "    int * ( something :: * process()) () { return 0; }\n"
               "    something() { process(); }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1994,7 +2035,7 @@ private:
               "        int& pa = a;\n"
               "        pa = 4;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
@@ -2003,7 +2044,7 @@ private:
               "        int* pa = &a;\n"
               "        *pa = 4;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
@@ -2013,7 +2054,7 @@ private:
               "        for (int i = 0; i < 2; i++)\n"
               "            *pa++ = i;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
@@ -2022,7 +2063,7 @@ private:
               "        int* pa = a[1];\n"
               "        *pa = 0;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'S::a' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct S {\n"
@@ -2031,7 +2072,7 @@ private:
               "        int pa = a;\n"
               "        pa = 4;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'S::a' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2050,7 +2091,7 @@ private:
               "    A() {\n"
               "        Wrapper<dim>::foo(x);\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2068,7 +2109,7 @@ private:
               "        d = rhs.get();\n"
               "    }\n"
               "    double d;\n"
-              "};", s);
+              "};\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n" // #8485
@@ -2095,7 +2136,7 @@ private:
               "{ }\n"
               "\n"
               "void Fred::operator=(const Fred &f)\n"
-              "{ }", dinit(CheckOptions, $.inconclusive = true));
+              "{ }\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:13:12]: (warning, inconclusive) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
 
         const Settings s = settingsBuilder().certainty(Certainty::inconclusive).severity(Severity::style).severity(Severity::warning).library("std.cfg").build();
@@ -2120,7 +2161,7 @@ private:
               "\n"
               "private:\n"
               "    ECODES _code;\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("[test.cpp:10:5]: (warning) Member variable 'Fred::_code' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -2133,7 +2174,7 @@ private:
               "  B() {}\n"
               "private:\n"
               "  float f;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:6:3]: (warning) Member variable 'B::f' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("class C\n"
@@ -2146,7 +2187,7 @@ private:
               "\n"
               "C::C(FILE *fp) {\n"
               "    C::fp = fp;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2157,7 +2198,7 @@ private:
               "    John() { (*this).i = 0; }\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2172,7 +2213,7 @@ private:
               "        Bar();\n"
               "    };\n"
               "    Bar bars[2];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // Using struct that doesn't have constructor
@@ -2185,7 +2226,7 @@ private:
               "        int x;\n"
               "    };\n"
               "    Bar bars[2];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Foo::bars' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2199,7 +2240,7 @@ private:
               "        int x;\n"
               "    };\n"
               "    struct Bar bar;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2211,7 +2252,7 @@ private:
               "    Foo &operator=(const Foo &)\n"
               "    { return *this; }\n"
               "    static int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2222,7 +2263,7 @@ private:
               "    explicit Foo(int i) : Bar(mi=i) { }\n"
               "private:\n"
               "    int mi;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Foo : public Bar\n"
@@ -2231,7 +2272,7 @@ private:
               "    explicit Foo(int i) : Bar{mi=i} { }\n"
               "private:\n"
               "    int mi;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2252,7 +2293,7 @@ private:
               "    Foo copy(rhs);\n"
               "    copy.Swap(*this);\n"
               "    return *this;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2269,7 +2310,7 @@ private:
               "    {\n"
               "    }\n"
               "    return *this;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:8:11]: (warning) Member variable 'Foo::a' is not assigned a value in 'Foo::operator='. [operatorEqVarError]\n", errout_str());
     }
 
@@ -2283,7 +2324,7 @@ private:
               "Prefs::Prefs(wxSize size)\n"
               "{\n"
               "    SetMinSize( wxSize( 48,48 ) );\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:7:8]: (warning) Member variable 'Prefs::xasd' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2295,7 +2336,7 @@ private:
               "        int var1;\n"
               "        int var2;\n"
               "};\n"
-              "A::A() : var1(0) { }");
+              "A::A() : var1(0) { }\n");
         ASSERT_EQUALS("[test.cpp:8:4]: (warning) Member variable 'A::var2' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2306,7 +2347,7 @@ private:
               "private:\n"
               "        int var;\n"
               "};\n"
-              "A::A(int a) { }");
+              "A::A(int a) { }\n");
         ASSERT_EQUALS("[test.cpp:7:4]: (warning) Member variable 'A::var' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2322,7 +2363,7 @@ private:
               "        : x(x), y(y)\n"
               "    {}\n"
               "    int x, y;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Point::x' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:4:5]: (warning) Member variable 'Point::y' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
@@ -2334,7 +2375,7 @@ private:
               "public:\n"
               "    A()\n"
               "    {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:5:5]: (warning) Member variable 'A::ints' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2349,7 +2390,7 @@ private:
               "};\n"
               "Foo::Foo()\n"
               "{\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:8:6]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // single namespace
@@ -2365,7 +2406,7 @@ private:
               "    Foo::Foo()\n"
               "    {\n"
               "    }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:10:10]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // constructor outside namespace
@@ -2381,7 +2422,7 @@ private:
               "}\n"
               "Foo::Foo()\n"
               "{\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         // constructor outside namespace
@@ -2397,7 +2438,7 @@ private:
               "}\n"
               "Output::Foo::Foo()\n"
               "{\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:11:14]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // constructor outside namespace with using, #4792
@@ -2414,7 +2455,7 @@ private:
               "using namespace Output;"
               "Foo::Foo()\n"
               "{\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:11:29]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // constructor in separate namespace
@@ -2433,7 +2474,7 @@ private:
               "    Foo::Foo()\n"
               "    {\n"
               "    }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:13:10]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // constructor in different separate namespace
@@ -2452,7 +2493,7 @@ private:
               "    Foo::Foo()\n"
               "    {\n"
               "    }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         // constructor in different separate namespace (won't compile)
@@ -2471,7 +2512,7 @@ private:
               "    Output::Foo::Foo()\n"
               "    {\n"
               "    }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         // constructor in nested separate namespace
@@ -2493,7 +2534,7 @@ private:
               "        {\n"
               "        }\n"
               "    }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:15:14]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // constructor in nested different separate namespace
@@ -2515,7 +2556,7 @@ private:
               "        {\n"
               "        }\n"
               "    }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         // constructor in nested different separate namespace
@@ -2537,7 +2578,7 @@ private:
               "        {\n"
               "        }\n"
               "    }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2551,7 +2592,7 @@ private:
               "};\n"
               "Fred::~Fred()\n"
               "{\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2569,7 +2610,7 @@ private:
               "    {\n"
               "        foo.set(0);\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Foo\n"
@@ -2584,7 +2625,7 @@ private:
               "    Bar()\n"
               "    {\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:10:5]: (warning) Member variable 'Bar::foo' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2601,7 +2642,7 @@ private:
               "    {\n"
               "        foo[0].a = 0;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Foo\n"
@@ -2615,7 +2656,7 @@ private:
               "    Bar()\n"
               "    {\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:9:5]: (warning) Member variable 'Bar::foo' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -2631,7 +2672,7 @@ private:
               "    A() { }\n"
               "private:\n"
               "    Altren value;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2655,7 +2696,7 @@ private:
               "    {\n"
               "        free(m_str);\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2667,7 +2708,7 @@ private:
               "        std::streamsize dataLength_;\n"
               "        double bitsInData_;\n"
               "    } obj;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:9]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct copy_protected;\n"
@@ -2678,7 +2719,7 @@ private:
               "        std::streamsize dataLength_;\n"
               "        double bitsInData_;\n"
               "    } obj;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS(
             "[test.cpp:5:9]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor. [uninitMemberVar]\n",
             errout_str());
@@ -2691,7 +2732,7 @@ private:
               "        std::streamsize dataLength_;\n"
               "        double bitsInData_;\n"
               "    } obj;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS(
             "[test.cpp:5:9]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor. [uninitMemberVar]\n",
             errout_str());
@@ -2706,7 +2747,7 @@ private:
               "};\n"
               "Fred::Fred() {\n"
               "    a[x::y] = 0;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2723,7 +2764,7 @@ private:
               "Fred & Fred::clone(const Fred & other) {\n"
               "    x = 0;\n"
               "    return *this;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred {\n"
@@ -2737,7 +2778,7 @@ private:
               "}\n"
               "Fred & Fred::clone(const Fred & other) {\n"
               "    return *this;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:7:14]: (warning) Member variable 'Fred::x' is not assigned a value in 'Fred::operator='. [operatorEqVarError]\n", errout_str());
     }
 
@@ -2755,7 +2796,7 @@ private:
               "Fred::Fred(struct C c, D d) { }\n"
               "Fred::Fred(E e, struct F f) { }\n"
               "Fred::Fred(G g, H h) { }\n"
-              "Fred::Fred(struct I i, struct J j) { }");
+              "Fred::Fred(struct I i, struct J j) { }\n");
         ASSERT_EQUALS("[test.cpp:10:7]: (warning) Member variable 'Fred::x' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:11:7]: (warning) Member variable 'Fred::x' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:12:7]: (warning) Member variable 'Fred::x' is not initialized in the constructor. [uninitMemberVar]\n"
@@ -2864,7 +2905,7 @@ private:
               "    A(int s) {\n"
               "        v = new int [sz = s];\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2875,7 +2916,7 @@ private:
               "    A() {\n"
               "        rtl::math::setNan(&d);\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
         check("class A {\n"
               "    double d;\n"
@@ -2883,7 +2924,7 @@ private:
               "    A() {\n"
               "        ::rtl::math::setNan(&d);\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2898,7 +2939,7 @@ private:
               "    }\n"
               "    void foo(int a) { i = a; }\n"
               "    void foo(float a) { f = a; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2930,7 +2971,7 @@ private:
               "    D() { foo(); }\n"
               "	void foo() { }\n"
               "	void foo() const { i = 0; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:18:5]: (warning) Member variable 'C::i' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:25:5]: (warning) Member variable 'D::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
@@ -2947,7 +2988,7 @@ private:
               "}\n"
               "using namespace NS;\n"
               "MyClass::~MyClass() { }\n"
-              "MyClass::MyClass() : SomeVar(false) { }");
+              "MyClass::MyClass() : SomeVar(false) { }\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2965,7 +3006,7 @@ private:
               "}\n"
               "void MyClass::Restart() {\n"
               "    m_retCode = 0;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2978,7 +3019,7 @@ private:
               "   {\n"
               "      if (1) {}\n"
               "   }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:5:4]: (warning) Member variable 'Foo::member' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
         check("class Foo {\n"
               "   friend class Bar;\n"
@@ -2988,7 +3029,7 @@ private:
               "   {\n"
               "      while (1) {}\n"
               "   }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:5:4]: (warning) Member variable 'Foo::member' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
         check("class Foo {\n"
               "   friend class Bar;\n"
@@ -2998,7 +3039,7 @@ private:
               "   {\n"
               "      for (;;) {}\n"
               "   }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:5:4]: (warning) Member variable 'Foo::member' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3010,7 +3051,7 @@ private:
               "        int x;\n"
               "    };\n"
               "};\n"
-              "app::B::B(void){}");
+              "app::B::B(void){}\n");
         ASSERT_EQUALS("[test.cpp:8:9]: (warning) Member variable 'B::x' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3062,7 +3103,7 @@ private:
               "\n"
               "private:\n"
               "    char name[255];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'John::name' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("class John\n"
@@ -3072,7 +3113,7 @@ private:
               "\n"
               "private:\n"
               "    char name[255];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class John\n"
@@ -3082,7 +3123,7 @@ private:
               "\n"
               "private:\n"
               "    char name[255];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class John\n"
@@ -3091,7 +3132,7 @@ private:
               "    John() { }\n"
               "\n"
               "    double  operator[](const unsigned long i);\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A;\n"
@@ -3100,7 +3141,7 @@ private:
               "public:\n"
               "    John() { }\n"
               "    A a[5];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A;\n"
@@ -3109,7 +3150,7 @@ private:
               "public:\n"
               "    John() { }\n"
               "    A (*a)[5];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:5:5]: (warning) Member variable 'John::a' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3121,7 +3162,7 @@ private:
               "\n"
               "private:\n"
               "    char name[255];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // #5754
@@ -3132,7 +3173,7 @@ private:
               "\n"
               "private:\n"
               "    char name[255];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3149,7 +3190,7 @@ private:
               "        memset(a,0,sizeof(a));\n"
               "        memset(b,0,sizeof(b));\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3166,7 +3207,7 @@ private:
               "        if (snprintf(a,10,\"a\")) { }\n"
               "        if (snprintf(b,10,\"b\")) { }\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3178,7 +3219,7 @@ private:
               "public:\n"
               "    Foo()\n"
               "    { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3190,7 +3231,7 @@ private:
               "    static const char STR[];\n"
               "};\n"
               "const char Foo::STR[] = \"abc\";\n"
-              "Foo::Foo() { }");
+              "Foo::Foo() { }\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3200,7 +3241,7 @@ private:
               "    int array[10];\n"
               "public:\n"
               "    Foo() { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:5:5]: (warning) Member variable 'Foo::array' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("class Foo\n"
@@ -3208,7 +3249,7 @@ private:
               "    int array[10];\n"
               "public:\n"
               "    Foo() { memset(array, 0, sizeof(array)); }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Foo\n"
@@ -3216,7 +3257,7 @@ private:
               "    int array[10];\n"
               "public:\n"
               "    Foo() { ::memset(array, 0, sizeof(array)); }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3225,7 +3266,7 @@ private:
               "    char a[10];\n"
               "public:\n"
               "    Foo() { ::ZeroMemory(a); }\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3236,7 +3277,7 @@ private:
               "    BaseGDL* eArr[3];\n"
               "public:\n"
               "    IxExprListT() {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:6:5]: (warning) Member variable 'IxExprListT::eArr' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
         check("struct sRAIUnitDefBL {\n"
               "  sRAIUnitDefBL();\n"
@@ -3245,7 +3286,7 @@ private:
               "struct sRAIUnitDef {\n"
               "  sRAIUnitDef() {}\n"
               "  sRAIUnitDefBL *List[35];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:6:3]: (warning) Member variable 'sRAIUnitDef::List' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3292,7 +3333,7 @@ private:
               "\n"
               "private:\n"
               "    char a[2][2];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3303,7 +3344,7 @@ private:
               "    char a[2][2][2];\n"
               "public:\n"
               "    John() { a[0][0][0] = 0; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3314,7 +3355,7 @@ private:
               "    Foo()\n"
               "        : bar({\"a\", \"b\"})\n"
               "    {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3330,7 +3371,7 @@ private:
               "    Fred() : f{0, true} { }\n"
               "    float get() const;\n"
               "};\n"
-              "float Fred::get() const { return g; }");
+              "float Fred::get() const { return g; }\n");
         ASSERT_EQUALS("[test.cpp:9:5]: (warning) Member variable 'Fred::g' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3346,7 +3387,7 @@ private:
               "public:\n"
               "    A() {\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
@@ -3360,7 +3401,7 @@ private:
               "public:\n"
               "    A() {\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:10:5]: (warning) Member variable 'A::b' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("class A\n"
@@ -3375,7 +3416,7 @@ private:
               "public:\n"
               "    A() {\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3392,7 +3433,7 @@ private:
               "public:\n"
               "    Fred()\n"
               "    { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:11:5]: (warning) Member variable 'Fred::p' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct POINT\n"
@@ -3408,7 +3449,7 @@ private:
               "public:\n"
               "    Fred()\n"
               "    { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct POINT\n"
@@ -3424,7 +3465,7 @@ private:
               "public:\n"
               "    Fred()\n"
               "    { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // non static data-member initialization
@@ -3440,7 +3481,7 @@ private:
               "public:\n"
               "    Fred()\n"
               "    { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3452,13 +3493,13 @@ private:
               "public:\n"
               "    Fred()\n"
               "    { a = 0; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred {\n"
               "private:\n"
               "    union { int a{}; int b; };\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3472,7 +3513,7 @@ private:
               "public:\n"
               "    Fred() : data_type(0)\n"
               "    { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:8:5]: (warning) Member variable 'Fred::data' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3485,7 +3526,7 @@ private:
               "private:\n"
               "    void Init();"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // Unknown non-member function (friend class)
@@ -3496,7 +3537,7 @@ private:
               "private:\n"
               "    friend ABC;\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // Unknown non-member function (is Init a virtual function?)
@@ -3506,7 +3547,7 @@ private:
               "    Fred() { Init(); }\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // Unknown non-member function
@@ -3516,7 +3557,7 @@ private:
               "    Fred() { Init(); }\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // Unknown non-member function
@@ -3527,7 +3568,7 @@ private:
               "    Fred() { Init(); }\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:5:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // Unknown member functions and unknown static functions
@@ -3547,7 +3588,7 @@ private:
               "    static void static_f();\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:7:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // Unknown overloaded member functions
@@ -3560,7 +3601,7 @@ private:
               "    void func();\n"
               "private:\n"
               "    int i;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3572,7 +3613,7 @@ private:
               "    Fred() {}\n"
               "private:\n"
               "    unsigned int i;\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("[test.cpp:5:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
@@ -3583,7 +3624,7 @@ private:
               "struct Y {\n"
               "    Y() {}\n"
               "    X x;\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -3599,7 +3640,7 @@ private:
               "        if(!(in >> foo))\n"
               "            throw 0;\n"
               "    }\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -3611,7 +3652,7 @@ private:
               "    typedef int * pointer;\n"
               "    Foo() : a(0) {}\n"
               "    pointer a;\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -3622,7 +3663,7 @@ private:
               "public:\n"
               "    int * pointer;\n"
               "    Foo() { memset(this, 0, sizeof(*this)); }\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("", errout_str());
 
@@ -3631,7 +3672,7 @@ private:
               "public:\n"
               "    int * pointer;\n"
               "    Foo() { ::memset(this, 0, sizeof(*this)); }\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("", errout_str());
 
@@ -3640,13 +3681,13 @@ private:
               "    int * p;\n"
               "    char c;\n"
               "    Foo() { memset(p, 0, sizeof(int)); }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Foo::c' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
         check("struct Foo {\n"
               "    int i;\n"
               "    char c;\n"
               "    Foo() { memset(&i, 0, sizeof(int)); }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Foo::c' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
         check("struct Foo { int f; };\n"
               "struct Bar { int b; };\n"
@@ -3660,7 +3701,7 @@ private:
               "int main() {\n"
               "  FooBar foobar;\n"
               "  return foobar.foo.f + foobar.bar.b;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:4:3]: (warning) Member variable 'FooBar::bar' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
         check("struct Foo { int f; };\n"
               "struct Bar { int b; };\n"
@@ -3674,7 +3715,7 @@ private:
               "int main() {\n"
               "  FooBar foobar;\n"
               "  return foobar.foo.f + foobar.bar.b;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:4:3]: (warning) Member variable 'FooBar::bar' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         // #7755
@@ -3683,7 +3724,7 @@ private:
               "    memset(this->data, 0, 42);\n"
               "  }\n"
               "  char data[42];\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3693,7 +3734,7 @@ private:
             check("class Foo {\n"
                   "    int foo;\n"
                   "    Foo() { }\n"
-                  "};", s);
+                  "};\n", s);
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -3702,7 +3743,7 @@ private:
             check("class Foo {\n"
                   "    int foo;\n"
                   "    Foo() { }\n"
-                  "};", s);
+                  "};\n", s);
             ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'Foo::foo' is not initialized in the constructor. [uninitMemberVarPrivate]\n", errout_str());
         }
     }
@@ -3715,7 +3756,7 @@ private:
               "    Foo() { }\n"
               "public:\n"
               "    explicit Foo(int _i) { }\n"
-              "};");
+              "};\n");
 
         ASSERT_EQUALS("[test.cpp:7:14]: (warning) Member variable 'Foo::foo' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
@@ -3736,7 +3777,7 @@ private:
               "int* A::f(int* p)\n"
               "{\n"
               "    return p;\n"
-              "}");
+              "}\n");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -3750,7 +3791,7 @@ private:
               "    int *i;\n"
               "public:\n"
               "    Fred() { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3764,7 +3805,7 @@ private:
               "    Fred() { }\n"
               "private:\n"
               "    int x;\n"
-              "};", s);
+              "};\n", s);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3774,7 +3815,7 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "    int *operator [] (int index) { return 0; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3788,7 +3829,7 @@ private:
               "    { f.d = 0; }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -3800,7 +3841,7 @@ private:
               "    { }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Fred::d' is not initialized in the constructor. [uninitMemberVar]\n", "", errout_str());
     }
 
@@ -3814,7 +3855,7 @@ private:
               "    { f.d = 0; return true; }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -3826,7 +3867,7 @@ private:
               "    { return true; }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Fred::d' is not initialized in the constructor. [uninitMemberVar]\n", "",  errout_str());
     }
 
@@ -3840,7 +3881,7 @@ private:
               "    { d = 0; return true; }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -3852,7 +3893,7 @@ private:
               "    { return true; }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Fred::d' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3866,7 +3907,7 @@ private:
               "    { f.d = 0; }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
@@ -3878,7 +3919,7 @@ private:
               "    { }\n"
               "\n"
               "    double d;\n"
-              "};");
+              "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'Fred::d' is not initialized in the constructor. [uninitMemberVar]\n", "", errout_str());
     }
 
@@ -3892,7 +3933,7 @@ private:
               "public:\n"
               "    A() { Init( B ); };\n"
               "    void Init( Structure& S ) { S.C = 0; };\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct Structure {\n"
@@ -3904,7 +3945,7 @@ private:
               "public:\n"
               "    A() { Init( B ); };\n"
               "    void Init(const Structure& S) { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:8:5]: (warning) Member variable 'A::B' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3929,7 +3970,7 @@ private:
               "A::B::B()\n"
               "{\n"
               "    i = 0;\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class B\n"
@@ -3955,7 +3996,7 @@ private:
               "\n"
               "A::B::B()\n"
               "{\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:18:4]: (warning) Member variable 'B::j' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:22:7]: (warning) Member variable 'B::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -3976,7 +4017,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "};\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         check("namespace n1\n"
@@ -3998,7 +4039,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "};\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:11:10]: (warning) Member variable 'Foo::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("namespace n1\n"
@@ -4020,7 +4061,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "};\n"
-              "}");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4041,7 +4082,7 @@ private:
               "\n"
               "    void init(int value)\n"
               "    { i = value; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
@@ -4059,7 +4100,7 @@ private:
               "\n"
               "    void init(int value)\n"
               "    { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:7:5]: (warning) Member variable 'A::i' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("class bar {\n" // #9887
@@ -4080,7 +4121,7 @@ private:
               "    int a;\n"
               "    A() { a=0; }\n"
               "    A(A const &a) { operator=(a); }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {\n"
@@ -4091,7 +4132,7 @@ private:
               "        a = rhs.a;\n"
               "        return *this;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {\n"
@@ -4101,7 +4142,7 @@ private:
               "    A & operator = (const A & rhs) {\n"
               "        return *this;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'A::a' is not initialized in the copy constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:9]: (warning) Member variable 'A::a' is not assigned a value in 'A::operator='. [operatorEqVarError]\n", errout_str());
     }
@@ -4113,28 +4154,28 @@ private:
               "struct B {\n"
               "    A* a;\n"
               "    B() { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:6:5]: (warning) Member variable 'B::a' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct A;\n"
               "struct B {\n"
               "    A* a;\n"
               "    B() { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'B::a' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct A;\n"
               "struct B {\n"
               "    const A* a;\n"
               "    B() { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'B::a' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct A;\n"
               "struct B {\n"
               "    A* const a;\n"
               "    B() { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'B::a' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
         check("class Test {\n" // #8498
@@ -4185,7 +4226,7 @@ private:
               "    A* const a;\n"
               "    B() { }\n"
               "    B(B& b) { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Member variable 'B::a' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:5:5]: (warning) Member variable 'B::a' is not initialized in the copy constructor. [uninitMemberVar]\n", errout_str());
 
@@ -4193,21 +4234,21 @@ private:
               "struct B {\n"
               "    A* const a;\n"
               "    B& operator=(const B& r) { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str()); // #3804
 
         check("struct B {\n"
               "    const int a;\n"
               "    B() { }\n"
               "    B(B& b) { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'B::a' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:4:5]: (warning) Member variable 'B::a' is not initialized in the copy constructor. [uninitMemberVar]\n", errout_str());
 
         check("struct B {\n"
               "    const int a;\n"
               "    B& operator=(const B& r) { }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4217,7 +4258,7 @@ private:
               "public:\n"
               "  C() _STLP_NOTHROW {}\n"
               "  C(const C&) _STLP_NOTHROW {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4226,7 +4267,7 @@ private:
               "  int mValue;\n"
               "public:\n"
               "  operatorX() : mValue(0) {}\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4236,7 +4277,7 @@ private:
               "  T* mElements;\n"
               "};\n"
               "template <class T> Container<T>::Container() : mElements(nullptr) {}\n"
-              "Container<int> intContainer;");
+              "Container<int> intContainer;\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4246,7 +4287,7 @@ private:
               "public:\n"
               "    SelectionPosition() {}\n"
               "    const rvec &x() const;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4261,7 +4302,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Member variable 'C::x' is not initialized in the constructor.\n",
                            "[test.cpp:3:5]: (warning) Member variable 'C::x' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -4275,7 +4316,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};", dinit(CheckOptions, $.inconclusive = true));
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Member variable 'C::x' is not initialized in the constructor.\n",
                            "[test.cpp:3:5]: (warning) Member variable 'C::x' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
 
@@ -4289,7 +4330,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4302,7 +4343,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4312,7 +4353,7 @@ private:
               "        i = i * SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4322,7 +4363,7 @@ private:
               "        i = i / SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4332,7 +4373,7 @@ private:
               "        i = i % SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4342,7 +4383,7 @@ private:
               "        i = i + SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4352,7 +4393,7 @@ private:
               "        i = i - SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4362,7 +4403,7 @@ private:
               "        i = i << SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4372,7 +4413,7 @@ private:
               "        i = i >> SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4382,7 +4423,7 @@ private:
               "        i = i ^ SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4397,7 +4438,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4410,7 +4451,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4420,7 +4461,7 @@ private:
               "        i *= SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4430,7 +4471,7 @@ private:
               "        i /= SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4440,7 +4481,7 @@ private:
               "        i %= SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4450,7 +4491,7 @@ private:
               "        i += SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4460,7 +4501,7 @@ private:
               "        i -= SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4470,7 +4511,7 @@ private:
               "        i <<= SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4480,7 +4521,7 @@ private:
               "        i >>= SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4490,7 +4531,7 @@ private:
               "        i ^= SetValue();\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4505,7 +4546,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4518,7 +4559,7 @@ private:
               "        x = 1;\n"
               "        return true;\n"
               "    }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4527,7 +4568,7 @@ private:
               "        bool b = (0 < SetValue());\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4536,7 +4577,7 @@ private:
               "        bool b = (0 <= SetValue());\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4545,7 +4586,7 @@ private:
               "        bool b = (0 > SetValue());\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("struct C {\n"
@@ -4554,7 +4595,7 @@ private:
               "        bool b = (0 >= SetValue());\n"
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4572,7 +4613,7 @@ private:
               "class C {\n"
               "  private:\n"
               "    A* b;\n"
-              "};");
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         check("template<class T> class A{};\n"
@@ -4584,7 +4625,7 @@ private:
               "    bool m_value;\n"
               "};\n"
               "template<class T1, class T2>\n"
-              "A<B<T1, T2>>::A() : m_value(false) {}");
+              "A<B<T1, T2>>::A() : m_value(false) {}\n");
         ASSERT_EQUALS("", errout_str());
 
         check("template <typename T> struct S;\n" // #11177
@@ -4603,7 +4644,7 @@ private:
               "public:\n"
               "    A& operator=() { return *this; }\n"
               "};\n"
-              "A<decltype(SOMETHING)> a;");
+              "A<decltype(SOMETHING)> a;\n");
         ASSERT_EQUALS("", errout_str());
     }
 

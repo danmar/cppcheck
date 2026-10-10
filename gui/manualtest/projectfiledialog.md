@@ -4,8 +4,21 @@
 Some manual testing in the project file dialog interface
 
 
+## Test: Relative paths
 
-## Test: Platform files
+Ticket: #14983
+
+1. Configure files/paths in project folder:
+ * import a projectfile
+ * add include paths in project folder
+ * exclude file/folder
+
+2. Save project
+
+EXPECTED: Relative paths should be used in the XML
+
+
+## Test: Platform file pic8.xml
 
 Ticket: #14489
 
@@ -13,6 +26,14 @@ EXPECTED: In the project file dialog it should be possible to select xml files i
 
 TODO: can this test be automated
 
+
+## Test: Custom cfg file
+
+Ticket: #14672
+
+1. Copy addons/avr.cfg to a file "aa.cfg" in same folder as a cppcheck GUI project file
+
+EXPECTED: It should not be possible to activate "aa.cfg" in the project file dialog, it should appear in alphabetical order.
 
 
 ## Test: Misra C checkbox

@@ -25,13 +25,13 @@
 #include "pathmatch.h"
 #include "utils.h"
 #include "token.h"
-#include "tokenize.h"
 #include "tokenlist.h"
 #include "settings.h"
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <cstring>
+#include <exception>
 #include <functional> // std::bind, std::placeholders
 #include <sstream>
 #include <stdexcept>
@@ -136,7 +136,10 @@ std::string SuppressionList::parseXmlFile(const char *filename)
                 s.lineNumber = strToInt<int>(text);
             else if (std::strcmp(name, "symbolName") == 0)
                 s.symbolName = text;
-            else if (*text && std::strcmp(name, "hash") == 0)
+            else if (std::strcmp(name, "macroName") == 0) {
+                s.macroName = text;
+                s.type = SuppressionList::Type::macro;
+            } else if (*text && std::strcmp(name, "hash") == 0)
                 s.hash = strToInt<std::size_t>(text);
             else
                 return std::string("unknown element '") + name + "' in suppressions XML '" + filename + "', expected id/fileName/lineNumber/symbolName/hash.";
@@ -148,6 +151,36 @@ std::string SuppressionList::parseXmlFile(const char *filename)
     }
 
     return "";
+}
+
+static std::string getExtraComment(const std::string &comment, std::string::size_type startPos, std::string::size_type *delimPos = nullptr)
+{
+    const std::string::size_type semiPos = comment.find(';', startPos);
+    const std::string::size_type slashPos = comment.find("//", startPos);
+    std::string::size_type pos;
+
+    if (delimPos)
+        *delimPos = std::min(semiPos, slashPos);
+
+    if (semiPos < slashPos) {
+        pos = semiPos + 1;
+    } else if (slashPos < semiPos) {
+        pos = slashPos + 2;
+    } else {
+        return "";
+    }
+
+    std::string extra = comment.substr(pos);
+
+    if (startsWith(comment, "/*") && endsWith(comment, "*/"))
+        extra.erase(extra.size() - 2, 2);
+
+    extra = trim(extra);
+
+    for (auto it = extra.begin(); it != extra.end();)
+        it = (*it & 0x80) ? extra.erase(it) : it + 1;
+
+    return extra;
 }
 
 std::vector<SuppressionList::Suppression> SuppressionList::parseMultiSuppressComment(const std::string &comment, std::string *errorMessage)
@@ -204,12 +237,19 @@ std::vector<SuppressionList::Suppression> SuppressionList::parseMultiSuppressCom
         suppressions.push_back(std::move(s));
     }
 
+    const std::string extraComment = getExtraComment(comment, end_position);
+
+    if (extraComment.empty())
+        return suppressions;
+
+    for (auto &suppression : suppressions)
+        suppression.extraComment = extraComment;
+
     return suppressions;
 }
 
-SuppressionList::Suppression SuppressionList::parseLine(const std::string &line)
+SuppressionList::Suppression SuppressionList::parseLine(std::string line)
 {
-    std::istringstream lineStream;
     SuppressionList::Suppression suppression;
 
     // Strip any end of line comments
@@ -218,13 +258,18 @@ SuppressionList::Suppression SuppressionList::parseLine(const std::string &line)
         while (endpos > 0 && std::isspace(line[endpos-1])) {
             endpos--;
         }
-        lineStream.str(line.substr(0, endpos));
-    } else {
-        lineStream.str(line);
+        line.resize(endpos);
     }
 
-    if (std::getline(lineStream, suppression.errorId, ':')) {
-        if (std::getline(lineStream, suppression.fileName)) {
+    const auto parts = splitString(line, '\n');
+    const std::string& suppr_l = parts[0];
+
+    const std::string::size_type first_sep = suppr_l.find(':');
+    suppression.errorId = suppr_l.substr(0, first_sep);
+    if (first_sep != std::string::npos) {
+        suppression.fileName = suppr_l.substr(first_sep+1);
+        if (!suppression.fileName.empty()) {
+            // TODO: this only works with files which have an extension
             // If there is not a dot after the last colon in "file" then
             // the colon is a separator and the contents after the colon
             // is a line number..
@@ -234,39 +279,48 @@ SuppressionList::Suppression SuppressionList::parseLine(const std::string &line)
 
             // if a colon is found and there is no dot after it..
             if (pos != std::string::npos &&
-                suppression.fileName.find('.', pos) == std::string::npos) {
-                // Try to parse out the line number
+                suppression.fileName.find('.', pos) == std::string::npos)
+            {
+                // parse out the line number
+                const std::string line_s = suppression.fileName.substr(pos+1);
+                suppression.fileName.erase(pos);
+
+                if (suppression.fileName.empty())
+                    throw std::runtime_error("filename is missing");
+
                 try {
-                    std::istringstream istr1(suppression.fileName.substr(pos+1));
-                    istr1 >> suppression.lineNumber;
-                } catch (...) {
-                    suppression.lineNumber = SuppressionList::Suppression::NO_LINE;
-                }
-
-                if (suppression.lineNumber != SuppressionList::Suppression::NO_LINE) {
-                    suppression.fileName.erase(pos);
+                    suppression.lineNumber = strToInt<int>(line_s);
+                } catch (const std::runtime_error& e) {
+                    throw std::runtime_error(std::string("invalid line number (") + e.what() + ")");
                 }
             }
-
-            // when parsing string generated internally by toString() there can be newline
-            std::string extra;
-            while (std::getline(lineStream, extra)) {
-                if (startsWith(extra, "symbol="))
-                    suppression.symbolName = extra.substr(7);
-                else if (extra == "polyspace=1")
-                    suppression.isPolyspace = true;
-            }
+            suppression.fileName = Path::simplifyPath(suppression.fileName);
+        } else {
+            throw std::runtime_error("filename is missing");
         }
     }
 
-    suppression.fileName = Path::simplifyPath(suppression.fileName);
+    // TODO: make this optional - do we even encounter this in production code?
+    // when parsing string generated internally by toString() there can be newline
+    for (std::size_t i = 1; i < parts.size(); ++i) {
+        if (startsWith(parts[i], "symbol="))
+            suppression.symbolName = parts[i].substr(7);
+        else if (parts[i] == "polyspace=1")
+            suppression.isPolyspace = true;
+        else
+            throw std::runtime_error("unexpected extra '" + parts[i] + "'");
+    }
 
     return suppression;
 }
 
 std::string SuppressionList::addSuppressionLine(const std::string &line)
 {
-    return addSuppression(parseLine(line));
+    try {
+        return addSuppression(parseLine(line));
+    } catch (const std::exception& e) {
+        return e.what();
+    }
 }
 
 std::string SuppressionList::addSuppression(SuppressionList::Suppression suppression)
@@ -344,20 +398,11 @@ bool SuppressionList::Suppression::parseComment(std::string comment, std::string
     if (comment.compare(comment.size() - 2, 2, "*/") == 0)
         comment.erase(comment.size() - 2, 2);
 
-    std::string::size_type extraPos = comment.find(';');
-    std::string::size_type extraDelimiterSize = 1;
+    std::string::size_type extraPos;
+    extraComment = getExtraComment(comment, 2, &extraPos);
 
-    if (extraPos == std::string::npos) {
-        extraPos = comment.find("//", 2);
-        extraDelimiterSize = 2;
-    }
-
-    if (extraPos != std::string::npos) {
-        extraComment = trim(comment.substr(extraPos + extraDelimiterSize));
-        for (auto it = extraComment.begin(); it != extraComment.end();)
-            it = *it & 0x80 ? extraComment.erase(it) : it + 1;
+    if (!extraComment.empty())
         comment.erase(extraPos);
-    }
 
     const std::set<std::string> cppchecksuppress{
         "cppcheck-suppress",
@@ -407,7 +452,7 @@ SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(
             if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
                 return Result::None;
         }
-        if (!fileName.empty() && !PathMatch::match(fileName, errmsg.getFileName()))
+        if (!fileName.empty() && !isFileNameMatch(errmsg.getFileName()))
             return Result::None;
         if (hash > 0 && hash != errmsg.hash)
             return Result::Checked;
@@ -440,6 +485,21 @@ SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(
     return Result::Matched;
 }
 
+bool SuppressionList::Suppression::isFileNameMatch(const std::string &errorFileName) const
+{
+    const auto it = mFileNameMatchCache.find(errorFileName);
+    if (it != mFileNameMatchCache.end())
+        return it->second;
+
+    const bool result = PathMatch::match(fileName, errorFileName);
+
+    if (mFileNameMatchCache.size() >= mFileNameMatchCacheMaxEntries)
+        mFileNameMatchCache.clear();
+
+    mFileNameMatchCache.emplace(errorFileName, result);
+    return result;
+}
+
 bool SuppressionList::Suppression::isMatch(const SuppressionList::ErrorMessage &errmsg)
 {
     switch (isSuppressed(errmsg)) {
@@ -460,6 +520,7 @@ bool SuppressionList::isSuppressed(const SuppressionList::ErrorMessage &errmsg, 
 {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);
 
+    // TODO: handle unmatchedPolyspaceSuppression?
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
     bool returnValue = false;
     for (Suppression &s : mSuppressions) {
@@ -615,25 +676,25 @@ std::list<SuppressionList::Suppression> SuppressionList::getSuppressions() const
     return mSuppressions;
 }
 
-void SuppressionList::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
+void SuppressionList::markUnmatchedInlineSuppressionsAsChecked(const TokenList &tokenlist) {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);
 
     int currLineNr = -1;
     int currFileIdx = -1;
-    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = tokenlist.front(); tok; tok = tok->next()) {
         if (currFileIdx != tok->fileIndex() || currLineNr != tok->linenr()) {
             currLineNr = tok->linenr();
             currFileIdx = tok->fileIndex();
             for (auto &suppression : mSuppressions) {
                 if (suppression.type == SuppressionList::Type::unique) {
-                    if (!suppression.checked && (suppression.lineNumber == currLineNr) && (suppression.fileName == tokenizer.list.file(tok))) {
+                    if (!suppression.checked && (suppression.lineNumber == currLineNr) && (suppression.fileName == tokenlist.file(tok))) {
                         suppression.checked = true;
                     }
                 } else if (suppression.type == SuppressionList::Type::block) {
-                    if ((!suppression.checked && (suppression.lineBegin <= currLineNr) && (suppression.lineEnd >= currLineNr) && (suppression.fileName == tokenizer.list.file(tok)))) {
+                    if ((!suppression.checked && (suppression.lineBegin <= currLineNr) && (suppression.lineEnd >= currLineNr) && (suppression.fileName == tokenlist.file(tok)))) {
                         suppression.checked = true;
                     }
-                } else if (!suppression.checked && suppression.fileName == tokenizer.list.file(tok)) {
+                } else if (!suppression.checked && suppression.fileName == tokenlist.file(tok)) {
                     suppression.checked = true;
                 }
             }

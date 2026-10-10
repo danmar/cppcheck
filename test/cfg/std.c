@@ -45,7 +45,7 @@ void test_int32_min() {
 }
 
 void test_int64_min() {
-    // cppcheck-suppress compareValueOutOfTypeRangeError ; tests that INT64_MIN is a signed expression
+    // TODO cppcheck-suppress knownConditionTrueFalse // #13814
     if (INT64_MIN < 0) {}
 }
 
@@ -285,6 +285,13 @@ char* nullPointer_fgets(char *buffer, int n, FILE *stream)
     (void)fgets(buffer,n,NULL);
     // No warning is expected
     return fgets(buffer, n, stream);
+}
+
+void nullPointer_fseek(void) { // #10948
+    FILE *p = fopen("foo", "r");
+    // cppcheck-suppress nullPointerOutOfResources
+    fseek(p, 1, SEEK_SET);
+    fclose(p);
 }
 
 void memleak_aligned_alloc(void)
@@ -3510,6 +3517,13 @@ void invalidFunctionArg_strchr(const char *cs, int c)
 
     // cppcheck-suppress invalidFunctionArg
     (void)strchr(cs, 256);
+}
+
+void constParameterPointer_strchr(char *str) // #14453
+{
+	char *sep = strchr(str, ':');
+	if (sep)
+		*sep = '\0';
 }
 
 void invalidFunctionArg_log10(float f, double d, const long double ld)

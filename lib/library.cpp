@@ -177,7 +177,7 @@ static std::vector<std::string> getnames(const char *names)
 
 static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList)
 {
-    const std::string str(valid + ',');
+    const std::string str(valid + ",\n");
     tokenList.createTokensFromBuffer(str.data(), str.size()); // TODO: check result?
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
@@ -194,12 +194,13 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
     }
 
     const bool is_abs_path = Path::isAbsolute(path);
+    const bool is_rel_path = Path::isRelative(path);
 
     std::string fullfilename(path);
 
     // TODO: what if the extension is not .cfg?
-    // only append extension when we provide the library name and not a path - TODO: handle relative paths?
-    if (!is_abs_path && Path::getFilenameExtension(fullfilename).empty())
+    // only append extension when we provide the library name and not a path
+    if (!is_abs_path && !is_rel_path && Path::getFilenameExtension(fullfilename).empty())
         fullfilename += ".cfg";
 
     std::string absolute_path;
@@ -1569,8 +1570,7 @@ bool Library::isCompliantValidationExpression(const char* p)
             error |= (*(p + 1) == '-');
         }
         else if (*p == ':') {
-            // cppcheck-suppress bitwiseOnBoolean - TODO: fix this
-            error |= range | (*(p + 1) == '.');
+            error |= range || (*(p + 1) == '.');
             range = true;
             has_dot = false;
             has_E = false;
@@ -1584,8 +1584,7 @@ bool Library::isCompliantValidationExpression(const char* p)
             has_dot = false;
             has_E = false;
         } else if (*p == '.') {
-            // cppcheck-suppress bitwiseOnBoolean - TODO: fix this
-            error |= has_dot | (!std::isdigit(*(p + 1)));
+            error |= has_dot || (!std::isdigit(*(p + 1)));
             has_dot = true;
         } else if (*p == 'E' || *p == 'e') {
             error |= has_E;
@@ -1781,6 +1780,8 @@ bool Library::isFunctionConst(const Token *ftok) const
             using Yield = Library::Container::Yield;
             const Yield yield = astContainerYield(ftok->astParent()->astOperand1(), *this);
             if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
+                return true;
+            if ((yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR) && ftok->str()[0] == 'c')
                 return true;
         }
         return false;

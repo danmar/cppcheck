@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ private:
         TEST_CASE(summary);
         TEST_CASE(dry_run);
         TEST_CASE(exclude_tests);
+        TEST_CASE(timer_results);
     }
 
 
@@ -166,6 +167,12 @@ private:
         options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(true, args.exclude_tests());
         ASSERT(args.errors().empty());
+    }
+
+    void timer_results() const {
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-t"};
+        options args(getArrayLength(argv), argv);
+        ASSERT(!!args.timer_results());
     }
 };
 

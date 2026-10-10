@@ -141,6 +141,14 @@ public:
         return mUndefines;
     }
 
+    const QString& getUserInclude() const {
+        return mUserInclude;
+    }
+
+    void setUserInclude(const QString& userInclude) {
+        mUserInclude = userInclude.trimmed();
+    }
+
     /**
      * @brief Get list of paths to check.
      * @return list of paths.
@@ -179,10 +187,6 @@ public:
      */
     const QString& getPlatform() const {
         return mPlatform;
-    }
-
-    const QString& getProjectName() const {
-        return mProjectName;
     }
 
     void setProjectName(QString projectName) {
@@ -400,14 +404,6 @@ public:
         return mCertIntPrecision;
     }
 
-    /** Cppcheck Premium: License file */
-    void setLicenseFile(const QString& licenseFile) {
-        mPremiumLicenseFile = licenseFile;
-    }
-    const QString& getLicenseFile() const {
-        return mPremiumLicenseFile;
-    }
-
     /**
      * @brief Write project file (to disk).
      * @param filename Filename to use.
@@ -448,7 +444,20 @@ public:
 
     /** Get paths where we should glob for certain files (dir="cfg"/"platforms"/etc */
     QStringList getSearchPaths(const QString& dir) const;
+
     static QStringList getSearchPaths(const QString& projectPath, const QString& appPath, const QString& datadir, const QString& dir);
+
+    /**
+     * @brief Convert an absolute path to a path relative to this project's directory.
+     * If the relative path would need to walk up more than 2 parent folders
+     * (i.e. "../../...") the absolute path is returned unchanged instead.
+     * @param absolutePath Absolute path to convert.
+     */
+    QString getRelativePath(const QString &absolutePath) const;
+
+    /** Set user includes in settings if non-empty */
+    void setSettingsUserIncludes(Settings &settings) const;
+
 
 protected:
 
@@ -601,6 +610,9 @@ private:
      */
     QStringList mUndefines;
 
+    /** @brief --include file */
+    QString mUserInclude;
+
     /**
      * @brief List of paths to check.
      */
@@ -640,9 +652,6 @@ private:
      * @brief List of coding standards, checked by Cppcheck Premium.
      */
     QStringList mCodingStandards;
-
-    /** @brief Cppcheck Premium: license file */
-    QString mPremiumLicenseFile;
 
     /** @brief Project name, used when generating compliance report */
     QString mProjectName;

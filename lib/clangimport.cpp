@@ -140,7 +140,7 @@ static std::vector<std::string> splitString(const std::string &line)
             pos2 = line.find('\"', pos1+1);
         else if (line[pos1] == '\'') {
             pos2 = line.find('\'', pos1+1);
-            if (pos2 < static_cast<int>(line.size()) - 3 && line.compare(pos2, 3, "\':\'", 0, 3) == 0)
+            if (pos2 < line.size() - 3 && line.compare(pos2, 3, "\':\'", 0, 3) == 0)
                 pos2 = line.find('\'', pos2 + 3);
         } else {
             pos2 = pos1;
@@ -303,7 +303,7 @@ namespace clangimport {
         }
 
         // "}" tokens that are not end-of-scope
-        std::set<Token *> mNotScope;
+        std::set<const Token *> mNotScope;
 
         std::map<const Scope *, AccessControl> scopeAccessControl;
     private:
@@ -357,7 +357,7 @@ namespace clangimport {
         /**
          * @throws InternalError thrown if index is out of bounds
          */
-        AstNodePtr getChild(int c) {
+        AstNodePtr getChild(size_t c) {
             if (c >= children.size()) {
                 std::ostringstream err;
                 err << "ClangImport: AstNodePtr::getChild(" << c << ") out of bounds. children.size=" << children.size() << " " << nodeType;
@@ -422,15 +422,13 @@ std::string clangimport::AstNode::getSpelling() const
     if (nodeType == FunctionDecl || nodeType == CXXConstructorDecl || nodeType == CXXMethodDecl) {
         while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
             typeIndex--;
-        if (typeIndex <= 0)
-            return "";
     }
     if (nodeType == DeclRefExpr) {
         while (typeIndex > 0 && std::isalpha(mExtTokens[typeIndex][0]))
             typeIndex--;
-        if (typeIndex <= 0)
-            return "";
     }
+    if (typeIndex <= 0)
+        return "";
     const std::string &str = mExtTokens[typeIndex - 1];
     if (startsWith(str,"col:"))
         return "";
@@ -509,7 +507,7 @@ void clangimport::AstNode::dumpAst(int num, int indent) const
     for (const auto& tok: mExtTokens)
         std::cout << " " << tok;
     std::cout << std::endl;
-    for (int c = 0; c < children.size(); ++c) {
+    for (size_t c = 0; c < children.size(); ++c) {
         if (children[c])
             children[c]->dumpAst(c, indent + 2);
         else
@@ -1432,7 +1430,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
         function->nestedIn = nestedIn;
     function->argDef = par1;
     // Function arguments
-    for (int i = 0; i < children.size(); ++i) {
+    for (size_t i = 0; i < children.size(); ++i) {
         AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)
             continue;
@@ -1639,7 +1637,9 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
         if (pos1 == std::string::npos)
             continue;
         if (!tree.empty() && line.substr(pos1) == "-<<<NULL>>>") {
-            const int level = (pos1 - 1) / 2;
+            const size_t level = (pos1 - 1) / 2;
+            if (level == 0 || level > tree.size())
+                continue;
             tree[level - 1]->children.push_back(nullptr);
             continue;
         }
@@ -1657,7 +1657,7 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
             continue;
         }
 
-        const int level = (pos1 - 1) / 2;
+        const size_t level = (pos1 - 1) / 2;
         if (level == 0 || level > tree.size())
             continue;
 

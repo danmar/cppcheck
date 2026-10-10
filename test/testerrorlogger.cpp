@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2025 Cppcheck team.
+ * Copyright (C) 2007-2026 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,9 +49,14 @@ private:
         TEST_CASE(FileLocationSetFile2);
         TEST_CASE(ErrorMessageConstruct);
         TEST_CASE(ErrorMessageConstructLocations);
+        TEST_CASE(ErrorMessageHashFallback);
         TEST_CASE(ErrorMessageVerbose);
         TEST_CASE(ErrorMessageVerboseLocations);
+        TEST_CASE(ErrorMessageVerboseSymbol);
+        TEST_CASE(ErrorMessageVerboseNewline);
         TEST_CASE(ErrorMessageFromInternalError);
+        TEST_CASE(ErrorMessageCode);
+        TEST_CASE(ErrorMessageNoCode);
         TEST_CASE(CustomFormat);
         TEST_CASE(CustomFormat2);
         TEST_CASE(CustomFormatLocations);
@@ -137,7 +142,7 @@ private:
             ASSERT_EQUALS("info", loc.getinfo());
         }
         {
-            const SimpleTokenList tokenlist("a", "dir/a.cpp");
+            const SimpleTokenList tokenlist("a\n", "dir/a.cpp");
             {
                 const ErrorMessage::FileLocation loc(tokenlist.front(), &tokenlist.get());
                 ASSERT_EQUALS("dir/a.cpp", loc.getOrigFile(false));
@@ -170,7 +175,7 @@ private:
             }
         }
         {
-            const SimpleTokenList tokenlist("a", "dir\\a.cpp");
+            const SimpleTokenList tokenlist("a\n", "dir\\a.cpp");
             {
                 const ErrorMessage::FileLocation loc(tokenlist.front(), &tokenlist.get());
                 ASSERT_EQUALS("dir\\a.cpp", loc.getOrigFile(false));
@@ -210,12 +215,12 @@ private:
         ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation("dir/a.cpp", "info", 1, 1).getfile(false));
         ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation("dir\\a.cpp", "info", 1, 1).getfile(false));
         {
-            const SimpleTokenList tokenlist("a", "dir/a.cpp");
+            const SimpleTokenList tokenlist("a\n", "dir/a.cpp");
             ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), &tokenlist.get()).getfile(false));
             ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), "info", &tokenlist.get()).getfile(false));
         }
         {
-            const SimpleTokenList tokenlist("a", "dir\\a.cpp");
+            const SimpleTokenList tokenlist("a\n", "dir\\a.cpp");
             ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), &tokenlist.get()).getfile(false));
             ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), "info", &tokenlist.get()).getfile(false));
         }
@@ -264,6 +269,77 @@ private:
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(true, templateFormat, ""));
     }
 
+    // unusedFunction/staticFunction/ctu* warnings carry no token information, so
+    // ErrorMessage::calculateWarningHash() (which needs tokens) can't compute a
+    // hash for them. calculateWarningHashFromLocations() is the fallback used
+    // instead - it hashes the id, message and all location filenames/notes.
+    void ErrorMessageHashFallback() const {
+        // ids that don't need a fallback hash still get none
+        {
+            std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
+            ErrorMessage msg(std::move(locs), "", Severity::style, "Some warning.", "someOtherId", Certainty::normal);
+            ASSERT_EQUALS(0, msg.hash);
+        }
+
+        // unusedFunction, staticFunction and any ctu* id get a non-zero fallback hash
+        for (const std::string& id : { std::string("unusedFunction"), std::string("staticFunction"), std::string("ctuOneDefinitionRuleViolation") }) {
+            std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
+            ErrorMessage msg(std::move(locs), "", Severity::style, "Some warning.", id, Certainty::normal);
+            ASSERT(msg.hash != 0);
+        }
+
+        // same id/message/locations => same hash
+        {
+            std::list<ErrorMessage::FileLocation> locs1(1, fooCpp5);
+            ErrorMessage msg1(std::move(locs1), "", Severity::style, "Some warning.", "unusedFunction", Certainty::normal);
+
+            std::list<ErrorMessage::FileLocation> locs2(1, fooCpp5);
+            ErrorMessage msg2(std::move(locs2), "", Severity::style, "Some warning.", "unusedFunction", Certainty::normal);
+
+            ASSERT_EQUALS(msg1.hash, msg2.hash);
+        }
+
+        // different message => different hash
+        {
+            std::list<ErrorMessage::FileLocation> locs1(1, fooCpp5);
+            ErrorMessage msg1(std::move(locs1), "", Severity::style, "Some warning.", "unusedFunction", Certainty::normal);
+
+            std::list<ErrorMessage::FileLocation> locs2(1, fooCpp5);
+            ErrorMessage msg2(std::move(locs2), "", Severity::style, "Some other warning.", "unusedFunction", Certainty::normal);
+
+            ASSERT(msg1.hash != msg2.hash);
+        }
+
+        // different location filename => different hash
+        {
+            std::list<ErrorMessage::FileLocation> locs1(1, fooCpp5);
+            ErrorMessage msg1(std::move(locs1), "", Severity::style, "Some warning.", "unusedFunction", Certainty::normal);
+
+            std::list<ErrorMessage::FileLocation> locs2(1, barCpp8);
+            ErrorMessage msg2(std::move(locs2), "", Severity::style, "Some warning.", "unusedFunction", Certainty::normal);
+
+            ASSERT(msg1.hash != msg2.hash);
+        }
+
+        // different location note (info) => different hash
+        {
+            std::list<ErrorMessage::FileLocation> locs1(1, barCpp8);
+            ErrorMessage msg1(std::move(locs1), "", Severity::error, "Some warning.", "ctuOneDefinitionRuleViolation", Certainty::normal);
+
+            std::list<ErrorMessage::FileLocation> locs2(1, barCpp8_i);
+            ErrorMessage msg2(std::move(locs2), "", Severity::error, "Some warning.", "ctuOneDefinitionRuleViolation", Certainty::normal);
+
+            ASSERT(msg1.hash != msg2.hash);
+        }
+
+        // hash shows up in the XML output
+        {
+            std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
+            ErrorMessage msg(std::move(locs), "", Severity::style, "Some warning.", "unusedFunction", Certainty::normal);
+            ASSERT(msg.toXML().find(" hash=\"") != std::string::npos);
+        }
+    }
+
     void ErrorMessageVerbose() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
@@ -282,6 +358,27 @@ private:
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false, templateFormat, ""));
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Verbose error", msg.toString(true, templateFormat, ""));
+    }
+
+    void ErrorMessageVerboseSymbol() const {
+        std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "$symbol:sym\nProgramming error with $symbol.\nVerbose error about $symbol", "errorId", Certainty::normal);
+        ASSERT_EQUALS(1, msg.callStack.size());
+        ASSERT_EQUALS("Programming error with sym.", msg.shortMessage());
+        ASSERT_EQUALS("Verbose error about sym", msg.verboseMessage());
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error with sym.", msg.toString(false, templateFormat, ""));
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Verbose error about sym", msg.toString(true, templateFormat, ""));
+        ASSERT_EQUALS("sym\n", msg.symbolNames());
+    }
+
+    void ErrorMessageVerboseNewline() const {
+        std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error\nEven more verbose", "errorId", Certainty::normal);
+        ASSERT_EQUALS(1, msg.callStack.size());
+        ASSERT_EQUALS("Programming error.", msg.shortMessage());
+        ASSERT_EQUALS("Verbose error\nEven more verbose", msg.verboseMessage());
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false, templateFormat, ""));
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Verbose error\nEven more verbose", msg.toString(true, templateFormat, ""));
     }
 
     void ErrorMessageFromInternalError() const {
@@ -337,8 +434,45 @@ private:
         testReportType(ReportType::misraCpp2023, Severity::style, "premium-misra-cpp-2023-dir-0.3.2", "Required", "Dir 0.3.2");
         testReportType(ReportType::misraCpp2008, Severity::style, "premium-misra-cpp-2008-3-4-1", "Required", "3-4-1");
         testReportType(ReportType::misraC2012, Severity::style, "premium-misra-c-2012-dir-4.6", "Advisory", "Dir 4.6");
+        testReportType(ReportType::misraC2012, Severity::style, "premium-misra-c-2012-10.4-positive-number", "Required", "10.4");
+        testReportType(ReportType::misraC2012, Severity::style, "premium-misra-c-2012-10.4", "Required", "10.4");
         testReportType(ReportType::misraC2012, Severity::style, "misra-c2012-dir-4.6", "Advisory", "Dir 4.6");
         testReportType(ReportType::certC, Severity::error, "resourceLeak", "L3", "FIO42-C");
+    }
+
+    void ErrorMessageCode() const {
+        ScopedFile file("code.cpp",
+                        "int i;\n"
+                        "int i2;\n"
+                        "int i3;\n"
+                        );
+
+        ErrorMessage::FileLocation codeCpp3_5{"code.cpp", 3, 5};
+        std::list<ErrorMessage::FileLocation> locs = { codeCpp3_5 };
+        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ASSERT_EQUALS(1, msg.callStack.size());
+        ASSERT_EQUALS("Programming error.", msg.shortMessage());
+        ASSERT_EQUALS("Verbose error", msg.verboseMessage());
+        ASSERT_EQUALS("code.cpp:3:5: error: Programming error. [errorId]\n"
+                      "int i3;\n"
+                      "    ^",
+                      msg.toString(false, "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\n{code}", ""));
+    }
+
+    void ErrorMessageNoCode() const {
+        ScopedFile file("code.cpp",
+                        "int i;\n"
+                        "int i2;\n"
+                        "int i3;\n"
+                        );
+
+        ErrorMessage::FileLocation code{"code.cpp", 3, 5};
+        std::list<ErrorMessage::FileLocation> locs = { code };
+        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ASSERT_EQUALS(1, msg.callStack.size());
+        const bool noCode = true;
+        ASSERT_EQUALS("code.cpp:3:5: error: Programming error. [errorId]\n",
+                      msg.toString(false, "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\n{code}", "", noCode));
     }
 
     void CustomFormat() const {
@@ -554,7 +688,7 @@ private:
                                "0 "
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid CWE ID - not an integer");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid CWE ID - not an integer (invalid_argument)");
         }
         {
             // invalid hash
@@ -570,7 +704,7 @@ private:
                                "0 "
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid hash - not an integer");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid hash - not an integer (invalid_argument)");
         }
         {
             // out-of-range CWE ID

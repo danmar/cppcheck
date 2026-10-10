@@ -586,7 +586,6 @@ void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s
     (void)os.write(s,n);
 }
 
-// cppcheck-suppress constParameterReference // TODO: FP
 void bufferAccessOutOfBounds_std_ifstream_get(std::ifstream& in, std::streambuf& sb)
 {
     char cBuf[10];
@@ -870,7 +869,7 @@ char * overlappingWriteFunction_strncat(const char *src, char *dest, const std::
     // cppcheck-suppress overlappingWriteFunction
     (void)strncat(dest, dest+1, 2);
     char buffer[] = "strncat";
-    // cppcheck-suppress overlappingWriteFunction
+    // cppcheck-suppress [overlappingWriteFunction,returnDanglingLifetime]
     return strncat(buffer, buffer + 1, 3);
 }
 
@@ -883,7 +882,7 @@ wchar_t * overlappingWriteFunction_wcsncat(const wchar_t *src, wchar_t *dest, co
     // cppcheck-suppress overlappingWriteFunction
     (void)wcsncat(dest, dest+1, 2);
     wchar_t buffer[] = L"strncat";
-    // cppcheck-suppress overlappingWriteFunction
+    // cppcheck-suppress [overlappingWriteFunction,returnDanglingLifetime]
     return wcsncat(buffer, buffer + 1, 3);
 }
 
@@ -918,8 +917,8 @@ char * overlappingWriteFunction_strncpy(char *buf, const std::size_t count)
 
 void * overlappingWriteFunction_memmove(void)
 {
-    // No warning shall be shown:
     char str[] = "memmove handles overlapping data well";
+    // cppcheck-suppress returnDanglingLifetime
     return memmove(str,str+3,4);
 }
 
@@ -1059,7 +1058,7 @@ void returnValue_std_isgreater(void)
 {
     // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreater(4,2) == 0) {}
-    // @todo support floats
+    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreater(4.0f,2.0f) == 0) {}
 }
 
@@ -1067,7 +1066,7 @@ void returnValue_std_isgreaterequal(void)
 {
     // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreaterequal(4,2) == 0) {}
-    // @todo support floats
+    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreaterequal(4.0f,2.0f) == 0) {}
 }
 
@@ -1075,7 +1074,7 @@ void returnValue_std_isless(void)
 {
     // cppcheck-suppress knownConditionTrueFalse
     if (std::isless(4,2) == 0) {}
-    // @todo support floats
+    // cppcheck-suppress knownConditionTrueFalse
     if (std::isless(4.0f,2.0f) == 0) {}
 }
 
@@ -1083,7 +1082,7 @@ void returnValue_std_islessequal(void)
 {
     // cppcheck-suppress knownConditionTrueFalse
     if (std::islessequal(4,2) == 0) {}
-    // @todo support floats
+    // cppcheck-suppress knownConditionTrueFalse
     if (std::islessequal(4.0f,2.0f) == 0) {}
 }
 
@@ -1094,8 +1093,10 @@ void returnValue_std_islessgreater(void)
     // cppcheck-suppress knownConditionTrueFalse
     if (std::islessgreater(2,4) == 0) {}
 
-    if (std::islessgreater(4.0f,2.0f) == 0) {} // @todo support floats
-    if (std::islessgreater(2.0f,4.0f) == 0) {} // @todo support floats
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::islessgreater(4.0f,2.0f) == 0) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::islessgreater(2.0f,4.0f) == 0) {}
 }
 
 void bufferAccessOutOfBounds(void)
@@ -4981,6 +4982,18 @@ std::span<const int> returnDanglingLifetime_std_span1() {
 }
 #endif
 
+void* returnDanglingLifetime_memcpy() { // #14833
+    char a[4];
+    // cppcheck-suppress returnDanglingLifetime
+    return memcpy(a, "abc", 4);
+}
+
+wchar_t* returnDanglingLifetime_wcscat() {
+    wchar_t a[10]{L"abc"};
+    // cppcheck-suppress returnDanglingLifetime
+    return wcscat(a, L"def");
+}
+
 void beginEnd()
 {
     std::vector<int> v;
@@ -5003,7 +5016,7 @@ void beginEnd()
     //cppcheck-suppress ignoredReturnValue
     std::crend(v);
 
-    // cppcheck-suppress constVariable
+    // TODO cppcheck-suppress constVariable
     int arr[4];
 
     //cppcheck-suppress ignoredReturnValue
@@ -5023,6 +5036,44 @@ void beginEnd()
     std::cend(arr);
     //cppcheck-suppress ignoredReturnValue
     std::crend(arr);
+}
+
+struct S_constParameter_std_begin { // #11617
+    int a[2];
+};
+
+struct T_constParameter_std_begin {
+    std::vector<int> v;
+};
+
+struct U_constParameter_std_begin {
+    std::vector<int> v[1][1];
+};
+
+void f(S_constParameter_std_begin& s) {
+    std::for_each(std::begin(s.a), std::end(s.a), [](int& i) { ++i; });
+}
+
+void f(T_constParameter_std_begin& t) {
+    std::for_each(std::begin(t.v), std::end(t.v), [](int& i) { ++i; });
+}
+
+void f(U_constParameter_std_begin& u) {
+    std::for_each(std::begin(u.v[0][0]), std::end(u.v[0][0]), [](int& i) { ++i; });
+}
+
+void g_constVariable_std_begin(int* p) { *p = 0; }
+
+int f_constVariable_std_begin() {
+    int arr[1];
+    g_constVariable_std_begin(std::begin(arr));
+    *std::begin(arr) = 1;
+    return arr[0];
+}
+
+std::size_t uninitvar_std_size() { // #14976
+    int a[3];
+    return std::size(a);
 }
 
 void smartPtr_get()
@@ -5332,4 +5383,14 @@ int containerOutOfBounds_std_initializer_list() { // #14340
     // cppcheck-suppress derefInvalidIterator
     int i = *x.end();
     return i + containerOutOfBounds_std_initializer_list_access(x);
+}
+
+int* missingReturn_std_throw_with_nested() { // #14374
+    try {
+        int* p = new int();
+        return p;
+    }
+    catch (...) {
+        std::throw_with_nested(std::runtime_error("xyz"));
+    }
 }

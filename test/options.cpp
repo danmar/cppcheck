@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2025 Cppcheck team.
+// Copyright (C) 2007-2026 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "options.h"
+
+#include "timer.h"
 
 options::options(int argc, const char* const argv[])
     : mExe(argv[0])
@@ -34,6 +36,8 @@ options::options(int argc, const char* const argv[])
                 mDryRun = true;
             else if (arg == "-x")
                 mExcludeTests = true;
+            else if (arg == "-t")
+                mTimerResults.reset(new TimerResults);
             else
                 mErrors.emplace_back("unknown option '" + arg + "'");
             continue; // command-line switch
@@ -50,6 +54,12 @@ options::options(int argc, const char* const argv[])
         const std::string test = arg.substr(pos+2);
         mWhichTests[fixture].emplace(test); // run individual test
     }
+}
+
+options::~options()
+{
+    if (mTimerResults)
+        mTimerResults->showResults(10, false);
 }
 
 bool options::quiet() const
@@ -85,6 +95,11 @@ const std::string& options::exe() const
 bool options::exclude_tests() const
 {
     return mExcludeTests;
+}
+
+TimerResultsIntf* options::timer_results() const
+{
+    return mTimerResults.get();
 }
 
 const std::vector<std::string>& options::errors() const

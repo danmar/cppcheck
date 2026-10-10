@@ -42,6 +42,8 @@
 
 class options;
 class Tokenizer;
+class Timer;
+class TimerResultsIntf;
 
 class TestFixture : public ErrorLogger {
 private:
@@ -60,6 +62,7 @@ protected:
     bool quiet_tests{};
     bool dry_run{};
     bool exclude_tests{};
+    TimerResultsIntf* timer_results{};
     bool mNewTemplate{};
 
     virtual void run() = 0;
@@ -131,21 +134,13 @@ protected:
 
     void processOptions(const options& args);
 
-    template<typename T>
-    static T& getCheck()
+    static Check& getCheck(Check& check)
     {
-        for (Check *check : Check::instances()) {
-            //cppcheck-suppress useStlAlgorithm
-            if (T* c = dynamic_cast<T*>(check))
-                return *c;
-        }
-        throw std::runtime_error("instance not found");
+        return check;
     }
 
-    template<typename T>
-    static void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+    static void runChecks(Check& check, const Tokenizer &tokenizer, ErrorLogger& errorLogger)
     {
-        Check& check = getCheck<T>();
         check.runChecks(tokenizer, errorLogger);
     }
 
@@ -285,7 +280,9 @@ private:
     std::ostringstream mOutput;
     std::ostringstream mErrout;
 
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
+    std::unique_ptr<Timer> mTimer;
+
+    void reportOut(const std::string &outmsg, Color /*c*/ = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
     void reportMetric(const std::string &metric) override
     {
@@ -298,6 +295,7 @@ public:
     const std::string classname;
 
     explicit TestFixture(const char * _name);
+    ~TestFixture() override;
 
     static std::size_t runTests(const options& args);
 };

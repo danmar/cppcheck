@@ -28,6 +28,7 @@
 #include <ctime>
 #include <list>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -88,7 +89,7 @@ public:
         std::string stringify(bool addcolumn = false) const;
 
         unsigned int fileIndex;
-        int line; // negative value means "no line"
+        int line; // negative value means "no line" - TODO: actually 0 means no line - lines from simplecpp are unsigned
         unsigned int column;
 
         const std::string& getinfo() const {
@@ -151,11 +152,13 @@ public:
      * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
      * @param templateLocation Format Empty string to use default output format
      * or template to be used. E.g. "{file}:{line},{info}"
+     * @param noCode Always replace {code} with an empty string
      * @return formatted string
      */
     std::string toString(bool verbose,
                          const std::string &templateFormat,
-                         const std::string &templateLocation) const;
+                         const std::string &templateLocation,
+                         bool noCode = false) const;
 
     std::string serialize() const;
     /**
@@ -207,6 +210,15 @@ public:
 
 private:
     static std::string fixInvalidChars(const std::string& raw);
+
+    void calculateWarningHash(const std::list<const Token*>& callstack);
+
+    /**
+     * Fallback hash calculation for warnings that have no token information
+     * (e.g. whole-program/CTU checks, unusedFunction, staticFunction). Hashes
+     * the id, message and all filenames/notes in the callstack instead.
+     */
+    void calculateWarningHashFromLocations();
 
     /** Short message */
     std::string mShortMessage;
@@ -271,12 +283,19 @@ public:
      */
     static std::string toxml(const std::string &str);
 
-    static std::string plistHeader(const std::string &version, const std::vector<std::string> &files);
+    static std::string plistHeader(const std::string &version);
     static std::string plistData(const ErrorMessage &msg);
-    static const char *plistFooter() {
-        return " </array>\r\n"
-               "</dict>\r\n"
-               "</plist>";
+    static std::string plistFooter(const std::vector<std::string>& files) {
+        std::ostringstream ostr;
+        ostr << " </array>\r\n"
+             << " <key>files</key>\r\n"
+             << " <array>\r\n";
+        for (const std::string& file : files)
+            ostr << "  <string>" << ErrorLogger::toxml(file) << "</string>\r\n";
+        ostr << " </array>\r\n"
+             << "</dict>\r\n"
+             << "</plist>";
+        return ostr.str();
     }
 
     static bool isCriticalErrorId(const std::string& id) {

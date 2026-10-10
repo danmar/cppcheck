@@ -51,7 +51,7 @@ public:
 
 private:
 #ifdef HAS_THREADING_MODEL_FORK
-    /*const*/ Settings settings = settingsBuilder().library("std.cfg").build();
+    /*const*/ Settings settings;
     bool useFS;
 
     std::string fprefix() const
@@ -64,7 +64,7 @@ private:
     struct CheckOptions
     {
         bool quiet = true;
-        ShowTime showtime = ShowTime::NONE;
+        Settings::ShowTime showtime = Settings::ShowTime::NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
     };
@@ -104,7 +104,9 @@ private:
             s.plistOutput = opt.plistOutput;
         s.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}";
         Suppressions supprs;
-        TimerResults timerResults;
+        std::unique_ptr<TimerResults> timerResults;
+        if (s.showtime != Settings::ShowTime::NONE)
+            timerResults.reset(new TimerResults);
 
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
         auto executeFn = [](std::string,std::vector<std::string>,std::string,std::string&){
@@ -120,7 +122,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        ProcessExecutor executor(filelist, fileSettings, s, supprs, *this, &timerResults, executeFn);
+        ProcessExecutor executor(filelist, fileSettings, s, supprs, *this, timerResults.get(), executeFn);
         ASSERT_EQUALS(result, executor.check());
     }
 #endif // HAS_THREADING_MODEL_FORK
@@ -177,7 +179,7 @@ private:
               "void f()\n"
               "{\n"
               "  (void)(*((int*)0));\n"
-              "}", dinit(CheckOptions, $.showtime = ShowTime::SUMMARY));
+              "}", dinit(CheckOptions, $.showtime = Settings::ShowTime::SUMMARY));
         // we are not interested in the results - so just consume them
         ignore_errout();
     }
@@ -246,11 +248,10 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = ShowTime::TOP5_FILE));
-        // for each file: top5 results + overall + empty line
+                    $.showtime = Settings::ShowTime::TOP5_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        // for each file: top5 results + overall + empty line
-        TODO_ASSERT_EQUALS(static_cast<long long>(5 + 1 + 1) * 2, 0, cppcheck::count_all_of(output_s, '\n'));
+        // for each file: top5 results + check time
+        TODO_ASSERT_EQUALS(static_cast<long long>(5 + 1) * 2, 0, cppcheck::count_all_of(output_s, '\n'));
     }
 
     void showtime_file() {
@@ -258,7 +259,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = ShowTime::FILE));
+                    $.showtime = Settings::ShowTime::FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         TODO_ASSERT_EQUALS(2, 0, cppcheck::count_all_of(output_s, "Overall time:"));
     }
@@ -268,7 +269,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = ShowTime::FILE_TOTAL));
+                    $.showtime = Settings::ShowTime::FILE_TOTAL));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_1.c: ") != std::string::npos);
         TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_2.c: ") != std::string::npos);

@@ -31,8 +31,12 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "timer.h"
 #include "utils.h"
+
+#ifdef HAVE_RULES
+#include "regex.h"
+#include "rule.h"
+#endif
 
 #include <cstdio>
 #include <list>
@@ -256,6 +260,7 @@ private:
         TEST_CASE(premiumOptionsMetrics);
         TEST_CASE(premiumOptionsCertCIntPrecision);
         TEST_CASE(premiumOptionsLicenseFile);
+        TEST_CASE(premiumOptionsLicenseFilePathWithSpace);
         TEST_CASE(premiumOptionsInvalid1);
         TEST_CASE(premiumOptionsInvalid2);
         TEST_CASE(premiumSafety);
@@ -302,6 +307,10 @@ private:
         TEST_CASE(suppressSingleFile);
         TEST_CASE(suppressTwo);
         TEST_CASE(suppressTwoSeparate);
+        TEST_CASE(exitcodeSuppressSingle);
+        TEST_CASE(exitcodeSuppressSingleFile);
+        TEST_CASE(exitcodeSuppressTwo);
+        TEST_CASE(exitcodeSuppressTwoSeparate);
         TEST_CASE(templates);
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
@@ -493,6 +502,7 @@ private:
         TEST_CASE(noSafety);
         TEST_CASE(noSafetyOverride);
         TEST_CASE(debugAnalyzerinfo);
+        TEST_CASE(debugIpc);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -538,6 +548,8 @@ private:
         TEST_CASE(reportTypeMisraCpp2023);
         TEST_CASE(invalidReportType);
         TEST_CASE(defaultReportType);
+        TEST_CASE(keepComments);
+        TEST_CASE(keepCommentsNoDashE);
     }
 
     void nooptions() {
@@ -1230,7 +1242,7 @@ private:
         const char * const argv[] = {"cppcheck", "--error-exitcode=", "file.cpp"};
         // Fails since exit code not given
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void errorExitcodeStr() {
@@ -1238,7 +1250,7 @@ private:
         const char * const argv[] = {"cppcheck", "--error-exitcode=foo", "file.cpp"};
         // Fails since invalid exit code
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void exitcodeSuppressionsOld() {
@@ -1389,7 +1401,7 @@ private:
         const char * const argv[] = {"cppcheck", "-j", "file.cpp"};
         // Fails since -j is missing thread count
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void jobsInvalid() {
@@ -1397,7 +1409,7 @@ private:
         const char * const argv[] = {"cppcheck", "-j", "e", "file.cpp"};
         // Fails since invalid count given for -j
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void jobsNoJobs() {
@@ -1427,7 +1439,7 @@ private:
         const char * const argv[] = {"cppcheck", "--max-configs=", "file.cpp"};
         // Fails since --max-configs= is missing limit
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void maxConfigsInvalid() {
@@ -1435,7 +1447,7 @@ private:
         const char * const argv[] = {"cppcheck", "--max-configs=e", "file.cpp"};
         // Fails since invalid count given for --max-configs=
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void maxConfigsTooSmall() {
@@ -1615,12 +1627,28 @@ private:
         ASSERT_EQUALS("--cert-c-int-precision=12", settings->premiumArgs);
     }
 
+    void premiumOptionsCertCIntPrecisionInvalid() {
+        REDIRECT;
+        asPremium();
+        const char * const argv[] = {"cppcheck", "--premium-cert-c-int-precision=abc", "file.c"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--premium-cert-c-int-precision=' is not valid - not an integer (invalid_argument).\n", logger->str());
+    }
+
     void premiumOptionsLicenseFile() {
         REDIRECT;
         asPremium();
         const char * const argv[] = {"cppcheck", "--premium-license-file=file.lic", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS("--license-file=file.lic", settings->premiumArgs);
+    }
+
+    void premiumOptionsLicenseFilePathWithSpace() {
+        REDIRECT;
+        asPremium();
+        const char * const argv[] = {"cppcheck", "--premium-license-file=license folder/file.lic", "file.c"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS("\"--license-file=license folder/file.lic\"", settings->premiumArgs);
     }
 
     void premiumOptionsInvalid1() {
@@ -1666,7 +1694,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--report-progress=", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--report-progress=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--report-progress=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void reportProgress3() {
@@ -1984,6 +2012,35 @@ private:
         ASSERT_EQUALS(true, supprs->nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
     }
 
+    void exitcodeSuppressSingle() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exitcode-suppress=uninitvar", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, supprs->nofail.isSuppressed(errorMessage("uninitvar", "file.cpp", 1)));
+    }
+
+    void exitcodeSuppressSingleFile() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exitcode-suppress=uninitvar:file.cpp", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, supprs->nofail.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
+    }
+
+    void exitcodeSuppressTwo() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exitcode-suppress=uninitvar,noConstructor", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: Failed to add suppression. Invalid id \"uninitvar,noConstructor\"\n", logger->str());
+    }
+
+    void exitcodeSuppressTwoSeparate() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exitcode-suppress=uninitvar", "--exitcode-suppress=noConstructor", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, supprs->nofail.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
+        ASSERT_EQUALS(true, supprs->nofail.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
+    }
+
     void templates() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template={file}:{line},{severity},{id},{message}", "--template-location={file}:{line}:{column} {info}", "file.cpp"};
@@ -2137,7 +2194,7 @@ private:
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--xml-version=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--xml-version=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void doc() {
@@ -2158,21 +2215,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=summary", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == ShowTime::SUMMARY);
+        ASSERT_EQUALS_ENUM(Settings::ShowTime::SUMMARY, settings->showtime);
     }
 
     void showtimeFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=file", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == ShowTime::FILE);
+        ASSERT_EQUALS_ENUM(Settings::ShowTime::FILE, settings->showtime);
     }
 
     void showtimeFileTotal() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=file-total", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == ShowTime::FILE_TOTAL);
+        ASSERT_EQUALS_ENUM(Settings::ShowTime::FILE_TOTAL, settings->showtime);
     }
 
     void showtimeTop5() {
@@ -2186,21 +2243,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5_file", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == ShowTime::TOP5_FILE);
+        ASSERT_EQUALS_ENUM(Settings::ShowTime::TOP5_FILE, settings->showtime);
     }
 
     void showtimeTop5Summary() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5_summary", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == ShowTime::TOP5_SUMMARY);
+        ASSERT_EQUALS_ENUM(Settings::ShowTime::TOP5_SUMMARY, settings->showtime);
     }
 
     void showtimeNone() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=none", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == ShowTime::NONE);
+        ASSERT_EQUALS_ENUM(Settings::ShowTime::NONE, settings->showtime);
     }
 
     void showtimeEmpty() {
@@ -2360,7 +2417,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=seven"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iterations=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iterations=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void valueFlowMaxIterationsInvalid3() {
@@ -2388,7 +2445,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--checks-max-time=one", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
 #ifdef HAS_THREADING_MODEL_FORK
@@ -2410,7 +2467,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-l", "one", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '-l' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '-l' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 #else
     void loadAverageNotSupported() {
@@ -2447,7 +2504,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-ctu-depth=one", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--max-ctu-depth=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-ctu-depth=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void performanceValueflowMaxTime() {
@@ -2461,7 +2518,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-time=one", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-time=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-time=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void performanceValueFlowMaxIfCount() {
@@ -2475,7 +2532,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-if-count=one", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-if-count=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-if-count=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void templateMaxTime() {
@@ -2489,7 +2546,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template-max-time=one", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--template-max-time=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--template-max-time=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void templateMaxTimeInvalid2() {
@@ -2510,7 +2567,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--typedef-max-time=one", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--typedef-max-time=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--typedef-max-time=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void typedefMaxTimeInvalid2() {
@@ -2685,14 +2742,14 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(2, settings->rules.size());
         auto it = settings->rules.cbegin();
-        ASSERT_EQUALS_ENUM(Regex::Engine::Pcre, it->engine);
+        ASSERT_EQUALS_ENUM(Regex::Engine::Pcre, it->regex->engine());
         ASSERT_EQUALS("raw", it->tokenlist);
         ASSERT_EQUALS(".+", it->pattern);
         ASSERT_EQUALS_ENUM(Severity::error, it->severity);
         ASSERT_EQUALS("ruleId1", it->id);
         ASSERT_EQUALS("ruleSummary1", it->summary);
         ++it;
-        ASSERT_EQUALS_ENUM(Regex::Engine::Pcre, it->engine);
+        ASSERT_EQUALS_ENUM(Regex::Engine::Pcre, it->regex->engine());
         ASSERT_EQUALS("define", it->tokenlist);
         ASSERT_EQUALS(".*", it->pattern);
         ASSERT_EQUALS_ENUM(Severity::warning, it->severity);
@@ -2716,7 +2773,7 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
-        ASSERT_EQUALS_ENUM(Regex::Engine::Pcre, it->engine);
+        ASSERT_EQUALS_ENUM(Regex::Engine::Pcre, it->regex->engine());
         ASSERT_EQUALS("define", it->tokenlist);
         ASSERT_EQUALS(".+", it->pattern);
         ASSERT_EQUALS_ENUM(Severity::error, it->severity);
@@ -3200,7 +3257,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-template-recursion=", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--max-template-recursion=' is not valid - not an integer.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-template-recursion=' is not valid - not an integer (invalid_argument).\n", logger->str());
     }
 
     void emitDuplicates() {
@@ -3443,6 +3500,13 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-analyzerinfo", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugainfo);
+    }
+
+    void debugIpc() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-ipc", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugipc);
     }
 
     void ignorepaths1() {
@@ -3766,6 +3830,20 @@ private:
         const char *const argv[] = { "cppcheck", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS_ENUM(ReportType::normal, settings->reportType);
+    }
+
+    void keepComments() {
+        REDIRECT;
+        const char *const argv[] = { "cppcheck", "-E", "-CC", "file.cpp" };
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT(settings->keepComments);
+    }
+
+    void keepCommentsNoDashE() {
+        REDIRECT;
+        const char *const argv[] = { "cppcheck", "-CC", "file.cpp" };
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: -CC may only be used on conjunciton with -E\n", logger->str());
     }
 };
 
