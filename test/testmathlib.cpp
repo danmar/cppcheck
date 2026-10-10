@@ -24,6 +24,7 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 
 class TestMathLib : public TestFixture {
