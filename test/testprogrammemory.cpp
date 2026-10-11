@@ -57,6 +57,7 @@ private:
         TEST_CASE(executeUnsignedRange);
         TEST_CASE(executeContainerAlias);
         TEST_CASE(executeContainerSizeRange);
+        TEST_CASE(executeUnknown);
     }
 
     static ValueFlow::Value impossible(MathLib::bigint x, ValueFlow::Value::Bound bound = ValueFlow::Value::Bound::Point) {
@@ -634,6 +635,48 @@ private:
         ASSERT_EQUALS("1", results[1]);
         ASSERT_EQUALS("0", results[2]);
         ASSERT_EQUALS("", results[3]);
+    }
+
+    // An expression recorded as changed in an unknown way has no value: the marker is not a value
+    void executeUnknown() {
+        {
+            // The right hand side is unknown, so the assignment is not evaluated and the value recorded
+            // for the whole assignment expression (from a condition on it) is used instead of the marker
+            SimpleTokenizer tokenizer(settings, *this);
+            const std::vector<const Token*> exprs = parseAssignments(tokenizer, "void f(int x, int z, int y) {\n"
+                                                                     "    y = (x = z) == 0;\n"
+                                                                     "}\n");
+            ASSERT_EQUALS(1U, exprs.size());
+            const Token* const compare = exprs[0];
+            const Token* const assign = compare->astOperand1();
+            ASSERT(assign && assign->str() == "=");
+            ProgramMemory pm;
+            pm.setValue(assign, ValueFlow::Value(0));
+            pm.setUnknown(assign->astOperand2());
+            ASSERT_EQUALS("1", evaluate(compare, pm));
+            // the unknown right hand side does not replace the value of the left hand side
+            pm.setValue(assign->astOperand1(), ValueFlow::Value(3));
+            step(assign, pm);
+            MathLib::bigint x = 0;
+            ASSERT(pm.getIntValue(assign->astOperand1()->exprId(), x));
+            ASSERT_EQUALS(3, x);
+        }
+        {
+            // The symbolic value of an unknown expression still resolves it: result == p and p is 0
+            SimpleTokenizer tokenizer(settings, *this);
+            const std::vector<const Token*> exprs = parseAssignments(tokenizer,
+                                                                     "char* f(char* path, int y) {\n"
+                                                                     "    char* result = path;\n"
+                                                                     "    char* p = result;\n"
+                                                                     "    if (!p) {\n"
+                                                                     "        y = !result;\n"
+                                                                     "    }\n"
+                                                                     "    return p;\n"
+                                                                     "}\n",
+                                                                     /*clear*/ false);
+            ASSERT_EQUALS(1U, exprs.size());
+            ASSERT_EQUALS("1", evaluate(exprs[0]));
+        }
     }
 };
 

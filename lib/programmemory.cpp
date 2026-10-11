@@ -1734,7 +1734,7 @@ namespace {
                     continue;
                 const Values* stored = pm->getValues(value.tokvalue->exprId());
                 // Only int values can be moved by an offset
-                if (!stored || (value.intvalue != 0 && !stored->front().isIntValue()))
+                if (!stored || isUnknown(*stored) || (value.intvalue != 0 && !stored->front().isIntValue()))
                     continue;
                 for (const ValueFlow::Value& v : *stored) {
                     if (addOverflows(v.intvalue, value.intvalue))
@@ -2249,11 +2249,15 @@ namespace {
             if (depth < 0 || !expr)
                 return {};
             Values values = executeImpl(expr);
+            // The marker of an expression changed in an unknown way is not a value of it
+            if (isUnknown(values))
+                values.clear();
             if (!values.empty() && !isConstraints(values))
                 return values;
             // The program memory may hold the value of an expression that could not be evaluated
             if (expr->exprId() > 0) {
-                if (const Values* stored = pm->getValues(expr->exprId())) {
+                const Values* stored = pm->getValues(expr->exprId());
+                if (stored && !isUnknown(*stored)) {
                     if (!isConstraints(*stored))
                         return *stored;
                     if (values.empty())

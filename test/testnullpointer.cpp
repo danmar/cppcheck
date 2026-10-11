@@ -149,6 +149,7 @@ private:
         TEST_CASE(nullpointer109);
         TEST_CASE(nullpointer110); // #14937
         TEST_CASE(nullpointer111); // ranges from conditions
+        TEST_CASE(nullpointer112); // unknown values in program memory
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -3241,6 +3242,38 @@ private:
               "    *p = 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void nullpointer112() { // a variable whose value is unknown is still known through its aliases
+        // result is unknown, but result == p and the check on result is a check on p
+        check("char* g(char* path) {\n"
+              "    char* result;\n"
+              "    char* p;\n"
+              "    result = path;\n"
+              "    p = result;\n"
+              "    if (!result)\n"
+              "        return NULL;\n"
+              "    while ((p = strchr(p, '/'))) {\n"
+              "        p++;\n"
+              "    }\n"
+              "    return result;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        // g is unknown; it does not hide that 'ctx = g' is 0 when ctx is 0
+        check("struct S { int a; };\n"
+              "static struct S* g;\n"
+              "void f(const int* rsl) {\n"
+              "    static int inited = 0;\n"
+              "    struct S* ctx;\n"
+              "    if ((ctx = g) == 0)\n"
+              "        ctx = g = (struct S*)malloc(sizeof(struct S));\n"
+              "    if (inited && rsl == 0)\n"
+              "        return;\n"
+              "    inited = 1;\n"
+              "    ctx->a = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11:5]: (warning) If memory allocation fails, then there is a possible null pointer dereference: ctx [nullPointerOutOfMemory]\n", errout_str());
     }
 
     void nullpointer_addressOf() { // address of
