@@ -91,6 +91,7 @@ private:
         int y = 2;
         RefThunk<int> p(x);
         const RefThunk<int> q(y);
+        ASSERT(&p() == &x);
         p = q;
         ASSERT(&p() == &y);
         ASSERT_EQUALS(2, p());
@@ -100,6 +101,7 @@ private:
         int x = 1;
         int y = 2;
         RefThunk<int> p(x);
+        ASSERT(&p() == &x);
         // assignment rebinds, like std::reference_wrapper - it does not write through
         p = y;
         ASSERT(&p() == &y);

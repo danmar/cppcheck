@@ -1570,6 +1570,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
     }
 }
 
+// cppcheck-suppress functionConst - has side effects
 void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 {
     for (const Scope& scope : scopeList) {
@@ -1840,6 +1841,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     }
 }
 
+// cppcheck-suppress functionConst - has side effects
 void SymbolDatabase::setArrayDimensionsUsingValueFlow()
 {
     // set all unknown array dimensions
