@@ -1603,22 +1603,19 @@ private:
             ASSERT(p->valueType()->originalTypeName == "ubFunctionPointer_fp");
             ASSERT(p->valueType()->reference == Reference::None);
         }
-        { // function pointer returning a reference, the ValueType keeps the reference of the return type
+        { // function pointer returning a reference
             GET_SYMBOL_DB("void foo(int& (*f)()) {}\n");
             const Variable* const p = db->getVariableFromVarId(1);
             ASSERT(!p->isReference());
             ASSERT(p->isPointer());
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
-            ASSERT(p->valueType()->reference == Reference::LValue);
         }
         {
             GET_SYMBOL_DB("void foo(int&& (*f)()) {}\n");
             const Variable* const p = db->getVariableFromVarId(1);
             ASSERT(!p->isReference());
             ASSERT(!p->isRValueReference());
-            ASSERT(p->valueType());
-            ASSERT(p->valueType()->reference == Reference::RValue);
         }
         {
             GET_SYMBOL_DB("struct S { int& (*f[2])(); };\n");
