@@ -7739,7 +7739,7 @@ static const Token* parsedecl(const Token* type,
                 valuetype->type = ValueType::Type::RECORD;
             }
             valuetype->typeScope = type->type()->classScope;
-        } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
+        } else if (type->isNameOnly() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
         else if (Token::Match(type->previous(), "!!:: %name% !!::")) {
             if (!type->isKeyword())
