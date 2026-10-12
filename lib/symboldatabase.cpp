@@ -7624,8 +7624,6 @@ static const Token* parsedecl(const Token* type,
             if (par)
                 break;
             par = true;
-            // a reference before the parentheses belongs to the return type of the function pointer
-            valuetype->reference = Reference::None;
         }
         if (Token::simpleMatch(type, "decltype (") && type->next()->valueType()) {
             const ValueType *vt2 = type->next()->valueType();
