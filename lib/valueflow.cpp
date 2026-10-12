@@ -3746,6 +3746,8 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     for (const auto &value : vartok->values()) {
                         if (!value.isSymbolicValue())
                             continue;
+                        if (!value.isKnown())
+                            continue;
                         if (!value.tokvalue)
                             continue;
                         if (!ids.insert(value.tokvalue->exprId()).second)
