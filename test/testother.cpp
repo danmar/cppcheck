@@ -4225,6 +4225,17 @@ private:
               "    int select(DS &ds) { return select(ds, [](int) {}); }\n"
               "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int& g();\n" // reference to function
+              "int k();\n"
+              "int f1() { int& (&r)() = g; return r(); }\n"
+              "int f2() { int (&r)() = k; return r(); }\n"
+              "int& f3(int& (&f)()) { return f(); }\n"
+              "int f4(int&& (&f)()) { return f(); }\n"
+              "int f5(int (&f)()) { return f(); }\n"
+              "using FR = int&(&)();\n"
+              "void f6(FR f) { f(); }\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {

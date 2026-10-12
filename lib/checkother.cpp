@@ -1783,6 +1783,8 @@ void CheckOtherImpl::checkConstVariable()
             continue;
         if (var->isConst())
             continue;
+        if (Token::Match(var->nameToken(), "%name% ) (")) // reference to function
+            continue;
         const Scope* scope = var->scope();
         if (!scope)
             continue;

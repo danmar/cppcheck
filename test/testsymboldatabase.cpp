@@ -1654,6 +1654,18 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->reference == Reference::LValue);
         }
+        { // reference to function returning a reference
+            GET_SYMBOL_DB("void foo(int& (&f)()) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->isReference());
+            ASSERT(!p->isRValueReference());
+        }
+        {
+            GET_SYMBOL_DB("void foo(int&& (&f)()) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->isReference());
+            ASSERT(!p->isRValueReference());
+        }
     }
 
     void VariableValueTypeTemplate() {
@@ -2461,6 +2473,11 @@ private:
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == FunctionType::eMoveConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo&& (*f)()); };\n");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
         }
         {
             GET_SYMBOL_DB("void f() { extern void f(); }\n");
