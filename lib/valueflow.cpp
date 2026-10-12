@@ -3752,8 +3752,13 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                             continue;
                         if (!ids.insert(value.tokvalue->exprId()).second)
                             continue;
+                        const bool add = tok->str() == "+";
+                        if (add && MathLib::additionWouldOverflow(value.intvalue, constant->intvalue))
+                            continue;
+                        if (!add && MathLib::subtractionWouldOverflow(value.intvalue, constant->intvalue))
+                            continue;
                         ValueFlow::Value newValue(value);
-                        newValue.intvalue += tok->str() == "-" ? -constant->intvalue : constant->intvalue;
+                        newValue.intvalue = add ? newValue.intvalue + constant->intvalue : newValue.intvalue - constant->intvalue;
                         setTokenValue(tok, std::move(newValue), settings);
                     }
                 }
