@@ -690,8 +690,10 @@ void CheckOtherImpl::checkRedundantAssignment()
                 start = tok->findExpressionStartEndTokens().second->next();
 
             std::vector<const Token*> tokensToCheck{ tok->astOperand1() };
-            if (Token::simpleMatch(tok->astOperand1(), "[") && Token::simpleMatch(tok->astOperand1()->astOperand1(), "auto")) // structured binding
+            if (Token::simpleMatch(tok->astOperand1(), "[") && Token::simpleMatch(tok->astOperand1()->astOperand1(), "auto")) { // structured binding
                 tokensToCheck = astFlatten(tok->astOperand1()->astOperand2(), ",");
+                isInitialization = true;
+            }
 
             for (const Token* tokenToCheck : tokensToCheck) {
 

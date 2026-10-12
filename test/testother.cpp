@@ -11569,15 +11569,31 @@ private:
               "    z = 0;\n"
               "    return z;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4:7]: style: Variable 'x' is reassigned a value before the old one has been used. [redundantAssignment]\n"
-                      "[test.cpp:3:17]: note: x is assigned\n"
+        ASSERT_EQUALS("[test.cpp:4:7]: style: Redundant initialization for 'x'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:3:17]: note: x is initialized\n"
                       "[test.cpp:4:7]: note: x is overwritten\n"
-                      "[test.cpp:5:7]: style: Variable 'y' is reassigned a value before the old one has been used. [redundantAssignment]\n"
-                      "[test.cpp:3:17]: note: y is assigned\n"
+                      "[test.cpp:5:7]: style: Redundant initialization for 'y'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:3:17]: note: y is initialized\n"
                       "[test.cpp:5:7]: note: y is overwritten\n"
-                      "[test.cpp:11:7]: style: Variable 'z' is reassigned a value before the old one has been used. [redundantAssignment]\n"
-                      "[test.cpp:10:14]: note: z is assigned\n"
+                      "[test.cpp:11:7]: style: Redundant initialization for 'z'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:10:14]: note: z is initialized\n"
                       "[test.cpp:11:7]: note: z is overwritten\n",
+                      errout_str());
+
+        check("struct S {\n"
+              "    int a, b;\n"
+              "};\n"
+              "void f(S& s) {\n"
+              "    auto& [x, y] = s;\n"
+              "    y = 1;\n"
+              "}\n"
+              "int f(S s) {\n"
+              "    auto [x, y] = s;\n"
+              "    y = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10:7]: style: Redundant initialization for 'y'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:9:17]: note: y is initialized\n"
+                      "[test.cpp:10:7]: note: y is overwritten\n",
                       errout_str());
     }
 
