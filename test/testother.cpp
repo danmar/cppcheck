@@ -11587,7 +11587,7 @@ private:
               "    auto& [x, y] = s;\n"
               "    y = 1;\n"
               "}\n"
-              "int f(S s) {\n"
+              "void f(S s) {\n"
               "    auto [x, y] = s;\n"
               "    y = 1;\n"
               "}\n");
