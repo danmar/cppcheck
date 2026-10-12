@@ -195,6 +195,47 @@ void CheckClassImpl::handleUnionMembers(std::vector<Usage>& usageList)
     }
 }
 
+static std::vector<const Token *> getInheritedConstructors(const Scope *scope)
+{
+    std::vector<const Token *> result;
+
+    if (!scope || !scope->bodyStart || !scope->definedType)
+        return result;
+
+    const Token *baseName = nullptr;
+    for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        if (Token::Match(tok, "using %name%")) {
+            const bool isBase = std::any_of(
+                scope->definedType->derivedFrom.cbegin(),
+                scope->definedType->derivedFrom.cend(),
+                [&tok](const Type::BaseInfo &info) {
+                    return info.name == tok->strAt(1);
+                }
+            );
+            if (isBase)
+                baseName = tok->next();
+            continue;
+        }
+
+        if (tok->str() == ";") {
+            baseName = nullptr;
+            continue;
+        }
+
+        if (tok->str() == "{") {
+            baseName = nullptr;
+            tok = tok->link();
+            continue;
+        }
+
+        if (baseName && Token::Match(tok, "%name% :: %name% ;") &&
+            tok->str() == baseName->str() && tok->tokAt(2)->str() == baseName->str())
+            result.push_back(tok->tokAt(2));
+    }
+
+    return result;
+}
+
 //---------------------------------------------------------------------------
 // ClassCheck: Check that all class constructors are ok.
 //---------------------------------------------------------------------------
@@ -223,9 +264,11 @@ void CheckClassImpl::constructors()
             });
         });
 
+        const std::vector<const Token *> inheritedCtors = getInheritedConstructors(scope);
+
         // There are no constructors.
         std::set<const Variable*> diagVars;
-        if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
+        if (scope->numConstructors == 0 && inheritedCtors.empty() && printStyle && !usedInUnion) {
             // If there is a private variable, there should be a constructor..
             int needInit = 0, haveInit = 0;
             std::vector<const Variable*> uninitVars;
@@ -335,6 +378,30 @@ void CheckClassImpl::constructors()
                         missingMemberCopyError(func.token, func.type, var.scope()->className, var.name());
                     else
                         uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, false);
+                }
+            }
+        }
+
+        if (!inheritedCtors.empty()) {
+            clearAllVar(usageList);
+
+            for (Usage &usage : usageList) {
+                if (usage.var->hasDefault())
+                    usage.init = true;
+            }
+
+            handleUnionMembers(usageList);
+
+            // Inherited constructors don't initialize members of the derived class
+            for (const Token *baseCtorTok : inheritedCtors) {
+                for (const Usage &usage : usageList) {
+                    if (isInitialized(usage, FunctionType::eConstructor))
+                        continue;
+                    const Variable& var = *usage.var;
+                    if (var.typeScope() && var.typeScope()->numConstructors > 0)
+                        continue;
+                    uninitVarError(baseCtorTok, false, FunctionType::eConstructor, var.scope()->className, var.name(), scope != var.scope(), false, false, true);
+                    diagVars.emplace(&var);
                 }
             }
         }
@@ -1172,12 +1239,14 @@ void CheckClassImpl::noExplicitConstructorError(const Token *tok, const std::str
     reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
-void CheckClassImpl::uninitVarError(const Token *tok, bool isprivate, FunctionType functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive, bool noCtor)
+void CheckClassImpl::uninitVarError(const Token *tok, bool isprivate, FunctionType functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive, bool noCtor, bool inheritedCtor)
 {
     std::string message("Member variable '$symbol' ");
     if (noCtor)
         message += "has no initializer.";
-    else {
+    else if (inheritedCtor) {
+        message += "is not initialized in the constructor inherited from '" + tok->str() + "'.";
+    } else {
         message += "is not initialized in the ";
         if (functionType == FunctionType::eCopyConstructor)
             message += "copy ";
