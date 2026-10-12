@@ -13688,7 +13688,7 @@ private:
               "};\n"
               "int g(struct S* p, int x) {\n"
               "    return (p->f)(x, 10);\n"
-               "}\n");
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
