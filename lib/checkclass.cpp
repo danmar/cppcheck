@@ -229,7 +229,7 @@ static std::vector<const Token *> getInheritedConstructors(const Scope *scope)
         }
 
         if (baseName && Token::Match(tok, "%name% :: %name% ;") &&
-            tok->str() == baseName->str() && tok->tokAt(2)->str() == baseName->str())
+            tok->str() == baseName->str() && tok->strAt(2) == baseName->str())
             result.push_back(tok->tokAt(2));
     }
 
@@ -1245,7 +1245,8 @@ void CheckClassImpl::uninitVarError(const Token *tok, bool isprivate, FunctionTy
     if (noCtor)
         message += "has no initializer.";
     else if (inheritedCtor) {
-        message += "is not initialized in the constructor inherited from '" + tok->str() + "'.";
+        message += tok ? "is not initialized in the constructor inherited from '" + tok->str() + "'." :
+                   "is not initialized in the inherited constructor.";
     } else {
         message += "is not initialized in the ";
         if (functionType == FunctionType::eCopyConstructor)
