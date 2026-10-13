@@ -9799,9 +9799,6 @@ private:
         ASSERT_EQUALS("signed int", typeOf("int x; a = x++;\n", "++"));
         ASSERT_EQUALS("signed int *", typeOf("enum AB {A,B}; AB *ab; x=ab+2;\n", "+"));
         ASSERT_EQUALS("signed int *", typeOf("enum AB {A,B}; enum AB *ab; x=ab+2;\n", "+"));
-        ASSERT_EQUALS("unsigned char", typeOf("enum E : std::uint8_t {}; E e;\n", "e", /*cpp*/ true, &settings1));
-        ASSERT_EQUALS("signed short", typeOf("enum E : short {}; E e;\n", "e"));
-        ASSERT_EQUALS("unsigned short", typeOf("enum E : unsigned short {}; E e;\n", "e"));
         ASSERT_EQUALS("AB *", typeOf("struct AB {int a; int b;}; AB ab; x=&ab;\n", "&"));
         ASSERT_EQUALS("AB *", typeOf("struct AB {int a; int b;}; struct AB ab; x=&ab;\n", "&"));
         ASSERT_EQUALS("A::BC *", typeOf("namespace A { struct BC { int b; int c; }; }; struct A::BC abc; x=&abc;\n", "&"));
@@ -9913,6 +9910,8 @@ private:
         ASSERT_EQUALS("unsigned long", typeOf("enum E : unsigned long { }; void foo() { E e[3]; bar(e[0]); }\n", "[ 0"));
         ASSERT_EQUALS("signed long long", typeOf("enum E : long long { }; void foo() { E e[3]; bar(e[0]); }\n", "[ 0"));
         ASSERT_EQUALS("unsigned long long", typeOf("enum E : unsigned long long { }; void foo() { E e[3]; bar(e[0]); }\n", "[ 0"));
+        ASSERT_EQUALS("unsigned char", typeOf("enum E : std::uint8_t {}; E e;\n", "e", /*cpp*/ true, &settings1));
+        ASSERT_EQUALS("bool", typeOf("enum E : bool {}; E e;\n", "e"));
 
 #define CHECK_LIBRARY_FUNCTION_RETURN_TYPE(type) do { \
         const char xmldata[] = "<?xml version=\"1.0\"?>\n" \
