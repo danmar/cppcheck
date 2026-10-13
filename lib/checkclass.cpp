@@ -209,9 +209,9 @@ static std::vector<const Token *> getInheritedConstructors(const Scope *scope)
                 scope->definedType->derivedFrom.cbegin(),
                 scope->definedType->derivedFrom.cend(),
                 [&tok](const Type::BaseInfo &info) {
-                    return info.name == tok->strAt(1);
-                }
-            );
+                return info.name == tok->strAt(1);
+            }
+                );
             if (isBase)
                 baseName = tok->next();
             continue;
