@@ -232,6 +232,14 @@ private:
         TEST_CASE(uninitTemplate1); // ticket #7372
 
         TEST_CASE(unknownTemplateType);
+
+        TEST_CASE(inheritedCtor1);
+        TEST_CASE(inheritedCtor2);
+        TEST_CASE(inheritedCtor3);
+        TEST_CASE(inheritedCtor4);
+        TEST_CASE(inheritedCtor5);
+        TEST_CASE(inheritedCtor6);
+        TEST_CASE(inheritedCtor7);
     }
 
 
@@ -4646,6 +4654,78 @@ private:
               "};\n"
               "A<decltype(SOMETHING)> a;\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void inheritedCtor1() {
+        check("struct Base { Base(int); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:17]: (warning) Member variable 'Derived::x' is not initialized in the constructor inherited from 'Base'. [uninitMemberVar]\n", errout_str());
+    }
+
+    void inheritedCtor2() {
+        check("struct Base { Base(int); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x = 0;\n"
+              "    int y{};\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void inheritedCtor3() {
+        check("struct Base { Base(int); };\n"
+              "struct S { S(); int i; };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    S s;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void inheritedCtor4() {
+        check("struct Base { Base(int); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x = 0;\n"
+              "    int y;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:17]: (warning) Member variable 'Derived::y' is not initialized in the constructor inherited from 'Base'. [uninitMemberVar]\n", errout_str());
+    }
+
+    void inheritedCtor5() {
+        check("struct Base { Base(int); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    Derived() : x(0) {}\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:17]: (warning) Member variable 'Derived::x' is not initialized in the constructor inherited from 'Base'. [uninitMemberVar]\n", errout_str());
+    }
+
+    void inheritedCtor6() {
+        check("struct A { A(int); };\n"
+              "struct B { B(double); };\n"
+              "struct D : A, B {\n"
+              "    using A::A;\n"
+              "    using B::B;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4:14]: (warning) Member variable 'D::x' is not initialized in the constructor inherited from 'A'. [uninitMemberVar]\n"
+                      "[test.cpp:5:14]: (warning) Member variable 'D::x' is not initialized in the constructor inherited from 'B'. [uninitMemberVar]\n",
+                      errout_str());
+    }
+
+    void inheritedCtor7() {
+        check("struct Base { void f(); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::f;\n"
+              "    int x = 0;\n"
+              "    int y;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5:9]: (warning) Member variable 'Derived::y' has no initializer. [uninitMemberVarNoCtor]\n", errout_str());
     }
 
 };
