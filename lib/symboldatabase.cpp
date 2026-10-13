@@ -7550,15 +7550,17 @@ static const Token* parsedecl(const Token* type,
     else if (valuetype->typeScope->type == ScopeType::eEnum) {
         const Token * enum_type = valuetype->typeScope->enumType;
         if (enum_type) {
-            ValueType evt;
             if (enum_type->isSigned())
                 valuetype->sign = ValueType::Sign::SIGNED;
             else if (enum_type->isUnsigned())
                 valuetype->sign = ValueType::Sign::UNSIGNED;
-            else if (!enum_type->isStandardType() && parsedecl(enum_type, &evt, defaultSignedness, settings))
-                *valuetype = evt;
-            else
-                valuetype->sign = defaultSignedness; // TODO: this is implementation-dependent might be separate from char
+            else if (!enum_type->isStandardType()) {
+                ValueType evt;
+                if (parsedecl(enum_type, &evt, defaultSignedness, settings))
+                    *valuetype = evt;
+                else
+                    valuetype->sign = defaultSignedness; // TODO: this is implementation-dependent might be separate from char
+            }
             const ValueType::Type t = ValueType::typeFromString(enum_type->str(), enum_type->isLong());
             if (t != ValueType::Type::UNKNOWN_TYPE)
                 valuetype->type = t;
