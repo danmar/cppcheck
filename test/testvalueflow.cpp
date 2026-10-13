@@ -4345,6 +4345,25 @@ private:
         ASSERT_EQUALS(5, it->intvalue);
         ASSERT_EQUALS_ENUM(ValueFlow::Value::Bound::Point, it->bound);
         ASSERT_EQUALS_ENUM(ValueFlow::Value::ValueKind::Possible, it->valueKind);
+
+        code = "int f(int a, int b) {\n"
+               "    if (b <= 0)\n"
+               "        return b;\n"
+               "    int a = (a > 0) ? a : -a;\n"
+               "    return 1 / (a < b ? b : a);\n"
+               "}\n";
+        values = tokenValues(code, "? b");
+        ASSERT_EQUALS(2, values.size());
+        it = values.begin();
+        ASSERT_EQUALS_ENUM(ValueFlow::Value::ValueType::SYMBOLIC, it->valueType);
+        ASSERT_EQUALS(-1, it->intvalue);
+        ASSERT_EQUALS_ENUM(ValueFlow::Value::Bound::Upper, it->bound);
+        ASSERT_EQUALS_ENUM(ValueFlow::Value::ValueKind::Impossible, it->valueKind);
+        ++it;
+        ASSERT_EQUALS_ENUM(ValueFlow::Value::ValueType::SYMBOLIC, it->valueType);
+        ASSERT_EQUALS(-1, it->intvalue);
+        ASSERT_EQUALS_ENUM(ValueFlow::Value::Bound::Upper, it->bound);
+        ASSERT_EQUALS_ENUM(ValueFlow::Value::ValueKind::Impossible, it->valueKind);
     }
 
     void valueFlowForwardLambda() {
