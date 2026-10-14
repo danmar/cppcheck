@@ -202,18 +202,31 @@ static std::vector<const Token *> getInheritedConstructors(const Scope *scope)
     if (!scope || !scope->bodyStart || !scope->definedType)
         return result;
 
+    const auto isInherited = [](const Function &baseCtor, const Scope *scope) {
+        if (baseCtor.type != FunctionType::eConstructor || baseCtor.argCount() == 0)
+            return false;
+        if (baseCtor.isDelete() || baseCtor.access == AccessControl::Private)
+            return false;
+        return std::none_of(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function &func) {
+            return func.isConstructor() && func.argCount() == baseCtor.argCount() &&
+                   func.argsMatch(baseCtor.nestedIn, baseCtor.argDef, func.argDef, "", 0);
+        });
+    };
+
+    const std::vector<Type::BaseInfo> &bases = scope->definedType->derivedFrom;
     const Token *baseName = nullptr;
+    const std::list<Function> *baseFuncs = nullptr;
     for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
         if (Token::Match(tok, "using %name%")) {
-            const bool isBase = std::any_of(
-                scope->definedType->derivedFrom.cbegin(),
-                scope->definedType->derivedFrom.cend(),
-                [&tok](const Type::BaseInfo &info) {
-                return info.name == tok->strAt(1);
-            }
-                );
-            if (isBase)
+            const auto base = std::find_if(
+                bases.cbegin(),
+                bases.cend(),
+                [&tok](const Type::BaseInfo &info) { return info.name == tok->strAt(1); }
+            );
+            if (base != bases.cend() && base->type && base->type->classScope) {
                 baseName = tok->next();
+                baseFuncs = &base->type->classScope->functionList;
+            }
             continue;
         }
 
@@ -229,7 +242,10 @@ static std::vector<const Token *> getInheritedConstructors(const Scope *scope)
         }
 
         if (baseName && Token::Match(tok, "%name% :: %name% ;") &&
-            tok->str() == baseName->str() && tok->strAt(2) == baseName->str())
+            tok->str() == baseName->str() && tok->strAt(2) == baseName->str() &&
+            std::any_of(baseFuncs->cbegin(), baseFuncs->cend(), [&](const Function &func) {
+            return isInherited(func, scope);
+        }))
             result.push_back(tok->tokAt(2));
     }
 
