@@ -2009,7 +2009,8 @@ void CheckConditionImpl::checkCompareValueOutOfTypeRange()
             for (int i = 0; i < 2; ++i) {
                 const Token * const valueTok = (i == 0) ? tok->astOperand1() : tok->astOperand2();
                 const Token * const typeTok = valueTok->astSibling();
-                if (!valueTok->hasKnownIntValue() || !typeTok->valueType() || typeTok->valueType()->pointer)
+                const ValueType* const typeVt = typeTok->valueType();
+                if (!valueTok->hasKnownIntValue() || !typeVt || typeVt->pointer)
                     continue;
                 if (valueTok->getKnownIntValue() < 0 && valueTok->valueType() && valueTok->valueType()->sign != ValueType::Sign::SIGNED)
                     continue;
@@ -2040,11 +2041,11 @@ void CheckConditionImpl::checkCompareValueOutOfTypeRange()
                 }
                 if (bits == 0 || bits >= 63)
                     continue;
-
-                const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::UNSIGNED) ? 0 : (-(1LL << (bits-1)));
+                
+                const auto typeMinValue = (typeVt->sign == ValueType::Sign::UNSIGNED) ? 0 : (-(1LL << (bits-1)));
                 const auto unsignedTypeMaxValue = (1LL << bits) - 1LL;
-                long long typeMaxValue;
-                if (typeTok->valueType()->sign != ValueType::Sign::SIGNED)
+                long long typeMaxValue;                
+                if (typeVt->sign != ValueType::Sign::SIGNED && !(typeVt->sign == ValueType::Sign::UNKNOWN_SIGN && typeVt->type == ValueType::Type::CHAR && mSettings.platform.defaultSign == 's'))
                     typeMaxValue = unsignedTypeMaxValue;
                 else if (bits >= mSettings.platform.int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
                     typeMaxValue = unsignedTypeMaxValue;
@@ -2105,7 +2106,7 @@ void CheckConditionImpl::checkCompareValueOutOfTypeRange()
                 }
                 if (!error || diag(tok))
                     continue;
-                compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
+                compareValueOutOfTypeRangeError(valueTok, typeVt->str(), kiv, result);
             }
         }
     }
