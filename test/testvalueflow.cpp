@@ -1393,7 +1393,12 @@ private:
                 "    char c = -1;\n"
                 "    if (~c == -256) {}\n"
                 "}\n";
-        ASSERT(testKnownValueOfTok(code, "~", 0));
+        const Settings settingsUnix64 = settingsBuilder().platform(Platform::Type::Unix64).build();
+        values = tokenValues(code, "~", &settingsUnix64);
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT(values.front().isKnown());
+        ASSERT(values.front().isIntValue());
 
         // #10251 starship operator
         code  = "struct X {};\n"
