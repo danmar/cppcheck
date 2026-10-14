@@ -1393,12 +1393,8 @@ private:
                 "    char c = -1;\n"
                 "    if (~c == -256) {}\n"
                 "}\n";
-        const Settings settingsUnix64 = settingsBuilder().platform(Platform::Type::Unix64).build();
-        values = tokenValues(code, "~", &settingsUnix64);
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(0, values.front().intvalue);
-        ASSERT(values.front().isKnown());
-        ASSERT(values.front().isIntValue());
+        const int expected = std::numeric_limits<char>::is_signed ? 0 : -256;
+        ASSERT_EQUALS(true, testKnownValueOfTok(code, "~", expected));
 
         // #10251 starship operator
         code  = "struct X {};\n"
