@@ -863,6 +863,26 @@ static ParameterShape parseParameterShape(const Token* start, const std::vector<
     return shape;
 }
 
+// Complete a deduced type with the qualified name of a record or enum scope. The
+// returned type has an empty typeStr when the scope cannot be named.
+static DeducedType deducedScopeType(DeducedType deduced, const Scope* typeScope)
+{
+    if (!typeScope || typeScope->className.empty())
+        return DeducedType();
+    if (!typeScope->isClassOrStructOrUnion() && typeScope->type != ScopeType::eEnum)
+        return DeducedType();
+    deduced.typeStr = typeScope->className;
+    for (const Scope* nested = typeScope->nestedIn; nested && nested->type != ScopeType::eGlobal;
+         nested = nested->nestedIn) {
+        if (nested->type != ScopeType::eNamespace && !nested->isClassOrStructOrUnion())
+            return DeducedType(); // local types etc. cannot be named - bail out
+        if (nested->className.empty())
+            return DeducedType();
+        deduced.qualification.insert(deduced.qualification.cbegin(), nested->className);
+    }
+    return deduced;
+}
+
 // Convert the ValueType of an argument expression to the type that the parameter shape
 // deduces for its template parameter. The returned type has an empty typeStr when the
 // type is not supported.
@@ -896,6 +916,10 @@ static DeducedType valueTypeToDeducedType(const ValueType* vt, const ParameterSh
     DeducedType deduced;
     deduced.pointer = pointer;
     deduced.constness = constness;
+
+    // an enum has the ValueType of its underlying integer type - deduce the enum itself
+    if (vt->isEnum())
+        return deducedScopeType(deduced, vt->typeScope);
 
     switch (vt->type) {
     case ValueType::BOOL:
@@ -935,21 +959,8 @@ static DeducedType valueTypeToDeducedType(const ValueType* vt, const ParameterSh
         deduced.typeStr = "double";
         deduced.isLong = true;
         break;
-    case ValueType::RECORD: {
-        const Scope* typeScope = vt->typeScope;
-        if (!typeScope || typeScope->className.empty() || !typeScope->isClassOrStructOrUnion())
-            return DeducedType();
-        deduced.typeStr = typeScope->className;
-        for (const Scope* nested = typeScope->nestedIn; nested && nested->type != ScopeType::eGlobal;
-             nested = nested->nestedIn) {
-            if (nested->type != ScopeType::eNamespace && !nested->isClassOrStructOrUnion())
-                return DeducedType(); // local types etc. cannot be named - bail out
-            if (nested->className.empty())
-                return DeducedType();
-            deduced.qualification.insert(deduced.qualification.cbegin(), nested->className);
-        }
-        break;
-    }
+    case ValueType::RECORD:
+        return deducedScopeType(deduced, vt->typeScope);
     case ValueType::UNKNOWN_TYPE:
     case ValueType::POD:
     case ValueType::NONSTD:

@@ -315,6 +315,7 @@ private:
         TEST_CASE(templateTypeDeductionRedeclared);  // twice declared template: the surviving declaration stays valid
         TEST_CASE(templateTypeDeductionFullRebuild); // --template-full-rebuild gives the same result
         TEST_CASE(templateTypeDeductionMultiPass);   // a pending deduction survives later simplifier passes
+        TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
@@ -7270,6 +7271,77 @@ private:
                            "struct S<int> { int t ; } ;";
         ASSERT_EQUALS(exp, tok(code));
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void templateTypeDeductionEnum()
+    {
+        { // an enum variable has the ValueType of the underlying integer type - the enum
+          // itself must be deduced so the instantiation is not merged with f<int>
+            const char code[] = "template<class T> void f(T t) {}\n"
+                                "enum E { a, b };\n"
+                                "enum class C { x, y };\n"
+                                "namespace N { struct A { enum class M { m }; }; enum G { g }; }\n"
+                                "void g(E e, C c, N::A::M m, N::G ng, int i) {\n"
+                                "    f(e); f(c); f(m); f(ng); f(i); f(a); f(C::y); f(&e);\n"
+                                "}";
+            const char exp[] = "void f<E> ( E t ) ; "
+                               "void f<C> ( C t ) ; "
+                               "void f<N::A::M> ( N :: A :: M t ) ; "
+                               "void f<N::G> ( N :: G t ) ; "
+                               "void f<int> ( int t ) ; "
+                               "void f<E*> ( E * t ) ; "
+                               "enum E { a , b } ; "
+                               "enum class C { x , y } ; "
+                               "namespace N { struct A { enum class M { m } ; } ; enum G { g } ; } "
+                               "void g ( E e , C c , N :: A :: M m , N :: G ng , int i ) { "
+                               "f<E> ( e ) ; f<C> ( c ) ; f<N::A::M> ( m ) ; f<N::G> ( ng ) ; f<int> ( i ) ; "
+                               "f<E> ( a ) ; f<C> ( C :: y ) ; f<E*> ( & e ) ; "
+                               "} "
+                               "void f<E> ( E t ) { } "
+                               "void f<C> ( C t ) { } "
+                               "void f<N::A::M> ( N :: A :: M t ) { } "
+                               "void f<N::G> ( N :: G t ) { } "
+                               "void f<int> ( int t ) { } "
+                               "void f<E*> ( E * t ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS("", errout_str());
+        }
+        { // the explicit specialization for the enum is used
+            const char code[] = "template<class T> int f(T t) { return 0; }\n"
+                                "enum E { a, b };\n"
+                                "template<> int f<E>(E t) { return 1; }\n"
+                                "void g(E e, int i) { f(e); f(i); }";
+            const char exp[] = "int f<E> ( E t ) ; "
+                               "int f<int> ( int t ) ; "
+                               "enum E { a , b } ; "
+                               "int f<E> ( E t ) { return 1 ; } "
+                               "void g ( E e , int i ) { f<E> ( e ) ; f<int> ( i ) ; } "
+                               "int f<int> ( int t ) { return 0 ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS("", errout_str());
+        }
+        { // reference and pointer parameter shapes
+            const char code[] = "template<class T> void f(const T& t) {}\n"
+                                "template<class T> void h(T* t) {}\n"
+                                "enum class E { a, b };\n"
+                                "void g(const E& e, E* p) { f(e); h(p); }";
+            const char exp[] = "void f<E> ( const E & t ) ; "
+                               "void h<E> ( E * t ) ; "
+                               "enum class E { a , b } ; "
+                               "void g ( const E & e , E * p ) { f<E> ( e ) ; h<E> ( p ) ; } "
+                               "void h<E> ( E * t ) { } "
+                               "void f<E> ( const E & t ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS("", errout_str());
+        }
+        { // local and anonymous enums cannot be named - no deduction
+            const char code[] = "template<class T> void f(T t) {}\n"
+                                "void g() { enum L { l } v; f(v); enum { anon } w; f(w); }";
+            const char exp[] = "template < class T > void f ( T t ) { } "
+                               "void g ( ) { enum L { l } ; enum L v ; f ( v ) ; enum Anonymous0 { anon } ; enum Anonymous0 w ; f ( w ) ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS("", errout_str());
+        }
     }
 
     void simplifyTemplateArgs1() {
