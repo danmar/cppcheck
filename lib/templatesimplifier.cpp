@@ -1388,8 +1388,6 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
 
 void TemplateSimplifier::getTemplateInstantiations()
 {
-    mPendingTypeDeductions = false;
-
     std::multimap<std::string, const TokenAndName *> functionNameMap;
     // deduceFunctionTemplateArguments() parse results, cached per declaration
     DeductionCache deductionCache;
@@ -4355,6 +4353,12 @@ void TemplateSimplifier::printOut(const std::string & text) const
 
 void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 {
+    // the flag is sticky for the whole call: a call site that can be deduced later
+    // stays deducible even when a later pass does not see it again. This keeps the
+    // invariant that a deferred removal (shouldDeferRemoval) implies a pending
+    // deduction, so removeDeferredTemplateDeclarations() is always reached.
+    mPendingTypeDeductions = false;
+
     // convert "sizeof ..." to "sizeof..."
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof ...")) {
@@ -4693,7 +4697,6 @@ bool TemplateSimplifier::simplifyTemplatesUsingTypeInformation(std::time_t maxti
 {
     mUseTypeInformation = true;
     mTypeDeductionsMade = false;
-    mPendingTypeDeductions = false;
     mNewTokenRanges.clear();
     mConvertedSpecializations.clear();
     mDirtyCallSites.clear();

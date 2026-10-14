@@ -314,6 +314,7 @@ private:
         TEST_CASE(templateTypeDeductionAccess);      // instantiated member templates get the access specifier in force
         TEST_CASE(templateTypeDeductionRedeclared);  // twice declared template: the surviving declaration stays valid
         TEST_CASE(templateTypeDeductionFullRebuild); // --template-full-rebuild gives the same result
+        TEST_CASE(templateTypeDeductionMultiPass);   // a pending deduction survives later simplifier passes
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
@@ -7249,6 +7250,26 @@ private:
             ASSERT(expected.find("template < class T > void f ( T ) ; void f<int> ( int ) ;") != std::string::npos);
             ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
         }
+    }
+
+    void templateTypeDeductionMultiPass()
+    { // a pending deduction seen in the first simplifier pass must survive the later
+      // passes (the nested class template forces a second pass): the deferred removal of
+      // the instantiated f<int> declaration depends on it, otherwise the declaration is
+      // left in the token list and f(x) is never deduced
+        const char code[] = "template<class T> struct S { T t; };\n"
+                            "template<class T> struct U { S<T> s; };\n"
+                            "template<class T> void f(T t) {}\n"
+                            "void g(int x) { U<int> u; f(1); f(x); }";
+        const char exp[] = "struct S<int> ; "
+                           "struct U<int> ; "
+                           "void f<int> ( int t ) ; "
+                           "void g ( int x ) { U<int> u ; f<int> ( 1 ) ; f<int> ( x ) ; } "
+                           "void f<int> ( int t ) { } "
+                           "struct U<int> { S<int> s ; } ; "
+                           "struct S<int> { int t ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyTemplateArgs1() {

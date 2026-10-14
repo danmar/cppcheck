@@ -623,7 +623,9 @@ private:
     bool mChanged{};
     /** true when type information (AST, SymbolDatabase, ValueType) is available for deduction */
     bool mUseTypeInformation = false;
-    /** true when there are calls where deduction may succeed once type information is available */
+    /** true when there are calls where deduction may succeed once type information is
+     * available; sticky for one simplifyTemplates() call so a deferred removal always
+     * implies a pending deduction */
     bool mPendingTypeDeductions = false;
     /** true when the current simplifyTemplatesUsingTypeInformation() call deduced something */
     bool mTypeDeductionsMade = false;
