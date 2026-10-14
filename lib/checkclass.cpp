@@ -221,8 +221,10 @@ static std::vector<const Token *> getInheritedConstructors(const Scope *scope)
             const auto base = std::find_if(
                 bases.cbegin(),
                 bases.cend(),
-                [&tok](const Type::BaseInfo &info) { return info.name == tok->strAt(1); }
-            );
+                [&tok](const Type::BaseInfo &info) {
+                return info.name == tok->strAt(1);
+            }
+                );
             if (base != bases.cend() && base->type && base->type->classScope) {
                 baseName = tok->next();
                 baseFuncs = &base->type->classScope->functionList;
