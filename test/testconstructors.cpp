@@ -240,6 +240,9 @@ private:
         TEST_CASE(inheritedCtor5);
         TEST_CASE(inheritedCtor6);
         TEST_CASE(inheritedCtor7);
+        TEST_CASE(inheritedCtor8);
+        TEST_CASE(inheritedCtor9);
+        TEST_CASE(inheritedCtor10);
     }
 
 
@@ -4726,6 +4729,63 @@ private:
               "    int y;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:5:9]: (warning) Member variable 'Derived::y' has no initializer. [uninitMemberVarNoCtor]\n", errout_str());
+    }
+
+    void inheritedCtor8() {
+        check("struct Base { Base(int); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    Derived(int i) : Base(i), x(0) {}\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct Base { Base(int); Base(double); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    Derived(int i) : Base(i), x(0) {}\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:17]: (warning) Member variable 'Derived::x' is not initialized in the constructor inherited from 'Base'. [uninitMemberVar]\n", errout_str());
+    }
+
+    void inheritedCtor9() {
+        check("struct Base { Base(); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct Base {};\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct Base { Base(const Base&); Base(Base&&); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void inheritedCtor10() {
+        check("struct Base { Base(int) = delete; };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("class Base { Base(int); };\n"
+              "struct Derived : Base {\n"
+              "    using Base::Base;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 };
