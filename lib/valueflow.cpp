@@ -3742,24 +3742,28 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                 if (Token::Match(tok, "<<|>>|/|-") && !astIsLHS(vartok))
                     continue;
                 if (Token::Match(tok, "+|-") && constant->intvalue != 0) {
-                    std::unordered_set<nonneg int> ids;
-                    for (const auto &value : vartok->values()) {
-                        if (!value.isSymbolicValue())
-                            continue;
-                        if (!value.isKnown())
-                            continue;
-                        if (!value.tokvalue)
-                            continue;
-                        if (!ids.insert(value.tokvalue->exprId()).second)
-                            continue;
-                        const bool add = tok->str() == "+";
-                        if (add && MathLib::additionWouldOverflow(value.intvalue, constant->intvalue))
-                            continue;
-                        if (!add && MathLib::subtractionWouldOverflow(value.intvalue, constant->intvalue))
-                            continue;
-                        ValueFlow::Value newValue(value);
-                        newValue.intvalue = add ? newValue.intvalue + constant->intvalue : newValue.intvalue - constant->intvalue;
-                        setTokenValue(tok, std::move(newValue), settings);
+                    const ValueType *vt = vartok->valueType();
+                    const bool promoted = vt && vt->pointer == 0 && vt->type < ValueType::Type::INT;
+                    if (!promoted) {
+                        std::unordered_set<nonneg int> ids;
+                        for (const auto &value : vartok->values()) {
+                            if (!value.isSymbolicValue())
+                                continue;
+                            if (!value.isKnown())
+                                continue;
+                            if (!value.tokvalue)
+                                continue;
+                            if (!ids.insert(value.tokvalue->exprId()).second)
+                                continue;
+                            const bool add = tok->str() == "+";
+                            if (add && MathLib::additionWouldOverflow(value.intvalue, constant->intvalue))
+                                continue;
+                            if (!add && MathLib::subtractionWouldOverflow(value.intvalue, constant->intvalue))
+                                continue;
+                            ValueFlow::Value newValue(value);
+                            newValue.intvalue = add ? newValue.intvalue + constant->intvalue : newValue.intvalue - constant->intvalue;
+                            setTokenValue(tok, std::move(newValue), settings);
+                        }
                     }
                 }
                 if (Token::Match(tok, "<<|>>|^|+|-|%or%") && constant->intvalue != 0)
