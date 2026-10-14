@@ -2041,10 +2041,10 @@ void CheckConditionImpl::checkCompareValueOutOfTypeRange()
                 }
                 if (bits == 0 || bits >= 63)
                     continue;
-                
+
                 const auto typeMinValue = (typeVt->sign == ValueType::Sign::UNSIGNED) ? 0 : (-(1LL << (bits-1)));
                 const auto unsignedTypeMaxValue = (1LL << bits) - 1LL;
-                long long typeMaxValue;                
+                long long typeMaxValue;
                 if (typeVt->sign != ValueType::Sign::SIGNED && !(typeVt->sign == ValueType::Sign::UNKNOWN_SIGN && typeVt->type == ValueType::Type::CHAR && mSettings.platform.defaultSign == 's'))
                     typeMaxValue = unsignedTypeMaxValue;
                 else if (bits >= mSettings.platform.int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
