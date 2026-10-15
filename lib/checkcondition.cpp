@@ -2017,7 +2017,7 @@ void CheckConditionImpl::checkCompareValueOutOfTypeRange()
                 if (typeTok->isLiteral())
                     continue;
                 std::uint8_t bits = 0;
-                switch (typeTok->valueType()->type) {
+                switch (typeVt->type) {
                 case ValueType::Type::BOOL:
                     bits = 1;
                     break;
