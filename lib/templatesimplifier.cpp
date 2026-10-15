@@ -863,6 +863,33 @@ static ParameterShape parseParameterShape(const Token* start, const std::vector<
     return shape;
 }
 
+// Whether the argument expression has an array type that the deduction would get wrong:
+// the ValueType of an array has its dimensions as pointer levels. With array to pointer
+// decay (a "T" or "T *" parameter) only the outermost dimension becomes a pointer, so a
+// multidimensional array is not deducible; without decay (a "T &" parameter) no array is.
+// consumed is the number of dimensions that enclosing "[" and "*" operators strip off.
+static bool isUndecayedArray(const Token* tok, bool decay, std::size_t consumed = 0)
+{
+    if (!tok)
+        return false;
+    if (tok->variable()) {
+        const std::size_t dimensions = tok->variable()->dimensions().size();
+        if (dimensions <= consumed)
+            return false;
+        return !decay || dimensions - consumed >= 2;
+    }
+    if (tok->str() == "[" || tok->isUnaryOp("*"))
+        return isUndecayedArray(tok->astOperand1(), decay, consumed + 1);
+    if (tok->isUnaryOp("&")) // the address of an array is a pointer to the array - no decay
+        return isUndecayedArray(tok->astOperand1(), false, consumed);
+    if (Token::Match(tok, ".|::|?"))
+        return isUndecayedArray(tok->astOperand2(), decay, consumed);
+    if (tok->str() == ":")
+        return isUndecayedArray(tok->astOperand1(), decay, consumed) ||
+               isUndecayedArray(tok->astOperand2(), decay, consumed);
+    return false;
+}
+
 // Complete a deduced type with the qualified name of a record or enum scope. The
 // returned type has an empty typeStr when the scope cannot be named.
 static DeducedType deducedScopeType(DeducedType deduced, const Scope* typeScope)
@@ -1353,6 +1380,8 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
             mPendingTypeDeductions = true;
             return qualification;
         }
+        if (vt->pointer > 0 && isUndecayedArray(argRoots[i], !shape.isReference))
+            return qualification;
         DeducedType deduced = valueTypeToDeducedType(vt, shape);
         if (deduced.typeStr.empty())
             return qualification;

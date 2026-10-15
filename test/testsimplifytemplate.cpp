@@ -316,6 +316,7 @@ private:
         TEST_CASE(templateTypeDeductionFullRebuild); // --template-full-rebuild gives the same result
         TEST_CASE(templateTypeDeductionMultiPass);   // a pending deduction survives later simplifier passes
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
+        TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
@@ -7342,6 +7343,37 @@ private:
             ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout_str());
         }
+    }
+
+    void templateTypeDeductionArray()
+    { // the ValueType of an array has the dimensions as pointer levels. A reference
+      // parameter binds the array itself (T = int[3]) and a multidimensional array decays
+      // only its outermost dimension - neither is a pointer type, so bail out
+        const char code[] = "template<class T> void f(T& x) {}\n"
+                            "template<class T> void g(const T& x) {}\n"
+                            "template<class T> void h(T* x) {}\n"
+                            "template<class T> void k(T x) {}\n"
+                            "struct S { int m[2]; };\n"
+                            "void test(S s, S* p, bool c) {\n"
+                            "    int a[3]; int b[2][3]; int* q[2]; int i;\n"
+                            "    f(a); g(a); f(b); h(b); k(b); f(s.m); f(p->m); f(&a); f(q); f(*b); g(c ? a : a);\n"
+                            "    f(i); h(a); k(a); f(a[0]); h(b[0]); k(q); h(&a[0]); k(&i);\n"
+                            "}";
+        const char exp[] = "void f<int> ( int & x ) ; "
+                           "template < class T > void g ( const T & x ) { } "
+                           "void h<int> ( int * x ) ; "
+                           "void k<int*> ( int * x ) ; void k<int**> ( int * * x ) ; "
+                           "struct S { int m [ 2 ] ; } ; "
+                           "void test ( S s , S * p , bool c ) { "
+                           "int a [ 3 ] ; int b [ 2 ] [ 3 ] ; int * q [ 2 ] ; int i ; "
+                           "f ( a ) ; g ( a ) ; f ( b ) ; h ( b ) ; k ( b ) ; f ( s . m ) ; f ( p . m ) ; f ( & a ) ; f ( q ) ; f ( * b ) ; g ( c ? a : a ) ; "
+                           "f<int> ( i ) ; h<int> ( a ) ; k<int*> ( a ) ; f<int> ( a [ 0 ] ) ; h<int> ( b [ 0 ] ) ; k<int**> ( q ) ; h<int> ( & a [ 0 ] ) ; k<int*> ( & i ) ; "
+                           "} "
+                           "void k<int*> ( int * x ) { } void k<int**> ( int * * x ) { } "
+                           "void h<int> ( int * x ) { } "
+                           "void f<int> ( int & x ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyTemplateArgs1() {
