@@ -7379,28 +7379,10 @@ private:
 
     void templateTypeDeductionConstPointer()
     {
-        { // T must not include the const that the parameter already provides, otherwise
-          // every T local of the instantiation becomes a constant
-            const char code[] = "template<class T> T sum(const T* p, int n) {\n"
-                                "    T s = 0;\n"
-                                "    for (int i = 0; i < n; ++i)\n"
-                                "        s += p[i];\n"
-                                "    return s;\n"
-                                "}\n"
-                                "int g(const int* p, int n) { return sum(p, n); }";
-            const char exp[] = "int sum<int> ( const int * p , int n ) ; "
-                               "int g ( const int * p , int n ) { return sum<int> ( p , n ) ; } "
-                               "int sum<int> ( const int * p , int n ) { "
-                               "int s ; s = 0 ; "
-                               "for ( int i = 0 ; i < n ; ++ i ) { "
-                               "s += p [ i ] ; "
-                               "} "
-                               "return s ; "
-                               "}";
-            ASSERT_EQUALS(exp, tok(code));
-            ASSERT_EQUALS("", errout_str());
-        }
-        { // the const at the other pointer levels is part of T
+        // T must not include the const that the parameter already provides ("f<int>" for a
+        // "const int *" argument), otherwise every T local of the instantiation becomes a
+        // constant. The const at the other pointer levels is part of T.
+        {
             const char code[] = "template<class T> void f(const T* p) {}\n"
                                 "template<class T> void h(T* p) {}\n"
                                 "void g(const int* a, int* b, const int** c, int* const* d, const char* const e) {\n"

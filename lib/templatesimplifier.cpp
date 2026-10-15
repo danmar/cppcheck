@@ -809,7 +809,7 @@ struct ParameterShape {
 // The type deduced for a template parameter from a function call argument
 struct DeducedType {
     std::string typeStr;                // base type, e.g. "int" or "MyClass"
-    std::vector<std::string> qualification; // enclosing scopes for record types, outermost first
+    std::string qualification;          // enclosing scopes of record and enum types, "N :: A"
     unsigned int constness = 0;         // bit 0 = data const, bit 1 = first '*' const, ..
     unsigned int pointer = 0;           // number of '*'
     bool isUnsigned = false;
@@ -890,6 +890,19 @@ static bool isUndecayedArray(const Token* tok, bool decay, std::size_t consumed 
     return false;
 }
 
+// The qualified name of a scope ("N :: A"). Empty when the scope or an enclosing scope
+// cannot be named (anonymous namespaces, local classes, ..).
+static std::string scopeQualifiedName(const Scope* scope)
+{
+    std::string name;
+    for (const Scope* it = scope; it && it->type != ScopeType::eGlobal; it = it->nestedIn) {
+        if (it->className.empty() || (!it->isClassOrStructOrUnion() && it->type != ScopeType::eNamespace))
+            return "";
+        name = name.empty() ? it->className : (it->className + " :: " + name);
+    }
+    return name;
+}
+
 // Complete a deduced type with the qualified name of a record or enum scope. The
 // returned type has an empty typeStr when the scope cannot be named.
 static DeducedType deducedScopeType(DeducedType deduced, const Scope* typeScope)
@@ -898,46 +911,43 @@ static DeducedType deducedScopeType(DeducedType deduced, const Scope* typeScope)
         return DeducedType();
     if (!typeScope->isClassOrStructOrUnion() && typeScope->type != ScopeType::eEnum)
         return DeducedType();
+    const Scope* const enclosing = typeScope->nestedIn;
+    deduced.qualification = scopeQualifiedName(enclosing);
+    if (deduced.qualification.empty() && enclosing && enclosing->type != ScopeType::eGlobal)
+        return DeducedType(); // local types etc. cannot be named - bail out
     deduced.typeStr = typeScope->className;
-    for (const Scope* nested = typeScope->nestedIn; nested && nested->type != ScopeType::eGlobal;
-         nested = nested->nestedIn) {
-        if (nested->type != ScopeType::eNamespace && !nested->isClassOrStructOrUnion())
-            return DeducedType(); // local types etc. cannot be named - bail out
-        if (nested->className.empty())
-            return DeducedType();
-        deduced.qualification.insert(deduced.qualification.cbegin(), nested->className);
-    }
     return deduced;
 }
 
-// Convert the ValueType of an argument expression to the type that the parameter shape
+// Convert the type of an argument expression to the type that the parameter shape
 // deduces for its template parameter. The returned type has an empty typeStr when the
 // type is not supported.
-static DeducedType valueTypeToDeducedType(const ValueType* vt, const ParameterShape& shape)
+static DeducedType argumentToDeducedType(const Token* arg, const ParameterShape& shape)
 {
+    const ValueType* const vt = arg->valueType();
     if (!vt)
         return DeducedType();
     if (vt->bits > 0 || vt->volatileness != 0)
         return DeducedType();
     if (vt->smartPointer || vt->smartPointerType || vt->smartPointerTypeToken || vt->container || vt->containerTypeToken)
         return DeducedType();
+    // "T" and "T *" decay an array argument, "T &" binds the array itself
+    if (isUndecayedArray(arg, !shape.isReference))
+        return DeducedType();
 
     unsigned int pointer = vt->pointer;
     unsigned int constness = vt->constness;
-    if (shape.isPointer) {
-        // "T *": the argument must be a pointer and T is the pointee type
-        if (pointer < 1)
-            return DeducedType();
+    // "T *": the argument must be a pointer and T is the pointee type
+    if (shape.isPointer && pointer < 1)
+        return DeducedType();
+    // "T" and "T *": passing by value drops the top level const
+    if (!shape.isReference)
         constness &= ~(1U << pointer);
+    if (shape.isPointer)
         --pointer;
-        // "const T *": the parameter provides the const of the pointee
-        if (shape.isConst)
-            constness &= ~(1U << pointer);
-    } else if (!shape.isReference || shape.isConst) {
-        // "T" and "const T &" deduction drops the top level const
+    // "const T &" and "const T *": the parameter provides the const of T
+    if (shape.isConst)
         constness &= ~(1U << pointer);
-    }
-    // else "T &": the constness is part of the deduced type
 
     if (pointer > 2)
         return DeducedType();
@@ -1017,19 +1027,6 @@ static bool scopeHasNonTemplateFunction(const Scope* scope, const std::string& n
     });
 }
 
-// The qualified name of a scope ("N :: A"). Empty when the scope or an enclosing scope
-// cannot be named (anonymous namespaces, local classes, ..).
-static std::string scopeQualifiedName(const Scope* scope)
-{
-    std::string name;
-    for (const Scope* it = scope; it && it->type != ScopeType::eGlobal; it = it->nestedIn) {
-        if (it->className.empty() || (!it->isClassOrStructOrUnion() && it->type != ScopeType::eNamespace))
-            return "";
-        name = name.empty() ? it->className : (it->className + " :: " + name);
-    }
-    return name;
-}
-
 namespace {
 // The scopes where a call name is looked up, in lookup order: the innermost scope
 // with matching declarations wins. At class scopes the transitive base classes are
@@ -1068,23 +1065,29 @@ namespace {
     };
 } // namespace
 
-// Insert the tokens of a deduced type after tok (the tokens are inserted in reverse order)
+// Insert the tokens of a deduced type after tok
 static void insertDeducedType(Token* tok, const DeducedType& deduced)
 {
-    for (unsigned int level = deduced.pointer; level >= 1; --level) {
-        if (deduced.constness & (1U << level))
-            tok->insertToken("const");
-        tok->insertToken("*");
-    }
-    tok->insertToken(deduced.typeStr);
-    tok->next()->isUnsigned(deduced.isUnsigned);
-    tok->next()->isLong(deduced.isLong);
-    for (auto it = deduced.qualification.crbegin(); it != deduced.qualification.crend(); ++it) {
-        tok->insertToken("::");
-        tok->insertToken(*it);
-    }
     if (deduced.constness & 1U)
-        tok->insertToken("const");
+        tok = tok->insertToken("const");
+    const std::string& qualification = deduced.qualification;
+    for (std::string::size_type pos = 0; pos < qualification.size();) {
+        std::string::size_type end = qualification.find(' ', pos);
+        if (end == std::string::npos)
+            end = qualification.size();
+        tok = tok->insertToken(qualification.substr(pos, end - pos));
+        pos = end + 1;
+    }
+    if (!qualification.empty())
+        tok = tok->insertToken("::");
+    tok = tok->insertToken(deduced.typeStr);
+    tok->isUnsigned(deduced.isUnsigned);
+    tok->isLong(deduced.isLong);
+    for (unsigned int level = 1; level <= deduced.pointer; ++level) {
+        tok = tok->insertToken("*");
+        if (deduced.constness & (1U << level))
+            tok = tok->insertToken("const");
+    }
 }
 
 struct TemplateSimplifier::DeductionCache {
@@ -1383,9 +1386,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
             mPendingTypeDeductions = true;
             return qualification;
         }
-        if (vt->pointer > 0 && isUndecayedArray(argRoots[i], !shape.isReference))
-            return qualification;
-        DeducedType deduced = valueTypeToDeducedType(vt, shape);
+        DeducedType deduced = argumentToDeducedType(argRoots[i], shape);
         if (deduced.typeStr.empty())
             return qualification;
         DeducedType& stored = deducedTypes[shape.templateParameterIndex];
@@ -4396,10 +4397,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
 
 void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 {
-    // the flag is sticky for the whole call: a call site that can be deduced later
-    // stays deducible even when a later pass does not see it again. This keeps the
-    // invariant that a deferred removal (shouldDeferRemoval) implies a pending
-    // deduction, so removeDeferredTemplateDeclarations() is always reached.
+    // reset once per call, not per pass - see mPendingTypeDeductions
     mPendingTypeDeductions = false;
 
     // convert "sizeof ..." to "sizeof..."
