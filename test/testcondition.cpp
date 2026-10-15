@@ -129,6 +129,7 @@ private:
         TEST_CASE(knownConditionAfterBailout); // #12526
         TEST_CASE(knownConditionIncDecOperator);
         TEST_CASE(knownConditionFloating);
+        TEST_CASE(knownConditionTemplateConstPointer); // "const T *" must deduce T without the const
     }
 
     struct CheckOptions
@@ -6916,6 +6917,20 @@ private:
             "[test.cpp:3]: (style) Condition 'nf>-1.0' is always false\n",
             "",
             errout_str());
+    }
+
+    void knownConditionTemplateConstPointer() {
+        // the deduced T must be "int", not "const int" - otherwise the local s is a constant
+        check("template<class T> T sum(const T* p, int n) {\n"
+              "    T s = 0;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        s += p[i];\n"
+              "    if (s == 0)\n"
+              "        return -1;\n"
+              "    return s;\n"
+              "}\n"
+              "int g(const int* p, int n) { return sum(p, n); }\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

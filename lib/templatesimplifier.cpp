@@ -930,6 +930,9 @@ static DeducedType valueTypeToDeducedType(const ValueType* vt, const ParameterSh
             return DeducedType();
         constness &= ~(1U << pointer);
         --pointer;
+        // "const T *": the parameter provides the const of the pointee
+        if (shape.isConst)
+            constness &= ~(1U << pointer);
     } else if (!shape.isReference || shape.isConst) {
         // "T" and "const T &" deduction drops the top level const
         constness &= ~(1U << pointer);

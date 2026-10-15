@@ -317,6 +317,7 @@ private:
         TEST_CASE(templateTypeDeductionMultiPass);   // a pending deduction survives later simplifier passes
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
         TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
+        TEST_CASE(templateTypeDeductionConstPointer); // "const T *": the parameter provides the pointee const
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
@@ -7374,6 +7375,58 @@ private:
                            "void f<int> ( int & x ) { }";
         ASSERT_EQUALS(exp, tok(code));
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void templateTypeDeductionConstPointer()
+    {
+        { // T must not include the const that the parameter already provides, otherwise
+          // every T local of the instantiation becomes a constant
+            const char code[] = "template<class T> T sum(const T* p, int n) {\n"
+                                "    T s = 0;\n"
+                                "    for (int i = 0; i < n; ++i)\n"
+                                "        s += p[i];\n"
+                                "    return s;\n"
+                                "}\n"
+                                "int g(const int* p, int n) { return sum(p, n); }";
+            const char exp[] = "int sum<int> ( const int * p , int n ) ; "
+                               "int g ( const int * p , int n ) { return sum<int> ( p , n ) ; } "
+                               "int sum<int> ( const int * p , int n ) { "
+                               "int s ; s = 0 ; "
+                               "for ( int i = 0 ; i < n ; ++ i ) { "
+                               "s += p [ i ] ; "
+                               "} "
+                               "return s ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS("", errout_str());
+        }
+        { // the const at the other pointer levels is part of T
+            const char code[] = "template<class T> void f(const T* p) {}\n"
+                                "template<class T> void h(T* p) {}\n"
+                                "void g(const int* a, int* b, const int** c, int* const* d, const char* const e) {\n"
+                                "    f(a); f(b); f(c); f(d); f(e); h(a); h(b); h(d);\n"
+                                "}";
+            const char exp[] = "void f<int> ( const int * p ) ; "
+                               "void f<constint*> ( const int * const * p ) ; "
+                               "void f<int*> ( int * const * p ) ; "
+                               "void f<char> ( const char * p ) ; "
+                               "void h<constint> ( const int * p ) ; "
+                               "void h<int> ( int * p ) ; "
+                               "void h<int*const> ( int * const * p ) ; "
+                               "void g ( const int * a , int * b , const int * * c , int * const * d , const char * const e ) { "
+                               "f<int> ( a ) ; f<int> ( b ) ; f<constint*> ( c ) ; f<int*> ( d ) ; f<char> ( e ) ; "
+                               "h<constint> ( a ) ; h<int> ( b ) ; h<int*const> ( d ) ; "
+                               "} "
+                               "void h<constint> ( const int * p ) { } "
+                               "void h<int> ( int * p ) { } "
+                               "void h<int*const> ( int * const * p ) { } "
+                               "void f<int> ( const int * p ) { } "
+                               "void f<constint*> ( const int * const * p ) { } "
+                               "void f<int*> ( int * const * p ) { } "
+                               "void f<char> ( const char * p ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS("", errout_str());
+        }
     }
 
     void simplifyTemplateArgs1() {
