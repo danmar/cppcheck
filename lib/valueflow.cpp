@@ -3742,9 +3742,12 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                 if (Token::Match(tok, "<<|>>|/|-") && !astIsLHS(vartok))
                     continue;
                 if (Token::Match(tok, "+|-") && constant->intvalue != 0) {
-                    const ValueType *vt = vartok->valueType();
-                    const bool promoted = vt && vt->pointer == 0 && vt->type < ValueType::Type::INT;
-                    if (!promoted) {
+                    const ValueType *varVt = vartok->valueType();
+                    const ValueType *tokVt = tok->valueType();
+                    if (varVt && tokVt &&
+                        varVt->sign == tokVt->sign &&
+                        varVt->type == tokVt->type &&
+                        varVt->pointer == tokVt->pointer) {
                         std::unordered_set<nonneg int> ids;
                         for (const auto &value : vartok->values()) {
                             if (!value.isSymbolicValue())
