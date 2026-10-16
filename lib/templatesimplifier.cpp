@@ -1293,19 +1293,19 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     if (tok->function() && !tok->function()->templateDef)
         return qualification;
 
-    if (!mUseTypeInformation) {
-        // Can the deduction succeed later, when type information is available? Scope
-        // matching is not possible yet - the declaration may be in a base class - so
-        // consider all declarations with this name.
+    // Without type information for this call the deduction can not be done now: either
+    // the type information pass has not run yet, or the call is in a function body that
+    // an instantiation created during this pass - the symbol database does not know the
+    // new tokens yet. Can the deduction succeed later, when type information is
+    // available? Scope matching is not possible yet - the declaration may be in a base
+    // class - so consider all declarations with this name.
+    if (!mUseTypeInformation || !tok->scope()) {
         if (std::any_of(range.first, range.second, [&](const std::pair<const std::string, const TokenAndName*>& entry) {
             return deductionCache->supportedParameterCount(*entry.second) == instantiationArgs.size();
         }))
             mPendingTypeDeductions = true;
         return qualification;
     }
-
-    if (!tok->scope())
-        return qualification;
 
     // the scopes where the call name is looked up - see CallLookupLevels
     CallLookupLevels lookup;

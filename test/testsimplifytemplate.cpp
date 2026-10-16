@@ -315,6 +315,7 @@ private:
         TEST_CASE(templateTypeDeductionRedeclared);  // twice declared template: the surviving declaration stays valid
         TEST_CASE(templateTypeDeductionFullRebuild); // --template-full-rebuild gives the same result
         TEST_CASE(templateTypeDeductionMultiPass);   // a pending deduction survives later simplifier passes
+        TEST_CASE(templateTypeDeductionNested);      // calls inside a body created by deduction are deduced too
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
         TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
         TEST_CASE(templateTypeDeductionConstPointer); // "const T *": the parameter provides the pointee const
@@ -7273,6 +7274,54 @@ private:
                            "struct S<int> { int t ; } ;";
         ASSERT_EQUALS(exp, tok(code));
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void templateTypeDeductionNested()
+    { // a call inside a function body that a deduction instantiated has no symbol
+      // database scope yet when it is seen - the deduction must be retried in the next
+      // round instead of being given up
+        {
+            const char code[] = "template<class T> T twice(T t) { return t * 2; }\n"
+                                "template<class T> T thrice(T t) { return twice(t) + t; }\n"
+                                "int g(int a) { return thrice(a); }";
+            const char exp[] = "int twice<int> ( int t ) ; "
+                               "int thrice<int> ( int t ) ; "
+                               "int g ( int a ) { return thrice<int> ( a ) ; } "
+                               "int thrice<int> ( int t ) { return twice<int> ( t ) + t ; } "
+                               "int twice<int> ( int t ) { return t * 2 ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+            ASSERT_EQUALS("", errout_str());
+        }
+        { // three levels, each one needs another round
+            const char code[] = "template<class T> T a(T t) { return t; }\n"
+                                "template<class T> T b(T t) { return a(t); }\n"
+                                "template<class T> T c(T t) { return b(t); }\n"
+                                "long g(long x) { return c(x); }";
+            const char exp[] = "long a<long> ( long t ) ; "
+                               "long b<long> ( long t ) ; "
+                               "long c<long> ( long t ) ; "
+                               "long g ( long x ) { return c<long> ( x ) ; } "
+                               "long c<long> ( long t ) { return b<long> ( t ) ; } "
+                               "long b<long> ( long t ) { return a<long> ( t ) ; } "
+                               "long a<long> ( long t ) { return t ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+            ASSERT_EQUALS("", errout_str());
+        }
+        { // the nested call uses a different type than the outer one
+            const char code[] = "template<class T> void sink(T t) { (void)t; }\n"
+                                "template<class T> void outer(T t) { sink(&t); }\n"
+                                "void g(int x) { outer(x); }";
+            const char exp[] = "void sink<int*> ( int * t ) ; "
+                               "void outer<int> ( int t ) ; "
+                               "void g ( int x ) { outer<int> ( x ) ; } "
+                               "void outer<int> ( int t ) { sink<int*> ( & t ) ; } "
+                               "void sink<int*> ( int * t ) { ( void ) t ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+            ASSERT_EQUALS("", errout_str());
+        }
     }
 
     void templateTypeDeductionEnum()
