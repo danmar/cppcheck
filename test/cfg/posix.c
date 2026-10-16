@@ -1526,9 +1526,9 @@ void pthread_cond_init_test(pthread_cond_t *cond, const pthread_condattr_t *attr
 {
     (void)pthread_cond_init(cond, NULL);
     (void)pthread_cond_init(cond, attr);
-    pthread_cond_t *condu;
+    const pthread_condattr_t *uattr;
     // cppcheck-suppress uninitvar
-    (void)pthread_cond_init(condu, attr);
+    (void)pthread_cond_init(cond, uattr);
 }
 
 void pthread_cond_destroy_test(const pthread_cond_t *cond)
