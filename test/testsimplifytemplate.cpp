@@ -316,6 +316,7 @@ private:
         TEST_CASE(templateTypeDeductionFullRebuild); // --template-full-rebuild gives the same result
         TEST_CASE(templateTypeDeductionMultiPass);   // a pending deduction survives later simplifier passes
         TEST_CASE(templateTypeDeductionNested);      // calls inside a body created by deduction are deduced too
+        TEST_CASE(templateTypeDeductionOutOfLine);   // member template defined out of line, class in a namespace
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
         TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
         TEST_CASE(templateTypeDeductionConstPointer); // "const T *": the parameter provides the pointee const
@@ -7321,6 +7322,102 @@ private:
             ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
             ASSERT_EQUALS("", errout_str());
+        }
+    }
+
+    void templateTypeDeductionOutOfLine()
+    { // the out of line definition is already qualified with the class and the
+      // namespace - the instantiation must not get the qualification a second time,
+      // otherwise the body is not a member function body and the members used in it
+      // get no variable id
+        {
+            const char code[] = "namespace N {\n"
+                                "struct C {\n"
+                                "    template<class T> T m(T t);\n"
+                                "    int x;\n"
+                                "    int use(int i) { return m(i); }\n"
+                                "};\n"
+                                "}\n"
+                                "template<class T> T N::C::m(T t) { return t + x; }";
+            // the incremental setVarId() gives the new tokens ids above the existing ones
+            const char exp[] = "namespace N { "
+                               "struct C { "
+                               "int m<int> ( int t@5 ) ; "
+                               "int x@2 ; "
+                               "int use ( int i@3 ) { return m<int> ( i@3 ) ; } "
+                               "} ; "
+                               "} "
+                               "int N :: C :: m<int> ( int t@6 ) { return t@6 + x@2 ; }";
+            ASSERT_EQUALS(exp, tokVarId(code));
+            const char expFullRebuild[] = "namespace N { "
+                                          "struct C { "
+                                          "int m<int> ( int t@1 ) ; "
+                                          "int x@2 ; "
+                                          "int use ( int i@3 ) { return m<int> ( i@3 ) ; } "
+                                          "} ; "
+                                          "} "
+                                          "int N :: C :: m<int> ( int t@4 ) { return t@4 + x@2 ; }";
+            ASSERT_EQUALS(expFullRebuild, tokVarId(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+        }
+        { // explicit template arguments: same expansion
+            const char code[] = "namespace N {\n"
+                                "struct C {\n"
+                                "    template<class T> T m(T t);\n"
+                                "    int x;\n"
+                                "    int use(int i) { return m<int>(i); }\n"
+                                "};\n"
+                                "}\n"
+                                "template<class T> T N::C::m(T t) { return t + x; }";
+            const char exp[] = "namespace N { "
+                               "struct C { "
+                               "int m<int> ( int t@1 ) ; "
+                               "int x@2 ; "
+                               "int use ( int i@3 ) { return m<int> ( i@3 ) ; } "
+                               "} ; "
+                               "} "
+                               "int N :: C :: m<int> ( int t@4 ) { return t@4 + x@2 ; }";
+            ASSERT_EQUALS(exp, tokVarId(code));
+        }
+        { // the definition is qualified with the class only: the namespace is added
+          // (the instantiation is appended after the namespace, like all instantiations)
+            const char code[] = "namespace N {\n"
+                                "struct C {\n"
+                                "    template<class T> T m(T t);\n"
+                                "    int x;\n"
+                                "    int use(int i) { return m(i); }\n"
+                                "};\n"
+                                "template<class T> T C::m(T t) { return t + x; }\n"
+                                "}";
+            const char exp[] = "namespace N { "
+                               "struct C { "
+                               "int m<int> ( int t@1 ) ; "
+                               "int x@2 ; "
+                               "int use ( int i@3 ) { return m<int> ( i@3 ) ; } "
+                               "} ; "
+                               "} "
+                               "int N :: C :: m<int> ( int t@4 ) { return t@4 + x@2 ; }";
+            ASSERT_EQUALS(exp, tokVarId(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+            ASSERT(tokVarId(code).find("int N :: C :: m<int> ( int t@6 ) { return t@6 + x@2 ; }") != std::string::npos);
+        }
+        { // three levels of nesting
+            const char code[] = "namespace A { namespace B {\n"
+                                "struct C {\n"
+                                "    template<class T> T m(T t);\n"
+                                "    int x;\n"
+                                "    int use(int i) { return m(i); }\n"
+                                "};\n"
+                                "} }\n"
+                                "template<class T> T A::B::C::m(T t) { return t + x; }";
+            const char exp[] = "namespace A { namespace B { "
+                               "struct C { "
+                               "int m<int> ( int t@1 ) ; "
+                               "int x@2 ; "
+                               "int use ( int i@3 ) { return m<int> ( i@3 ) ; } "
+                               "} ; "
+                               "} } "
+                               "int A :: B :: C :: m<int> ( int t@4 ) { return t@4 + x@2 ; }";
+            ASSERT_EQUALS(exp, tokVarId(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+            ASSERT(tokVarId(code).find("int A :: B :: C :: m<int> ( int t@6 ) { return t@6 + x@2 ; }") != std::string::npos);
         }
     }
 

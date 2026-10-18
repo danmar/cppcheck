@@ -2107,12 +2107,26 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
     // decide if namespace needs to be inserted in or appended to token list
     const bool insert = tokStart != tok;
 
+    std::string scope = templateDeclaration.scope();
+    if (insert) {
+        // the qualification that is already there: "C" or "N :: C" for "N :: C :: m"
+        std::string existing;
+        for (const Token* tok2 = tokStart; tok2 != tok->previous(); tok2 = tok2->next())
+            existing += (existing.empty() ? "" : " ") + tok2->str();
+        // fully qualified already: nothing to add
+        if (scope == existing)
+            return;
+        // partially qualified: only the missing leading scopes are added
+        if (endsWith(scope, " :: " + existing))
+            scope.erase(scope.size() - existing.size() - 4);
+    }
+
     std::string::size_type start = 0;
     std::string::size_type end = 0;
     bool inTemplate = false;
     int level = 0;
-    while ((end = templateDeclaration.scope().find(' ', start)) != std::string::npos) {
-        std::string token = templateDeclaration.scope().substr(start, end - start);
+    while ((end = scope.find(' ', start)) != std::string::npos) {
+        std::string token = scope.substr(start, end - start);
         // done if scopes overlap
         if (token == tokStart->str() && tok->strAt(-1) != "::")
             break;
@@ -2139,19 +2153,19 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
         start = end + 1;
     }
     // don't add if it already exists
-    std::string token = templateDeclaration.scope().substr(start, end - start);
+    std::string token = scope.substr(start, end - start);
     if (token != tokStart->str() || tok->strAt(-1) != "::") {
         if (insert) {
             if (!inTemplate)
-                mTokenList.back()->tokAt(offset)->insertToken(templateDeclaration.scope().substr(start));
+                mTokenList.back()->tokAt(offset)->insertToken(scope.substr(start));
             else
-                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + templateDeclaration.scope().substr(start));
+                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + scope.substr(start));
             mTokenList.back()->tokAt(offset)->insertToken("::");
         } else {
             if (!inTemplate)
-                mTokenList.addtoken(templateDeclaration.scope().substr(start), tok->linenr(), tok->column(), tok->fileIndex());
+                mTokenList.addtoken(scope.substr(start), tok->linenr(), tok->column(), tok->fileIndex());
             else
-                mTokenList.back()->str(mTokenList.back()->str() + templateDeclaration.scope().substr(start));
+                mTokenList.back()->str(mTokenList.back()->str() + scope.substr(start));
             mTokenList.addtoken("::", tok->linenr(), tok->column(), tok->fileIndex());
         }
     }
