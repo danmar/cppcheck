@@ -336,7 +336,10 @@ namespace clangimport {
     public:
         AstNode(std::string nodeType, const std::string &ext, Data *data)
             : nodeType(std::move(nodeType)), mExtTokens(splitString(ext)), mData(data)
-        {}
+        {
+            if (mExtTokens.empty())
+                throw InternalError(nullptr, "invalid AST node: " + this->nodeType, InternalError::AST);
+        }
         std::string nodeType;
         std::vector<AstNodePtr> children;
 
@@ -1413,7 +1416,10 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
     auto *nestedIn = const_cast<Scope *>(nameToken->scope());
 
     if (prev) {
-        const std::string addr = *(std::find(mExtTokens.cbegin(), mExtTokens.cend(), "prev") + 1);
+        const auto it = std::find(mExtTokens.cbegin(), mExtTokens.cend(), "prev");
+        if (it + 1 == mExtTokens.cend())
+            throw InternalError(nullptr, "invalid AST node: " + nodeType, InternalError::AST);
+        const std::string addr = *(it + 1);
         mData->ref(addr, nameToken);
     }
     if (!nameToken->function()) {
@@ -1556,6 +1562,8 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList &tokenList)
 
 Token * clangimport::AstNode::createTokensVarDecl(TokenList &tokenList)
 {
+    if (mExtTokens.size() < 2)
+        throw InternalError(nullptr, "invalid AST node: " + nodeType, InternalError::AST);
     const std::string addr = mExtTokens.front();
     if (contains(mExtTokens, "static"))
         addtoken(tokenList, "static");
