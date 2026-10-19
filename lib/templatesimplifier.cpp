@@ -810,6 +810,8 @@ struct ParameterShape {
 struct DeducedType {
     std::string typeStr;                // base type, e.g. "int" or "MyClass"
     std::string qualification;          // enclosing scopes of record and enum types, "N :: A"
+    const Scope* typeScope = nullptr;   // the scope of a record or enum type
+    bool globalQualification = false;   // write the type with a leading "::"
     unsigned int constness = 0;         // bit 0 = data const, bit 1 = first '*' const, ..
     unsigned int pointer = 0;           // number of '*'
     bool isUnsigned = false;
@@ -817,8 +819,9 @@ struct DeducedType {
 
     bool operator==(const DeducedType& other) const
     {
-        return typeStr == other.typeStr && qualification == other.qualification && constness == other.constness &&
-               pointer == other.pointer && isUnsigned == other.isUnsigned && isLong == other.isLong;
+        return typeStr == other.typeStr && qualification == other.qualification && typeScope == other.typeScope &&
+               constness == other.constness && pointer == other.pointer && isUnsigned == other.isUnsigned &&
+               isLong == other.isLong;
     }
 };
 
@@ -916,7 +919,38 @@ static DeducedType deducedScopeType(DeducedType deduced, const Scope* typeScope)
     if (deduced.qualification.empty() && enclosing && enclosing->type != ScopeType::eGlobal)
         return DeducedType(); // local types etc. cannot be named - bail out
     deduced.typeStr = typeScope->className;
+    deduced.typeScope = typeScope;
     return deduced;
+}
+
+// Does the name of the deduced type, looked up from the given scope, find another scope
+// than the one the type is in? The instantiation is declared in the scope of the
+// template, so "S" deduced from "::S" would be resolved to "X::S" when the template is
+// in namespace X and X has its own S. Such a type must be written with a leading "::".
+static bool deducedTypeIsShadowed(const Scope* from, const DeducedType& deduced)
+{
+    if (!deduced.typeScope)
+        return false;
+    // the outermost named scope of the type: "N" for "N :: A :: M", the type itself for "S"
+    const Scope* outermost = deduced.typeScope;
+    while (outermost->nestedIn && outermost->nestedIn->type != ScopeType::eGlobal)
+        outermost = outermost->nestedIn;
+    const std::string& name = outermost->className;
+    for (const Scope* scope = from; scope && scope->type != ScopeType::eGlobal; scope = scope->nestedIn) {
+        // in a class the nested types of the base classes are visible too
+        std::vector<const Scope*> lookupScopes;
+        if (scope->isClassOrStructOrUnion())
+            lookupScopes = scope->findAssociatedScopes();
+        else
+            lookupScopes.push_back(scope);
+        for (const Scope* lookupScope : lookupScopes) {
+            for (const Scope* nested : lookupScope->nestedList) {
+                if (nested->className == name)
+                    return nested != outermost;
+            }
+        }
+    }
+    return false;
 }
 
 // Convert the type of an argument expression to the type that the parameter shape
@@ -1070,6 +1104,8 @@ static void insertDeducedType(Token* tok, const DeducedType& deduced)
 {
     if (deduced.constness & 1U)
         tok = tok->insertToken("const");
+    if (deduced.globalQualification)
+        tok = tok->insertToken("::");
     const std::string& qualification = deduced.qualification;
     for (std::string::size_type pos = 0; pos < qualification.size();) {
         std::string::size_type end = qualification.find(' ', pos);
@@ -1335,6 +1371,8 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     // find the function template declarations this call could instantiate
     std::vector<const TokenAndName*> candidates;
     std::string baseClassQualification;
+    // the scope the template is declared in - the instantiation is declared there too
+    const Scope* declarationScope = nullptr;
     for (const LookupLevel& level : lookup.levels) {
         // a non template function with the same name might be a better overload match
         if (level.scope && scopeHasNonTemplateFunction(level.scope, tok->str()))
@@ -1347,6 +1385,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
         if (!candidates.empty()) {
             if (level.isBaseClass)
                 baseClassQualification = level.scopeName;
+            declarationScope = level.scope;
             break;
         }
     }
@@ -1396,6 +1435,19 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
                 return qualification;
         } else
             stored = std::move(deduced);
+    }
+
+    // a deduced type whose name is shadowed in the scope of the template must be written
+    // with a leading "::" so the instantiation does not use the wrong type
+    if (!declarationScope)
+        declarationScope = declaration->nameToken()->scope(); // explicitly qualified call
+    for (DeducedType& deduced : deducedTypes) {
+        if (!deduced.typeScope)
+            continue;
+        if (!declarationScope)
+            return qualification; // cannot tell which type the name would resolve to
+        if (deducedTypeIsShadowed(declarationScope, deduced))
+            deduced.globalQualification = true;
     }
 
     // when the declaration is in a base class, qualify the call site explicitly so the

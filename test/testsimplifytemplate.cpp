@@ -317,6 +317,7 @@ private:
         TEST_CASE(templateTypeDeductionMultiPass);   // a pending deduction survives later simplifier passes
         TEST_CASE(templateTypeDeductionNested);      // calls inside a body created by deduction are deduced too
         TEST_CASE(templateTypeDeductionOutOfLine);   // member template defined out of line, class in a namespace
+        TEST_CASE(templateTypeDeductionShadowedType); // the deduced type name means another type in the template's scope
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
         TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
         TEST_CASE(templateTypeDeductionConstPointer); // "const T *": the parameter provides the pointee const
@@ -7418,6 +7419,91 @@ private:
                                "int A :: B :: C :: m<int> ( int t@4 ) { return t@4 + x@2 ; }";
             ASSERT_EQUALS(exp, tokVarId(code, dinit(CheckOptions, $.templateFullRebuild = true)));
             ASSERT(tokVarId(code).find("int A :: B :: C :: m<int> ( int t@6 ) { return t@6 + x@2 ; }") != std::string::npos);
+        }
+    }
+
+    void templateTypeDeductionShadowedType()
+    { // the instantiation is declared in the scope of the template: when the name of
+      // the deduced type means another type there, the type must be written with a
+      // leading "::", otherwise the instantiation uses the wrong type
+        { // a global type shadowed by a type in the namespace of the template
+            const char code[] = "struct S { int a[10]; };\n"
+                                "namespace X {\n"
+                                "struct S { int a[2]; };\n"
+                                "template<class T> int f(const T& t) { return t.a[5]; }\n"
+                                "int g(const ::S& s) { return f(s); }\n"
+                                "}";
+            const char exp[] = "struct S { int a [ 10 ] ; } ; "
+                               "namespace X { "
+                               "struct S { int a [ 2 ] ; } ; "
+                               "int f<::S> ( const :: S & t ) ; "
+                               "int g ( const :: S & s ) { return f<::S> ( s ) ; } "
+                               "} "
+                               "int X :: f<::S> ( const :: S & t ) { return t . a [ 5 ] ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+        }
+        { // a partly qualified name: the first scope name is shadowed
+            const char code[] = "namespace N { struct S { int a[10]; }; }\n"
+                                "namespace X {\n"
+                                "namespace N { struct S { int a[2]; }; }\n"
+                                "template<class T> int f(const T& t) { return t.a[5]; }\n"
+                                "int g(const ::N::S& s) { return f(s); }\n"
+                                "}";
+            const char exp[] = "namespace N { struct S { int a [ 10 ] ; } ; } "
+                               "namespace X { "
+                               "namespace N { struct S { int a [ 2 ] ; } ; } "
+                               "int f<::N::S> ( const :: N :: S & t ) ; "
+                               "int g ( const :: N :: S & s ) { return f<::N::S> ( s ) ; } "
+                               "} "
+                               "int X :: f<::N::S> ( const :: N :: S & t ) { return t . a [ 5 ] ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        { // an explicitly qualified call from outside the namespace
+            const char code[] = "struct S { int a[10]; };\n"
+                                "namespace X {\n"
+                                "struct S { int a[2]; };\n"
+                                "template<class T> int f(const T& t) { return t.a[5]; }\n"
+                                "}\n"
+                                "int g(const S& s) { return X::f(s); }";
+            const char exp[] = "struct S { int a [ 10 ] ; } ; "
+                               "namespace X { "
+                               "struct S { int a [ 2 ] ; } ; "
+                               "int f<::S> ( const :: S & t ) ; "
+                               "} "
+                               "int g ( const S & s ) { return X :: f<::S> ( s ) ; } "
+                               "int X :: f<::S> ( const :: S & t ) { return t . a [ 5 ] ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        { // the type in the namespace itself is not shadowed: no leading "::"
+            const char code[] = "namespace X {\n"
+                                "struct S { int a[10]; };\n"
+                                "template<class T> int f(const T& t) { return t.a[5]; }\n"
+                                "int g(const S& s) { return f(s); }\n"
+                                "}";
+            const char exp[] = "namespace X { "
+                               "struct S { int a [ 10 ] ; } ; "
+                               "int f<X::S> ( const X :: S & t ) ; "
+                               "int g ( const S & s ) { return f<X::S> ( s ) ; } "
+                               "} "
+                               "int X :: f<X::S> ( const X :: S & t ) { return t . a [ 5 ] ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        { // a member template: nested types of the class and of its base classes shadow
+            const char code[] = "struct S { int a[10]; };\n"
+                                "struct Base { struct S { int a[2]; }; };\n"
+                                "struct C : Base {\n"
+                                "    template<class T> int f(const T& t) { return t.a[5]; }\n"
+                                "    int g(const ::S& s) { return f(s); }\n"
+                                "};";
+            const char exp[] = "struct S { int a [ 10 ] ; } ; "
+                               "struct Base { struct S { int a [ 2 ] ; } ; } ; "
+                               "struct C : Base { "
+                               "int f<::S> ( const :: S & t ) ; "
+                               "int g ( const :: S & s ) { return f<::S> ( s ) ; } "
+                               "} ; "
+                               "int C :: f<::S> ( const :: S & t ) { return t . a [ 5 ] ; }";
+            ASSERT_EQUALS(exp, tok(code));
         }
     }
 
