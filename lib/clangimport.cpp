@@ -1055,7 +1055,10 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         return nullptr;
     }
     if (nodeType == EnumConstantDecl) {
-        Token *nameToken = addtoken(tokenList, getSpelling());
+        const std::string name = getSpelling();
+        if (name.empty())
+            throw InternalError(nullptr, "invalid AST node: " + nodeType, InternalError::AST);
+        Token *nameToken = addtoken(tokenList, name);
         auto *scope = const_cast<Scope *>(nameToken->scope());
         scope->enumeratorList.emplace_back(nameToken->scope());
         Enumerator *e = &scope->enumeratorList.back();
@@ -1391,6 +1394,10 @@ Token * clangimport::AstNode::createTokensCall(TokenList &tokenList)
 
 void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
 {
+    // an address-only node has no name: addtoken("") adds nothing and would return a null back()
+    const std::string name = getSpelling();
+    if (name.empty())
+        throw InternalError(nullptr, "invalid AST node: " + nodeType, InternalError::AST);
     const bool prev = contains(mExtTokens, "prev");
     const bool hasBody = !children.empty() && children.back()->nodeType == CompoundStmt;
     const bool isStatic = contains(mExtTokens, "static");
@@ -1412,7 +1419,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
     if (mExtTokens.size() > 4 && mExtTokens[1] == "parent")
         addFullScopeNameTokens(tokenList, mData->getScope(mExtTokens[2]));
 
-    Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
+    Token *nameToken = addtoken(tokenList, name + getTemplateParameters());
     auto *nestedIn = const_cast<Scope *>(nameToken->scope());
 
     if (prev) {

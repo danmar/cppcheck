@@ -1453,6 +1453,11 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-EnumDecl "), AST, "invalid AST node: EnumDecl");
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-VarDecl 0x1"), AST, "invalid AST node: VarDecl");
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-FunctionDecl 0x1 <a.cpp:1:1, col:20> col:5 f 'int ()' prev"), AST, "invalid AST node: FunctionDecl");
+        // address-only declarations: getSpelling() is empty, addtoken() adds nothing and back() is null
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-FunctionDecl 0x1"), AST, "invalid AST node: FunctionDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-CXXConstructorDecl 0x1"), AST, "invalid AST node: CXXConstructorDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-CXXMethodDecl 0x1"), AST, "invalid AST node: CXXMethodDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-EnumConstantDecl 0x1"), AST, "invalid AST node: EnumConstantDecl");
     }
 };
 
