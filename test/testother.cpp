@@ -13531,14 +13531,13 @@ private:
         {
             ScopedFile inc("test.h", "int pad1;\nint pad2;\nint pad3;\nint pad4;\nfloat f;\n");
             checkP("void g() {\n"
-                  "    #include \"test.h\"\n"
-                  "    {\n"
-                  "        float f;\n"
-                  "    }\n"
-                  "}\n");
+                   "    #include \"test.h\"\n"
+                   "    {\n"
+                   "        float f;\n"
+                   "    }\n"
+                   "}\n");
             ASSERT_EQUALS("[test.h:5:7] -> [test.cpp:4:15]: (style) Local variable 'f' shadows outer variable [shadowVariable]\n", errout_str());
         }
-
     }
 
     void knownArgument() {
