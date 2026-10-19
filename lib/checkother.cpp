@@ -4221,12 +4221,12 @@ void CheckOtherImpl::funcArgOrderDifferent(const std::string & functionName,
     reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE683, Certainty::normal);
 }
 
-static const Token *findShadowed(const Scope *scope, const Variable& var, int linenr)
+static const Token *findShadowed(const Scope *scope, const Variable& var)
 {
     if (!scope)
         return nullptr;
     for (const Variable &v : scope->varlist) {
-        if ((scope->isExecutable() || scope->type == ScopeType::eGlobal) && v.nameToken()->linenr() > linenr)
+        if ((scope->isExecutable() || scope->type == ScopeType::eGlobal) && succeeds(v.nameToken(), var.nameToken()))
             continue;
         if (v.name() == var.name())
             return v.nameToken();
@@ -4240,9 +4240,9 @@ static const Token *findShadowed(const Scope *scope, const Variable& var, int li
 
     if (scope->type == ScopeType::eLambda)
         return nullptr;
-    const Token* shadowed = findShadowed(scope->nestedIn, var, linenr);
+    const Token* shadowed = findShadowed(scope->nestedIn, var);
     if (!shadowed)
-        shadowed = findShadowed(scope->functionOf, var, linenr);
+        shadowed = findShadowed(scope->functionOf, var);
     return shadowed;
 }
 
@@ -4276,9 +4276,9 @@ void CheckOtherImpl::checkShadowVariables()
                 }
             }
 
-            const Token *shadowed = findShadowed(scope.nestedIn, var, var.nameToken()->linenr());
+            const Token *shadowed = findShadowed(scope.nestedIn, var);
             if (!shadowed)
-                shadowed = findShadowed(scope.functionOf, var, var.nameToken()->linenr());
+                shadowed = findShadowed(scope.functionOf, var);
             if (!shadowed)
                 return;
             if (scope.type == ScopeType::eFunction && scope.className == var.name())
