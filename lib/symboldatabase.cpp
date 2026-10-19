@@ -917,7 +917,8 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
                 continue;
 
             const Variable* firstArg = func->getArgumentVar(0);
-            if (firstArg->type() == scope.definedType) {
+            // skip references to functions: Foo(Foo& (&f)())
+            if (firstArg->type() == scope.definedType && !Token::Match(firstArg->typeEndToken(), "&|&& %name%| ) (")) {
                 if (firstArg->isRValueReference())
                     func->type = FunctionType::eMoveConstructor;
                 else if (firstArg->isReference() && !firstArg->isPointer())

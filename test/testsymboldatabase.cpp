@@ -2477,6 +2477,26 @@ private:
             ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
         }
         {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& (&f)()); };\n");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo&& (&f)()); };\n");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo (&f)()); };\n");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& (&)()); };\n");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
+        }
+        {
             GET_SYMBOL_DB("void f() { extern void f(); }\n");
             ASSERT(db && db->scopeList.size() == 2);
             const Function* f = findFunctionByName("f", &db->scopeList.back());
