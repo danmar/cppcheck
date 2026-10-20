@@ -4131,7 +4131,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
         }
 
         if (value.isIntValue() && sz > 0 && sz < sizeof(MathLib::biguint))
-            value.intvalue = ValueFlow::truncateIntValue(value.intvalue, sz, dst->sign);
+            value.intvalue = ValueFlow::truncateIntValue(value.intvalue, sz, dst, settings.platform);
     }
     return values;
 }
@@ -5166,8 +5166,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
             }
         } else if (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
                    Token::Match(tok->astParent()->previous(), "if|while (") ||
-                   (astIsPointer(tok) && isUsedAsBool(tok, settings)) ||
-                   tok->function()) {
+                   ((astIsPointer(tok) || tok->function()) && isUsedAsBool(tok, settings))) {
             std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), "!=", tok->values(), 0);
             if (result.size() != 1)
                 continue;

@@ -4763,6 +4763,26 @@ static const std::unordered_set<std::string> notstart_cpp = { NOTSTART_C,
                                                               "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
 };
 
+// Returns the end of the lambda that starts at tok in a constructor initializer list, or nullptr
+static const Token* findInitListLambdaEnd(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "[") || Token::Match(tok->previous(), "%name%|)|]|>"))
+        return nullptr; // array subscript or array size of a new expression
+    // array size of a new expression with pointer or reference type: new T*[n]{...}, new (p) T*[n]{...}
+    for (const Token* prev = tok->previous(); Token::Match(prev, "*|&|&&|::|%name%|>|)"); prev = prev->previous()) {
+        if (prev->str() == "new")
+            return nullptr;
+        if (prev->str() == ")")
+            prev = prev->link();
+        else if (prev->str() == ">") {
+            prev = prev->findOpeningBracket();
+            if (!prev)
+                break;
+        }
+    }
+    return findLambdaEndScope(tok);
+}
+
 void Tokenizer::setVarIdPass1()
 {
     const bool cpp = isCPP();
@@ -4778,6 +4798,7 @@ void Tokenizer::setVarIdPass1()
     std::stack<const Token *> functionDeclEndStack;
     const Token *functionDeclEndToken = nullptr;
     bool initlist = false;
+    std::stack<const Token *> initlistLambdaEnds; // ends of lambdas in constructor initializer lists
     bool inlineFunction = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isOp())
@@ -4813,6 +4834,13 @@ void Tokenizer::setVarIdPass1()
                     variableMap.enterScope();
                 }
             }
+        } else if (const Token* lambdaEnd = initlist ? findInitListLambdaEnd(tok) : nullptr) {
+            // lambda in initializer list: parse it like a lambda in executable code, the
+            // extra scope holds its parameters and is left at the end of the lambda
+            initlistLambdaEnds.push(lambdaEnd);
+            scopeStack.emplace(/*isExecutable=*/ true, /*isStructInit=*/ false, /*isEnum=*/ false, variableMap.getVarId());
+            variableMap.enterScope();
+            initlist = false;
         } else if (!initlist && tok->str()=="(") {
             const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
@@ -4902,6 +4930,15 @@ void Tokenizer::setVarIdPass1()
                         scopeStack.emplace(/*VarIdScopeInfo()*/);
                     }
                 }
+            }
+
+            if (!initlistLambdaEnds.empty() && initlistLambdaEnds.top() == tok) {
+                // end of lambda in initializer list
+                initlistLambdaEnds.pop();
+                if (scopeStack.size() > 1)
+                    scopeStack.pop();
+                variableMap.leaveScope();
+                initlist = true;
             }
         }
 
@@ -5046,7 +5083,7 @@ void Tokenizer::setVarIdPass1()
                 if (decl) {
                     if (isC() && Token::Match(prev2->previous(), "&|&&"))
                         syntaxErrorC(prev2, prev2->strAt(-2) + prev2->strAt(-1) + " " + prev2->str());
-                    variableMap.addVariable(prev2->str(), scopeStack.size() <= 1);
+                    variableMap.addVariable(prev2->str(), scopeStack.size() <= 1 && !functionDeclEndToken);
 
                     if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=[({,]")) {
                         for (const Token *tok3 = prev2->next(); tok3 && tok3->str() != ";"; tok3 = tok3->next()) {
