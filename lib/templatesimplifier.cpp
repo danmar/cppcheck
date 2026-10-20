@@ -944,10 +944,12 @@ static bool deducedTypeIsShadowed(const Scope* from, const DeducedType& deduced)
         else
             lookupScopes.push_back(scope);
         for (const Scope* lookupScope : lookupScopes) {
-            for (const Scope* nested : lookupScope->nestedList) {
-                if (nested->className == name)
-                    return nested != outermost;
-            }
+            const std::vector<Scope*>& nestedList = lookupScope->nestedList;
+            const auto it = std::find_if(nestedList.cbegin(), nestedList.cend(), [&](const Scope* nested) {
+                return nested->className == name;
+            });
+            if (it != nestedList.cend())
+                return *it != outermost;
         }
     }
     return false;
