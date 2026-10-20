@@ -1569,14 +1569,15 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList &tokenList)
 
 Token * clangimport::AstNode::createTokensVarDecl(TokenList &tokenList)
 {
-    if (mExtTokens.size() < 2)
-        throw InternalError(nullptr, "invalid AST node: " + nodeType, InternalError::AST);
     const std::string addr = mExtTokens.front();
     if (contains(mExtTokens, "static"))
         addtoken(tokenList, "static");
     int typeIndex = mExtTokens.size() - 1;
     while (typeIndex > 1 && std::isalpha(mExtTokens[typeIndex][0]))
         typeIndex--;
+    // there must be a name token between the address and the type
+    if (typeIndex < 2)
+        throw InternalError(nullptr, "invalid AST node: " + nodeType, InternalError::AST);
     const std::string type = mExtTokens[typeIndex];
     const std::string name = mExtTokens[typeIndex - 1];
     const Token *startToken = tokenList.back();

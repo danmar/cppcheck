@@ -1452,6 +1452,9 @@ private:
                                            "      `-IntegerLiteral \n"), AST, "invalid AST node: IntegerLiteral");
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-EnumDecl "), AST, "invalid AST node: EnumDecl");
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-VarDecl 0x1"), AST, "invalid AST node: VarDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-VarDecl 0x1 'int'"), AST, "invalid AST node: VarDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-VarDecl 0x1 <col:1>"), AST, "invalid AST node: VarDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-FieldDecl 0x1 'int'"), AST, "invalid AST node: FieldDecl");
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-FunctionDecl 0x1 <a.cpp:1:1, col:20> col:5 f 'int ()' prev"), AST, "invalid AST node: FunctionDecl");
         // address-only declarations: getSpelling() is empty, addtoken() adds nothing and back() is null
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-FunctionDecl 0x1"), AST, "invalid AST node: FunctionDecl");
