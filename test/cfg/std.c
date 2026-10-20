@@ -78,6 +78,9 @@ void invalidFunctionArgStr_strncat(void)
     // No warning is expected for
     strncat (str1, &src, 1);
     puts (str1);
+    char d[] = {'a','b','c'};
+    // cppcheck-suppress invalidFunctionArgStr
+    strncat(d, "def", 1);
 }
 
 char * invalidFunctionArgStr_strpbrk( const char *p )
@@ -4913,6 +4916,10 @@ void invalidFunctionArgString(char c)
     char d='d';
     /* cppcheck-suppress invalidFunctionArgStr */
     (void)strcat(str,&d);
+
+    char a[] = { 'a', 'b', 'c' };
+    /* cppcheck-suppress [bufferAccessOutOfBounds,invalidFunctionArgStr] */
+    (void)strcat(a, "def");
 }
 
 void ignoredReturnValue_abs(int i)

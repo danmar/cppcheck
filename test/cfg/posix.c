@@ -194,6 +194,12 @@ void invalidFunctionArgStr_mbsnrtowcs(void)
     if (mbsnrtowcs (wenough, &cp, 1, 10, &s) != 1 || wcscmp (wenough, L"AEF") != 0) {}
 }
 
+int invalidFunctionArgStr_strncasecmp(const char* s)
+{
+    const char buf[3] = {'a', 'b', 'c'};
+    return strncasecmp(buf, s, 3);
+}
+
 struct tm * ignoredReturnValue_localtime(const time_t *tp)
 {
     // cppcheck-suppress [ignoredReturnValue,localtimeCalled]
@@ -719,6 +725,13 @@ size_t bufferAccessOutOfBounds_strnlen(const char *s, size_t maxlen)
     size_t len = strnlen(buf,2);
     // cppcheck-suppress bufferAccessOutOfBounds
     len+=strnlen(buf,3);
+    len+=strnlen("ab",5);
+    return len;
+}
+
+size_t bufferAccessOutOfBounds_strncasecmp(const char *s)
+{
+    size_t len = strncasecmp(s, "abc", 5);
     return len;
 }
 
