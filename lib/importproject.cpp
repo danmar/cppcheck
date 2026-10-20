@@ -849,42 +849,20 @@ static std::string safeFormat(const char *fmt, Args... args) {
 #pragma clang diagnostic pop
 #endif
 
-// Checked signed arithmetic for the [MSBuild]::Add/Subtract/Multiply intrinsics.
-// Operands come straight from the (untrusted) project file, so the result can
-// exceed long long and the plain a+b / a-b / a*b would be signed-overflow UB.
-// These return false on overflow so the caller can report it instead.
-static bool addChecked(long long a, long long b, long long &res) {
-    if ((b > 0 && a > LLONG_MAX - b) || (b < 0 && a < LLONG_MIN - b))
-        return false;
-    res = a + b;
-    return true;
+// MSBuild evaluates the [MSBuild]::Add/Subtract/Multiply intrinsics in .NET's
+// default unchecked context, so on overflow the result wraps (two's complement).
+// Do the arithmetic on unsigned operands to get the same result without
+// signed-overflow UB.
+static long long wrapAdd(long long a, long long b) {
+    return static_cast<long long>(static_cast<unsigned long long>(a) + static_cast<unsigned long long>(b));
 }
 
-static bool subChecked(long long a, long long b, long long &res) {
-    if ((b < 0 && a > LLONG_MAX + b) || (b > 0 && a < LLONG_MIN + b))
-        return false;
-    res = a - b;
-    return true;
+static long long wrapSub(long long a, long long b) {
+    return static_cast<long long>(static_cast<unsigned long long>(a) - static_cast<unsigned long long>(b));
 }
 
-static bool mulChecked(long long a, long long b, long long &res) {
-    if (a > 0) {
-        if (b > 0) {
-            if (a > LLONG_MAX / b)
-                return false;
-        } else if (b < LLONG_MIN / a) {
-            return false;
-        }
-    } else {
-        if (b > 0) {
-            if (a < LLONG_MIN / b)
-                return false;
-        } else if (a != 0 && b < LLONG_MAX / a) {
-            return false;
-        }
-    }
-    res = a * b;
-    return true;
+static long long wrapMul(long long a, long long b) {
+    return static_cast<long long>(static_cast<unsigned long long>(a) * static_cast<unsigned long long>(b));
 }
 
 // Evaluate a $([ClassName]::Method(args)) static property function.
@@ -932,28 +910,12 @@ std::string ImportProject::applyMSBuildStaticFunction(const std::string &classNa
         if (args.size() == 2) {
             long long a = 0, b = 0;
             if (toInt(args[0], a) && toInt(args[1], b)) {
-                long long r = 0;
-                if (caseInsensitiveStringCompare(member, "Add") == 0) {
-                    if (!addChecked(a, b, r)) {
-                        addDebug("MSBuild::Add: integer overflow");
-                        return std::string();
-                    }
-                    return std::to_string(r);
-                }
-                if (caseInsensitiveStringCompare(member, "Subtract") == 0) {
-                    if (!subChecked(a, b, r)) {
-                        addDebug("MSBuild::Subtract: integer overflow");
-                        return std::string();
-                    }
-                    return std::to_string(r);
-                }
-                if (caseInsensitiveStringCompare(member, "Multiply") == 0) {
-                    if (!mulChecked(a, b, r)) {
-                        addDebug("MSBuild::Multiply: integer overflow");
-                        return std::string();
-                    }
-                    return std::to_string(r);
-                }
+                if (caseInsensitiveStringCompare(member, "Add") == 0)
+                    return std::to_string(wrapAdd(a, b));
+                if (caseInsensitiveStringCompare(member, "Subtract") == 0)
+                    return std::to_string(wrapSub(a, b));
+                if (caseInsensitiveStringCompare(member, "Multiply") == 0)
+                    return std::to_string(wrapMul(a, b));
                 if (caseInsensitiveStringCompare(member, "Divide") == 0) {
                     if (b == 0) {
                         addDebug("MSBuild::Divide: division by zero");
@@ -970,8 +932,10 @@ std::string ImportProject::applyMSBuildStaticFunction(const std::string &classNa
                         addDebug("MSBuild::Modulo: division by zero");
                         return std::string();
                     }
-                    if (a == LLONG_MIN && b == -1)
-                        return std::string("0");
+                    if (a == LLONG_MIN && b == -1) {
+                        addDebug("MSBuild::Modulo: integer overflow");
+                        return std::string();
+                    }
                     return std::to_string(a % b);
                 }
             }
