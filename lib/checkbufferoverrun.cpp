@@ -605,11 +605,11 @@ ValueFlow::Value CheckBufferOverrunImpl::getBufferSize(const Token *bufTok, cons
                 }
             }
         } else if (checkStringLiteral && bufTok->tokType() == Token::Type::eString && bufTok->valueType()) {
-            ValueFlow::Value strSizeVal;
-            strSizeVal.setKnown();
-            strSizeVal.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
             const size_t charSize = bufTok->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
             if (charSize > 0) {
+                ValueFlow::Value strSizeVal;
+                strSizeVal.setKnown();
+                strSizeVal.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
                 strSizeVal.intvalue = (Token::getStrArraySize(bufTok) - index) * charSize;
                 return strSizeVal;
             }
