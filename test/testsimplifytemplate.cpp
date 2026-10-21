@@ -319,6 +319,7 @@ private:
         TEST_CASE(templateTypeDeductionOutOfLine);   // member template defined out of line, class in a namespace
         TEST_CASE(templateTypeDeductionShadowedType); // the deduced type name means another type in the template's scope
         TEST_CASE(templateTypeDeductionRecursion);   // recursive calls are deduced, not renamed to the current instantiation
+        TEST_CASE(templateTypeDeductionRemainingCalls); // the generic definition stays while undeduced calls remain
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
         TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
         TEST_CASE(templateTypeDeductionConstPointer); // "const T *": the parameter provides the pointee const
@@ -7562,6 +7563,63 @@ private:
         }
     }
 
+    void templateTypeDeductionRemainingCalls()
+    { // a call whose template arguments can not be deduced - in an uninstantiated class
+      // template here - refers to the generic definition: it must not be removed after
+      // another call instantiated the template
+        {
+            const char code[] = "template<class T> int get(const T& t) { return t.count; }\n"
+                                "template<class U> struct Box { U item; int count; int size() const { return get(*this); } };\n"
+                                "struct Bag { int count; };\n"
+                                "int total(const Bag& b) { return get(b); }";
+            const char exp[] = "int get<Bag> ( const Bag & t ) ; "
+                               "template < class T > int get ( const T & t ) { return t . count ; } "
+                               "template < class U > struct Box { U item ; int count ; int size ( ) const { return get ( * this ) ; } } ; "
+                               "struct Bag { int count ; } ; "
+                               "int total ( const Bag & b ) { return get<Bag> ( b ) ; } "
+                               "int get<Bag> ( const Bag & t ) { return t . count ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+        }
+        { // explicit template arguments: same result
+            const char code[] = "template<class T> int get(const T& t) { return t.count; }\n"
+                                "template<class U> struct Box { U item; int count; int size() const { return get(*this); } };\n"
+                                "struct Bag { int count; };\n"
+                                "int total(const Bag& b) { return get<Bag>(b); }";
+            const char exp[] = "int get<Bag> ( const Bag & t ) ; "
+                               "template < class T > int get ( const T & t ) { return t . count ; } "
+                               "template < class U > struct Box { U item ; int count ; int size ( ) const { return get ( * this ) ; } } ; "
+                               "struct Bag { int count ; } ; "
+                               "int total ( const Bag & b ) { return get<Bag> ( b ) ; } "
+                               "int get<Bag> ( const Bag & t ) { return t . count ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        { // a forward declaration is kept with the definition
+            const char code[] = "template<class T> int get(const T& t);\n"
+                                "template<class T> int get(const T& t) { return t.count; }\n"
+                                "template<class U> struct Box { int count; int size() const { return get(*this); } };\n"
+                                "struct Bag { int count; };\n"
+                                "int total(const Bag& b) { return get(b); }";
+            const std::string result = tok(code);
+            ASSERT(result.find("template < class T > int get ( const T & t ) ;") != std::string::npos);
+            ASSERT(result.find("template < class T > int get ( const T & t ) { return t . count ; }") != std::string::npos);
+            ASSERT(result.find("int get<Bag> ( const Bag & t ) { return t . count ; }") != std::string::npos);
+        }
+        { // when all calls are instantiated the generic definition is removed as before; a
+          // function with the same name in another class is not a call
+            const char code[] = "template<class T> int get(const T& t) { return t.count; }\n"
+                                "struct Other { int get(int x); };\n"
+                                "struct Bag { int count; };\n"
+                                "int total(const Bag& b) { return get(b); }";
+            const char exp[] = "int get<Bag> ( const Bag & t ) ; "
+                               "struct Other { int get ( int x ) ; } ; "
+                               "struct Bag { int count ; } ; "
+                               "int total ( const Bag & b ) { return get<Bag> ( b ) ; } "
+                               "int get<Bag> ( const Bag & t ) { return t . count ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
     void templateTypeDeductionEnum()
     {
         { // an enum variable has the ValueType of the underlying integer type - the enum
@@ -7647,10 +7705,14 @@ private:
                             "    f(a); g(a); f(b); h(b); k(b); f(s.m); f(p->m); f(&a); f(q); f(*b); g(c ? a : a);\n"
                             "    f(i); h(a); k(a); f(a[0]); h(b[0]); k(q); h(&a[0]); k(&i);\n"
                             "}";
+        // the generic definitions stay because of the calls that are not deduced
         const char exp[] = "void f<int> ( int & x ) ; "
+                           "template < class T > void f ( T & x ) { } "
                            "template < class T > void g ( const T & x ) { } "
                            "void h<int> ( int * x ) ; "
+                           "template < class T > void h ( T * x ) { } "
                            "void k<int*> ( int * x ) ; void k<int**> ( int * * x ) ; "
+                           "template < class T > void k ( T x ) { } "
                            "struct S { int m [ 2 ] ; } ; "
                            "void test ( S s , S * p , bool c ) { "
                            "int a [ 3 ] ; int b [ 2 ] [ 3 ] ; int * q [ 2 ] ; int i ; "

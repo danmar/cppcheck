@@ -4699,11 +4699,13 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                     Token * tok = it->token();
                     tok->deleteNext(2);
                     tok->deleteThis();
-                } else if (shouldDeferRemoval(*it)) {
+                } else if (shouldDeferRemoval(*it) || hasRemainingCalls(*it)) {
                     // don't remove the declaration yet: pending type deductions may
                     // instantiate this function template again, and during the type
                     // deduction rounds the symbol database has references to these
-                    // tokens. It is removed later by removeDeferredTemplateDeclarations().
+                    // tokens. It is removed later by removeDeferredTemplateDeclarations()
+                    // - unless the template is still called without template arguments:
+                    // those calls refer to the generic definition.
                     auto it1 = mTemplateForwardDeclarationsMap.find(it->token());
                     if (it1 != mTemplateForwardDeclarationsMap.end())
                         deferRemoval(it1->second);
@@ -4871,6 +4873,75 @@ void TemplateSimplifier::rememberDirtyCallSite(Token* nameTok)
     mDirtyCallSites.push_back(nameTok);
 }
 
+// The tokens of the given template declarations, from "template" to the end of each
+// declaration
+static std::unordered_set<const Token*> declarationTokens(const std::vector<const Token*>& declarations)
+{
+    std::unordered_set<const Token*> tokens;
+    for (const Token* declTok : declarations) {
+        const Token* end = TemplateSimplifier::findTemplateDeclarationEnd(declTok);
+        if (!end)
+            continue;
+        for (const Token* tok = declTok; tok; tok = tok->next()) {
+            tokens.insert(tok);
+            if (tok == end)
+                break;
+        }
+    }
+    return tokens;
+}
+
+// Is the token the name of a plain call "f ( x )" - not a declaration "int f ( int x )"?
+static bool isPlainCall(const Token* tok)
+{
+    if (!tok->isName() || tok->isKeyword() || tok->strAt(1) != "(")
+        return false;
+    // skip the qualification: "N :: f ( x )"
+    const Token* prev = tok->previous();
+    while (Token::simpleMatch(prev, "::") && prev->previous() && prev->previous()->isName())
+        prev = prev->tokAt(-2);
+    if (!prev)
+        return false;
+    // "return f ( x )" is a call, "int f ( int x )" / "T * f ( T t )" is a declaration
+    if (Token::Match(prev, "return|case|throw|else|do|co_return|co_yield|co_await|sizeof"))
+        return true;
+    return !Token::Match(prev, "%name%|*|&|&&|>");
+}
+
+// Are there plain calls "name ( x )" of the function template left in the token list,
+// outside the tokens of its declarations? Such a call - in an uninstantiated template,
+// or with arguments whose types are unknown - could not be instantiated and refers to
+// the generic definition, so the definition must not be removed.
+static bool hasRemainingCalls(const TokenList& tokenList,
+                              const std::string& name,
+                              const std::unordered_set<const Token*>& declarations)
+{
+    for (const Token* tok = tokenList.front(); tok; tok = tok->next()) {
+        if (tok->str() == name && declarations.count(tok) == 0 && isPlainCall(tok))
+            return true;
+    }
+    return false;
+}
+
+// Is the name token the name of a function template whose calls can be written without
+// template arguments? A member function of a class template ("C < T > :: f") is
+// instantiated with its class, never from a call.
+static bool isDeducibleFunctionTemplateName(const Token* nameTok)
+{
+    return nameTok && nameTok->strAt(1) == "(" && !Token::simpleMatch(nameTok->tokAt(-2), "> ::");
+}
+
+bool TemplateSimplifier::hasRemainingCalls(const TokenAndName& declaration) const
+{
+    if (!declaration.isFunction() || !isDeducibleFunctionTemplateName(declaration.nameToken()))
+        return false;
+    std::vector<const Token*> declarations{declaration.token()};
+    const auto it = mTemplateForwardDeclarationsMap.find(declaration.token());
+    if (it != mTemplateForwardDeclarationsMap.cend())
+        declarations.push_back(it->second);
+    return ::hasRemainingCalls(mTokenList, declaration.name(), declarationTokens(declarations));
+}
+
 bool TemplateSimplifier::removeDeferredTemplateDeclarations(SymbolDatabase* symbolDatabase)
 {
     if (mDeferredRemovals.empty())
@@ -4886,18 +4957,27 @@ bool TemplateSimplifier::removeDeferredTemplateDeclarations(SymbolDatabase* symb
     }
     mDeferredRemovals.clear();
 
-    // all tokens that are going to be removed
-    std::unordered_set<const Token*> removedTokens;
+    // a function template that is still called without template arguments (the
+    // arguments could not be deduced) is kept - the calls refer to the generic definition
+    const std::unordered_set<const Token*> deferredTokens(
+        declarationTokens(std::vector<const Token*>(declarations.cbegin(), declarations.cend())));
+    std::vector<Token*> removedDeclarations;
     for (Token* declTok : declarations) {
-        const Token* end = findTemplateDeclarationEnd(declTok);
-        if (!end)
-            continue;
-        for (const Token* tok = declTok; tok; tok = tok->next()) {
-            removedTokens.insert(tok);
-            if (tok == end)
-                break;
+        const Token* nameTok = nullptr;
+        if (const Token* paramEnd = declTok->next()->findClosingBracket()) {
+            const int namepos = getTemplateNamePosition(paramEnd);
+            if (namepos > 0)
+                nameTok = paramEnd->tokAt(namepos);
         }
+        if (isDeducibleFunctionTemplateName(nameTok) && ::hasRemainingCalls(mTokenList, nameTok->str(), deferredTokens))
+            continue;
+        removedDeclarations.push_back(declTok);
     }
+    declarations = std::move(removedDeclarations);
+
+    // all tokens that are going to be removed
+    const std::unordered_set<const Token*> removedTokens(
+        declarationTokens(std::vector<const Token*>(declarations.cbegin(), declarations.cend())));
 
     // dirty call sites inside the removed declarations are gone
     mDirtyCallSites.erase(std::remove_if(mDirtyCallSites.begin(),

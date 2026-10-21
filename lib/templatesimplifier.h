@@ -449,6 +449,14 @@ private:
     void deferRemoval(Token* declTok);
 
     /**
+     * Are there calls of the function template left in the token list whose template
+     * arguments could not be deduced ("f ( x )" in an uninstantiated template, or with
+     * arguments of unknown type)? Those calls refer to the generic definition, so the
+     * declaration must not be removed after the instantiation.
+     */
+    bool hasRemainingCalls(const TokenAndName& declaration) const;
+
+    /**
      * Whether removing the given instantiated template declaration must be deferred
      * with deferRemoval() instead of removing it immediately.
      */
