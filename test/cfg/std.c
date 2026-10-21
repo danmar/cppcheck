@@ -616,6 +616,20 @@ void bufferAccessOutOfBounds_wcsncpy()
     wcsncpy(s, L"abc", 17);
 }
 
+void bufferAccessOutOfBounds_wmemcpy()
+{
+    wchar_t a[4];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    wmemcpy(a, L"abcd", 5);
+}
+
+int bufferAccessOutOfBounds_wmemcmp(const wchar_t* b)
+{
+    const wchar_t a[4] = { L'a', L'b', L'c', L'd' };
+    // cppcheck-suppress bufferAccessOutOfBounds
+    return wmemcmp(a, b, 5);
+}
+
 int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
 {
     // cppcheck-suppress nullPointer
