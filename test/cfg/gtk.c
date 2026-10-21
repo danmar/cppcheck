@@ -655,3 +655,20 @@ int g_return_val_if_reached_test(const char *s) {
 
     return 0;
 }
+
+void g_ascii_formatd_test(double d)
+{
+    // g_ascii_formatd() writes the buffer and formats exactly one double
+    gchar buf[39];
+    g_ascii_formatd(buf, sizeof(buf), "%.2f", d);
+    g_print("%s", buf);
+
+    // cppcheck-suppress invalidPrintfArgType_sint
+    g_ascii_formatd(buf, sizeof(buf), "%d", d);
+    g_print("%s", buf);
+
+    gchar small[4];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    g_ascii_formatd(small, sizeof(buf), "%.2f", d);
+    g_print("%s", small);
+}
