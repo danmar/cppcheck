@@ -318,6 +318,7 @@ private:
         TEST_CASE(templateTypeDeductionNested);      // calls inside a body created by deduction are deduced too
         TEST_CASE(templateTypeDeductionOutOfLine);   // member template defined out of line, class in a namespace
         TEST_CASE(templateTypeDeductionShadowedType); // the deduced type name means another type in the template's scope
+        TEST_CASE(templateTypeDeductionRecursion);   // recursive calls are deduced, not renamed to the current instantiation
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
         TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
         TEST_CASE(templateTypeDeductionConstPointer); // "const T *": the parameter provides the pointee const
@@ -7503,6 +7504,60 @@ private:
                                "int g ( const :: S & s ) { return f<::S> ( s ) ; } "
                                "} ; "
                                "int C :: f<::S> ( const :: S & t ) { return t . a [ 5 ] ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void templateTypeDeductionRecursion()
+    { // a call of the template inside its own body must not be renamed to the
+      // instantiation being expanded - the argument types may differ
+        { // the recursive call instantiates another type
+            const char code[] = "template<class T> int f2(T t) { long l = 0; return f2(l); }\n"
+                                "int g(int i) { return f2(i); }";
+            const char exp[] = "int f2<int> ( int t ) ; "
+                               "int f2<long> ( long t ) ; "
+                               "int g ( int i ) { return f2<int> ( i ) ; } "
+                               "int f2<int> ( int t ) { long l ; l = 0 ; return f2<long> ( l ) ; } "
+                               "int f2<long> ( long t ) { long l ; l = 0 ; return f2<long> ( l ) ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+        }
+        { // explicit template arguments at the call site: same expansion
+            const char code[] = "template<class T> int f2(T t) { long l = 0; return f2(l); }\n"
+                                "int g(int i) { return f2<int>(i); }";
+            const char exp[] = "int f2<int> ( int t ) ; "
+                               "int f2<long> ( long t ) ; "
+                               "int g ( int i ) { return f2<int> ( i ) ; } "
+                               "int f2<int> ( int t ) { long l ; l = 0 ; return f2<long> ( l ) ; } "
+                               "int f2<long> ( long t ) { long l ; l = 0 ; return f2<long> ( l ) ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        { // a literal argument
+            const char code[] = "template<class T> int f(T t) { return f(\"x\"); }\n"
+                                "int g(int i) { return f(i); }";
+            const char exp[] = "int f<int> ( int t ) ; "
+                               "int f<constchar*> ( const char * t ) ; "
+                               "int g ( int i ) { return f<int> ( i ) ; } "
+                               "int f<int> ( int t ) { return f<constchar*> ( \"x\" ) ; } "
+                               "int f<constchar*> ( const char * t ) { return f<constchar*> ( \"x\" ) ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        { // the recursion uses the same type
+            const char code[] = "template<class T> int f(T t) { if (t) return f(t - 1); return 0; }\n"
+                                "int g(int i) { return f(i); }";
+            const char exp[] = "int f<int> ( int t ) ; "
+                               "int g ( int i ) { return f<int> ( i ) ; } "
+                               "int f<int> ( int t ) { if ( t ) { return f<int> ( t - 1 ) ; } return 0 ; }";
+            ASSERT_EQUALS(exp, tok(code));
+            ASSERT_EQUALS(exp, tok(code, dinit(CheckOptions, $.templateFullRebuild = true)));
+        }
+        { // a declaration that deduction does not handle (T&&): the recursive call is
+          // renamed to the instantiation as before, it would stay unresolved otherwise
+            const char code[] = "template<class T> int f(T&& t) { return f(1); }\n"
+                                "int g(int i) { return f<int>(i); }";
+            const char exp[] = "int f<int> ( int && t ) ; "
+                               "int g ( int i ) { return f<int> ( i ) ; } "
+                               "int f<int> ( int && t ) { return f<int> ( 1 ) ; }";
             ASSERT_EQUALS(exp, tok(code));
         }
     }

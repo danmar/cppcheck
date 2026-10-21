@@ -2241,6 +2241,18 @@ bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclara
     return Token::simpleMatch(tok->tokAt(offset), scope.c_str(), scope.size());
 }
 
+// Is the call at the name token a call of the function template with deduced template
+// arguments that type deduction can handle? deducibleParameterCount is the parameter
+// count of the template, -1 when deduction does not support it.
+static bool isDeducibleCall(const Token* nameTok, int deducibleParameterCount)
+{
+    if (deducibleParameterCount < 0 || nameTok->strAt(1) != "(")
+        return false;
+    std::vector<const Token*> args;
+    getFunctionArguments(nameTok, args);
+    return args.size() == static_cast<std::size_t>(deducibleParameterCount);
+}
+
 struct newInstantiation {
     newInstantiation(Token* t, std::string s) : token(t), scope(std::move(s)) {}
     Token* token;
@@ -2263,6 +2275,8 @@ void TemplateSimplifier::expandTemplate(
     const bool isFunction = templateDeclaration.isFunction();
     const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
+    // the parameter count of a function template whose calls type deduction can handle
+    const int deducibleParameterCount = isFunction ? DeductionCache().supportedParameterCount(templateDeclaration) : -1;
 
     // the incremental symbol database update only supports expansions that copy a
     // function template (see SymbolDatabase::addSymbolsForNewTokenRanges) - everything
@@ -2854,6 +2868,13 @@ void TemplateSimplifier::expandTemplate(
                     if (Token::Match(tok3->tokAt(-3), "> friend class|struct|union")) {
                         if (copy)
                             mTokenList.addtoken(tok3);
+                    } else if (copy && tok3 != templateDeclarationNameToken &&
+                               isDeducibleCall(tok3, deducibleParameterCount)) {
+                        // a recursive call with deduced template arguments: the arguments
+                        // may have other types than this instantiation, so the call is
+                        // left to type deduction - the declaration must stay until then
+                        mTokenList.addtoken(tok3);
+                        mPendingTypeDeductions = true;
                     } else if (copy) {
                         // add namespace if necessary
                         if (!templateDeclaration.scope().empty() &&
@@ -4512,8 +4533,10 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 
     mTokenizer.calculateScopes();
 
-    // all template names expanded during this call; merged into mExpandedTemplateNames
-    // when this call is done so later calls can reuse the expansions
+    // all template names expanded during this call - an instantiation is expanded only
+    // once even though the declaration may stay for later passes (deferred removal);
+    // merged into mExpandedTemplateNames when this call is done so later calls can
+    // reuse the expansions too
     std::set<std::string> expandedTemplateNamesThisCall;
 
     unsigned int passCount = 0;
@@ -4637,8 +4660,6 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             return false;
         });
 
-        std::set<std::string> expandedtemplates;
-
         for (auto iter1 = mTemplateDeclarations.crbegin(); iter1 != mTemplateDeclarations.crend(); ++iter1) {
             if (iter1->isAlias() || iter1->isFriend())
                 continue;
@@ -4657,14 +4678,12 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                 *iter1,
                 specializations,
                 maxtime,
-                expandedtemplates);
+                expandedTemplateNamesThisCall);
             if (instantiated) {
                 mInstantiatedTemplates.push_back(*iter1);
                 mTemplateNamePos.clear(); // positions might be invalid after instantiations
             }
         }
-
-        expandedTemplateNamesThisCall.insert(expandedtemplates.cbegin(), expandedtemplates.cend());
 
         for (auto it = mInstantiatedTemplates.cbegin(); it != mInstantiatedTemplates.cend(); ++it) {
             auto decl = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&it](const TokenAndName& decl) {
