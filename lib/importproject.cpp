@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <climits>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -848,6 +849,22 @@ static std::string safeFormat(const char *fmt, Args... args) {
 #pragma clang diagnostic pop
 #endif
 
+// MSBuild evaluates the [MSBuild]::Add/Subtract/Multiply intrinsics in .NET's
+// default unchecked context, so on overflow the result wraps (two's complement).
+// Do the arithmetic on unsigned operands to get the same result without
+// signed-overflow UB.
+static long long wrapAdd(long long a, long long b) {
+    return static_cast<long long>(static_cast<unsigned long long>(a) + static_cast<unsigned long long>(b));
+}
+
+static long long wrapSub(long long a, long long b) {
+    return static_cast<long long>(static_cast<unsigned long long>(a) - static_cast<unsigned long long>(b));
+}
+
+static long long wrapMul(long long a, long long b) {
+    return static_cast<long long>(static_cast<unsigned long long>(a) * static_cast<unsigned long long>(b));
+}
+
 // Evaluate a $([ClassName]::Method(args)) static property function.
 // Returns an empty string for unknown or unimplementable functions rather
 // than throwing, so import can continue gracefully.
@@ -894,14 +911,18 @@ std::string ImportProject::applyMSBuildStaticFunction(const std::string &classNa
             long long a = 0, b = 0;
             if (toInt(args[0], a) && toInt(args[1], b)) {
                 if (caseInsensitiveStringCompare(member, "Add") == 0)
-                    return std::to_string(a + b);
+                    return std::to_string(wrapAdd(a, b));
                 if (caseInsensitiveStringCompare(member, "Subtract") == 0)
-                    return std::to_string(a - b);
+                    return std::to_string(wrapSub(a, b));
                 if (caseInsensitiveStringCompare(member, "Multiply") == 0)
-                    return std::to_string(a * b);
+                    return std::to_string(wrapMul(a, b));
                 if (caseInsensitiveStringCompare(member, "Divide") == 0) {
                     if (b == 0) {
                         addDebug("MSBuild::Divide: division by zero");
+                        return std::string();
+                    }
+                    if (a == LLONG_MIN && b == -1) {
+                        addDebug("MSBuild::Divide: integer overflow");
                         return std::string();
                     }
                     return std::to_string(a / b);
@@ -909,6 +930,10 @@ std::string ImportProject::applyMSBuildStaticFunction(const std::string &classNa
                 if (caseInsensitiveStringCompare(member, "Modulo") == 0) {
                     if (b == 0) {
                         addDebug("MSBuild::Modulo: division by zero");
+                        return std::string();
+                    }
+                    if (a == LLONG_MIN && b == -1) {
+                        addDebug("MSBuild::Modulo: integer overflow");
                         return std::string();
                     }
                     return std::to_string(a % b);
