@@ -594,6 +594,14 @@ void CheckOtherImpl::invalidPointerCastError(const Token* tok, const std::string
 // Detect redundant assignments: x = 0; x = 4;
 //---------------------------------------------------------------------------
 
+static bool isAssignmentOrInit(const Token* tok) {
+    if (tok->astParent() || !tok->astOperand1())
+        return false;
+    if (tok->isAssignmentOp() || tok->tokType() == Token::eIncDecOp)
+        return true;
+    return Token::Match(tok, "[{(]") && tok->astOperand1()->variable() && tok->astOperand1() == tok->astOperand1()->variable()->nameToken();
+}
+
 void CheckOtherImpl::checkRedundantAssignment()
 {
     if (!mSettings.severity.isEnabled(Severity::style) &&
@@ -614,75 +622,80 @@ void CheckOtherImpl::checkRedundantAssignment()
             if (Token::simpleMatch(tok, "try {"))
                 // todo: check try blocks
                 tok = tok->linkAt(1);
-            if ((tok->isAssignmentOp() || tok->tokType() == Token::eIncDecOp) && tok->astOperand1()) {
-                if (tok->astParent())
-                    continue;
+            if (!isAssignmentOrInit(tok))
+                continue;
 
-                // Do not warn about redundant initialization when rhs is trivial
-                // TODO : do not simplify the variable declarations
-                bool isInitialization = false;
-                if (Token::Match(tok->tokAt(-2), "; %var% =") && tok->tokAt(-2)->isSplittedVarDeclEq()) {
-                    isInitialization = true;
-                    bool trivial = true;
-                    visitAstNodes(tok->astOperand2(),
-                                  [&](const Token *rhs) {
-                        if (Token::simpleMatch(rhs, "{ 0 }"))
-                            return ChildrenToVisit::none;
-                        if (Token::Match(rhs, "%num%|%name%") && !rhs->varId())
-                            return ChildrenToVisit::none;
-                        if (Token::Match(rhs, ":: %name%") && rhs->hasKnownIntValue())
-                            return ChildrenToVisit::none;
-                        if (rhs->isCast())
-                            return rhs->astOperand2() ? ChildrenToVisit::op2 : ChildrenToVisit::op1;
-                        trivial = false;
-                        return ChildrenToVisit::done;
+            // Do not warn about redundant initialization when rhs is trivial
+            // TODO : do not simplify the variable declarations
+            bool isInitialization = false;
+            if ((Token::Match(tok->tokAt(-2), "; %var% =") && tok->tokAt(-2)->isSplittedVarDeclEq()) || Token::Match(tok, "[{(]")) {
+                isInitialization = true;
+                bool trivial = true;
+                visitAstNodes(tok->astOperand2(),
+                              [&](const Token *rhs) {
+                    if (Token::simpleMatch(rhs, "{ 0 }"))
+                        return ChildrenToVisit::none;
+                    if (Token::Match(rhs, "%num%|%name%") && !rhs->varId())
+                        return ChildrenToVisit::none;
+                    if (Token::Match(rhs, ":: %name%") && rhs->hasKnownIntValue())
+                        return ChildrenToVisit::none;
+                    if (rhs->isCast())
+                        return rhs->astOperand2() ? ChildrenToVisit::op2 : ChildrenToVisit::op1;
+                    trivial = false;
+                    return ChildrenToVisit::done;
+                });
+                if (trivial)
+                    continue;
+            }
+
+            const Token* rhs = tok->astOperand2();
+            // Do not warn about assignment with 0 / NULL
+            if ((rhs && MathLib::isNullValue(rhs->str())) || isNullOperand(rhs))
+                continue;
+
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
+                // todo: check references
+                continue;
+
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
+                // todo: check static variables
+                continue;
+
+            bool inconclusive = false;
+            if (tok->isCpp() && tok->astOperand1()->valueType()) {
+                // If there is a custom assignment operator => this is inconclusive
+                if (tok->astOperand1()->valueType()->typeScope) {
+                    const std::string op = "operator" + tok->str();
+                    const std::list<Function>& fList = tok->astOperand1()->valueType()->typeScope->functionList;
+                    inconclusive = std::any_of(fList.cbegin(), fList.cend(), [&](const Function& f) {
+                        return f.name() == op;
                     });
-                    if (trivial)
-                        continue;
                 }
+                // assigning a smart pointer has side effects
+                if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
+                    break;
+            }
+            if (inconclusive && !mSettings.certainty.isEnabled(Certainty::inconclusive))
+                continue;
 
-                const Token* rhs = tok->astOperand2();
-                // Do not warn about assignment with 0 / NULL
-                if ((rhs && MathLib::isNullValue(rhs->str())) || isNullOperand(rhs))
-                    continue;
+            FwdAnalysis fwdAnalysis(mSettings);
+            if (fwdAnalysis.hasOperand(tok->astOperand2(), tok->astOperand1()))
+                continue;
 
-                if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
-                    // todo: check references
-                    continue;
+            // Is there a redundant assignment?
+            const Token *start;
+            if (tok->isAssignmentOp())
+                start = tok->astOperand2();
+            else
+                start = tok->findExpressionStartEndTokens().second->next();
 
-                if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
-                    // todo: check static variables
-                    continue;
+            std::vector<const Token*> tokensToCheck{ tok->astOperand1() };
+            if (Token::simpleMatch(tok->astOperand1(), "[") && Token::simpleMatch(tok->astOperand1()->astOperand1(), "auto")) { // structured binding
+                tokensToCheck = astFlatten(tok->astOperand1()->astOperand2(), ",");
+                isInitialization = true;
+            }
 
-                bool inconclusive = false;
-                if (tok->isCpp() && tok->astOperand1()->valueType()) {
-                    // If there is a custom assignment operator => this is inconclusive
-                    if (tok->astOperand1()->valueType()->typeScope) {
-                        const std::string op = "operator" + tok->str();
-                        const std::list<Function>& fList = tok->astOperand1()->valueType()->typeScope->functionList;
-                        inconclusive = std::any_of(fList.cbegin(), fList.cend(), [&](const Function& f) {
-                            return f.name() == op;
-                        });
-                    }
-                    // assigning a smart pointer has side effects
-                    if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
-                        break;
-                }
-                if (inconclusive && !mSettings.certainty.isEnabled(Certainty::inconclusive))
-                    continue;
-
-                FwdAnalysis fwdAnalysis(mSettings);
-                if (fwdAnalysis.hasOperand(tok->astOperand2(), tok->astOperand1()))
-                    continue;
-
-                // Is there a redundant assignment?
-                const Token *start;
-                if (tok->isAssignmentOp())
-                    start = tok->astOperand2();
-                else
-                    start = tok->findExpressionStartEndTokens().second->next();
-
-                const Token * tokenToCheck = tok->astOperand1();
+            for (const Token* tokenToCheck : tokensToCheck) {
 
                 // Check if we are working with union
                 for (const Token* tempToken = tokenToCheck; Token::simpleMatch(tempToken, ".");) {
@@ -698,9 +711,10 @@ void CheckOtherImpl::checkRedundantAssignment()
                 }
 
                 // Get next assignment..
-                const Token *nextAssign = fwdAnalysis.reassign(tokenToCheck, start, scope->bodyEnd);
+                const Token* nextAssign = fwdAnalysis.reassign(tokenToCheck, start, scope->bodyEnd);
                 // extra check for union
-                if (nextAssign && tokenToCheck != tok->astOperand1()) {
+                const bool isUnion = tokenToCheck != tok->astOperand1() && !isStructuredBindingVariable(tokenToCheck->variable());
+                if (nextAssign && isUnion) {
                     nextAssign = fwdAnalysis.reassign(tok->astOperand1(), start, scope->bodyEnd);
                     // reading another member of the same union in the rhs is a use through aliasing
                     if (nextAssign && fwdAnalysis.hasOperand(nextAssign->astOperand2(), tokenToCheck))
@@ -712,7 +726,7 @@ void CheckOtherImpl::checkRedundantAssignment()
 
                 // there is redundant assignment. Is there a case between the assignments?
                 bool hasCase = false;
-                for (const Token *tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
+                for (const Token* tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
                     if (tok2->str() == "break" || tok2->str() == "return")
                         break;
                     if (tok2->str() == "case") {
@@ -722,13 +736,14 @@ void CheckOtherImpl::checkRedundantAssignment()
                 }
 
                 // warn
+                const Token* exprTok = isUnion ? tok->astOperand1() : tokenToCheck;
                 if (hasCase)
-                    redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
+                    redundantAssignmentInSwitchError(tok, nextAssign, exprTok->expressionString());
                 else if (isInitialization)
-                    redundantInitializationError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
+                    redundantInitializationError(tok, nextAssign, exprTok->expressionString(), inconclusive);
                 else {
                     diag(nextAssign);
-                    redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
+                    redundantAssignmentError(tok, nextAssign, exprTok->expressionString(), inconclusive);
                 }
             }
         }
