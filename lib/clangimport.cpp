@@ -1473,6 +1473,9 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
         AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)
             continue;
+        // there must be a token between the address and the type
+        if (child->mExtTokens.size() < 3)
+            throw InternalError(nullptr, "invalid AST node: " + child->nodeType, InternalError::AST);
         if (tokenList.back() != par1)
             addtoken(tokenList, ",");
         const Type *recordType = addTypeTokens(tokenList, child->mExtTokens.back(), nestedIn);

@@ -1461,6 +1461,10 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-CXXConstructorDecl 0x1"), AST, "invalid AST node: CXXConstructorDecl");
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-CXXMethodDecl 0x1"), AST, "invalid AST node: CXXMethodDecl");
         ASSERT_THROW_INTERNAL_EQUALS(parse("`-EnumConstantDecl 0x1"), AST, "invalid AST node: EnumConstantDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-FunctionDecl 0x1 <a.cpp:1:1, col:20> col:5 f 'int ()'\n"
+                                           "  `-ParmVarDecl 0x2 <col:1>\n"), AST, "invalid AST node: ParmVarDecl");
+        ASSERT_THROW_INTERNAL_EQUALS(parse("`-FunctionDecl 0x1 <a.cpp:1:1, col:20> col:5 f 'int ()'\n"
+                                           "  `-ParmVarDecl 0x2 'int'\n"), AST, "invalid AST node: ParmVarDecl");
     }
 };
 
