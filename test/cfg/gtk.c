@@ -679,4 +679,11 @@ void g_ascii_formatd_format_test(const gchar *format, int i)
     // cppcheck-suppress invalidFunctionArgBool
     g_ascii_formatd(buf, sizeof(buf), format, i == 1);
     g_print("%s", buf);
+
+    struct {
+        double x;
+    } s;
+    // cppcheck-suppress [uninitvar, uninitStructMember]
+    g_ascii_formatd(buf, sizeof(buf), format, s.x);
+    g_print("%s", buf);
 }
