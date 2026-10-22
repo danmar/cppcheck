@@ -35,6 +35,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <stack>
 #include <type_traits>
 #include <unordered_set>
@@ -1124,8 +1125,10 @@ static void insertDeducedType(Token* tok, const DeducedType& deduced)
     if (deduced.globalQualification)
         tok = tok->insertToken("::");
     if (!deduced.qualification.empty()) {
-        for (const std::string& part : splitString(deduced.qualification, ' '))
-            tok = tok->insertToken(part);
+        const std::vector<std::string> parts = splitString(deduced.qualification, ' ');
+        tok = std::accumulate(parts.cbegin(), parts.cend(), tok, [](Token* last, const std::string& part) {
+            return last->insertToken(part);
+        });
         tok = tok->insertToken("::");
     }
     tok = tok->insertToken(deduced.typeStr);
@@ -2230,15 +2233,15 @@ bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclara
 }
 
 // Is the call at the name token a call of the function template with deduced template
-// arguments that type deduction can handle? deducibleParameterCount is the parameter
+// arguments that type deduction can handle? deducibleParameters is the parameter
 // count of the template, -1 when deduction does not support it.
-static bool isDeducibleCall(const Token* nameTok, int deducibleParameterCount)
+static bool isDeducibleCall(const Token* nameTok, int deducibleParameters)
 {
-    if (deducibleParameterCount < 0 || nameTok->strAt(1) != "(")
+    if (deducibleParameters < 0 || nameTok->strAt(1) != "(")
         return false;
     std::vector<const Token*> args;
     getFunctionArguments(nameTok, args);
-    return args.size() == static_cast<std::size_t>(deducibleParameterCount);
+    return args.size() == static_cast<std::size_t>(deducibleParameters);
 }
 
 struct newInstantiation {
@@ -2264,8 +2267,8 @@ void TemplateSimplifier::expandTemplate(
     const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
     // the parameter count of a function template whose calls type deduction can handle
-    const int deducibleParameterCount =
-        isFunction ? ::deducibleParameterCount(DeductionCache::parseDeductionCandidate(templateDeclaration)) : -1;
+    const int deducibleParameters =
+        isFunction ? deducibleParameterCount(DeductionCache::parseDeductionCandidate(templateDeclaration)) : -1;
 
     // the incremental symbol database update only supports expansions that copy a
     // function template (see SymbolDatabase::addSymbolsForNewTokenRanges) - everything
@@ -2858,7 +2861,7 @@ void TemplateSimplifier::expandTemplate(
                         if (copy)
                             mTokenList.addtoken(tok3);
                     } else if (copy && tok3 != templateDeclarationNameToken &&
-                               isDeducibleCall(tok3, deducibleParameterCount)) {
+                               isDeducibleCall(tok3, deducibleParameters)) {
                         // a recursive call with deduced template arguments: the arguments
                         // may have other types than this instantiation, so the call is
                         // left to type deduction - the declaration must stay until then
