@@ -45,6 +45,7 @@ private:
         TEST_CASE(isnegative);
         TEST_CASE(ispositive);
         TEST_CASE(isFloat);
+        TEST_CASE(isLongDoubleOutOfDoubleRange);
         TEST_CASE(isDecimalFloat);
         TEST_CASE(isGreater);
         TEST_CASE(isGreaterEqual);
@@ -597,6 +598,16 @@ private:
         // TODO: test floating point
 
         // TODO: test with 128-bit values
+    }
+
+    void isLongDoubleOutOfDoubleRange() const {
+        ASSERT_EQUALS(true, MathLib::isLongDoubleOutOfDoubleRange("1e400L"));
+        ASSERT_EQUALS(true, MathLib::isLongDoubleOutOfDoubleRange("1.0e4931l"));
+        ASSERT_EQUALS(false, MathLib::isLongDoubleOutOfDoubleRange("1e300L"));
+        ASSERT_EQUALS(false, MathLib::isLongDoubleOutOfDoubleRange("1e10000"));
+        ASSERT_EQUALS(false, MathLib::isLongDoubleOutOfDoubleRange("1e10000f"));
+        ASSERT_EQUALS(false, MathLib::isLongDoubleOutOfDoubleRange("10L"));
+        ASSERT_EQUALS(false, MathLib::isLongDoubleOutOfDoubleRange(""));
     }
 
     void toDoubleNumber() const {

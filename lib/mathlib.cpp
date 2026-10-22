@@ -591,6 +591,13 @@ bool MathLib::isFloat(const std::string &str)
     return isDecimalFloat(str) || isFloatHex(str);
 }
 
+bool MathLib::isLongDoubleOutOfDoubleRange(const std::string &str)
+{
+    if (str.empty() || (str.back() != 'l' && str.back() != 'L') || !isFloat(str))
+        return false;
+    return std::isinf(toDoubleNumber(str));
+}
+
 bool MathLib::isDecimalFloat(const std::string &str)
 {
     if (str.empty())
