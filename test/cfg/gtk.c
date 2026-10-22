@@ -672,3 +672,11 @@ void g_ascii_formatd_test(double d)
     g_ascii_formatd(small, sizeof(buf), "%.2f", d);
     g_print("%s", small);
 }
+
+void g_ascii_formatd_format_test(const gchar *format, int i)
+{
+    gchar buf[39];
+    // cppcheck-suppress invalidFunctionArgBool
+    g_ascii_formatd(buf, sizeof(buf), format, i == 1);
+    g_print("%s", buf);
+}
