@@ -416,6 +416,14 @@ private:
      */
     void addInstantiation(Token *token, const std::string &scope);
 
+    /** forget the template declarations, instantiations etc. collected by the previous
+     * pass - they refer to a token list that has changed since */
+    void clearPassState();
+
+    /** the token simplifications that run once before the template passes: "sizeof ...",
+     * "typename", requires clauses and explicit(bool) are removed */
+    void simplifyTemplateSyntax();
+
     /** deduceFunctionTemplateArguments() parse results, cached per declaration and
      * shared by the call sites of one pass */
     struct DeductionCache;
@@ -430,16 +438,15 @@ private:
      * @param qualification qualification of the call ("A :: B" for "A :: B :: f ( 1 )")
      * @param scopeName name of the scope the call is in
      * @param functionNameMap map with all function template declarations
-     * @param deductionCache cache of the per declaration parse results, must not be null
-     * @return the qualification of the call: the given qualification, or the scope of
-     * the deduced declaration when it is in a base class and explicit qualification
-     * was inserted at the call site
+     * @param deductionCache cache of the per declaration parse results
+     * @return the qualification that was inserted at the call site: the scope of the
+     * deduced declaration when it is in a base class, empty otherwise
      */
     std::string deduceFunctionTemplateArguments(Token* tok,
-                                                std::string qualification,
+                                                const std::string& qualification,
                                                 const std::string& scopeName,
                                                 const std::multimap<std::string, const TokenAndName*>& functionNameMap,
-                                                DeductionCache* deductionCache);
+                                                DeductionCache& deductionCache);
 
     /**
      * Remember that the given instantiated function template declaration should not be

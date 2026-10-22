@@ -1477,6 +1477,12 @@ public:
      */
     void finalize();
 
+    /**
+     * The scope that is in force after the given token: the scope of the token, or the
+     * enclosing scope when the token is the closing brace of its scope.
+     */
+    static const Scope* scopeAfterToken(const Token* tok);
+
     /* returns the opening { if tok points to enum */
     static const Token* isEnumDefinition(const Token* tok);
 

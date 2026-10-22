@@ -4336,8 +4336,6 @@ void Tokenizer::simplifyTemplatesUsingTypeInformation()
     // each deduction round instead of updating them incrementally
     const bool allowIncremental = !mSettings.templateFullRebuild;
 
-    bool finalized = false;
-
     constexpr int maxRounds = 5;
     for (int round = 0; round < maxRounds; ++round) {
         if (Settings::terminated())
@@ -4349,17 +4347,16 @@ void Tokenizer::simplifyTemplatesUsingTypeInformation()
         // be removed now, so that the updated token information is already final
         if (!mTemplateSimplifier->hasPendingTypeDeductions()) {
             mTemplateSimplifier->removeDeferredTemplateDeclarations(incremental ? mSymbolDatabase : nullptr);
-            finalized = true;
+            updateOrRebuildTokenDataAfterTemplateSimplification(incremental);
+            return;
         }
         updateOrRebuildTokenDataAfterTemplateSimplification(incremental);
-        if (finalized)
-            break;
     }
-    if (!finalized) {
-        const bool incremental = allowIncremental && mTemplateSimplifier->incrementalUpdatePossible();
-        if (mTemplateSimplifier->removeDeferredTemplateDeclarations(incremental ? mSymbolDatabase : nullptr))
-            updateOrRebuildTokenDataAfterTemplateSimplification(incremental);
-    }
+    // deductions are still pending (or no round changed anything): remove the deferred
+    // declarations that are not called anymore
+    const bool incremental = allowIncremental && mTemplateSimplifier->incrementalUpdatePossible();
+    if (mTemplateSimplifier->removeDeferredTemplateDeclarations(incremental ? mSymbolDatabase : nullptr))
+        updateOrRebuildTokenDataAfterTemplateSimplification(incremental);
 }
 
 void Tokenizer::updateOrRebuildTokenDataAfterTemplateSimplification(bool incremental)
@@ -4470,27 +4467,23 @@ void Tokenizer::updateTokenDataAfterTemplateSimplification()
     // that is not covered by the new token ranges gets the scope of the preceding token.
     const Scope* lastScope = nullptr;
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (tok->scope()) {
-            lastScope = tok->scope();
-            // a namespace can consist of multiple blocks and bodyStart/bodyEnd only track the
-            // latest block - so for namespaces any closing brace with the namespace scope closes it
-            if (lastScope->nestedIn &&
-                (tok == lastScope->bodyEnd || (tok->str() == "}" && lastScope->type == ScopeType::eNamespace)))
-                lastScope = lastScope->nestedIn;
-        } else if (lastScope)
+        if (tok->scope())
+            lastScope = SymbolDatabase::scopeAfterToken(tok);
+        else if (lastScope)
             tok->scope(lastScope);
     }
 
-    // recreate the valuetypes of the changed regions
+    // recreate the valuetypes of the changed regions. Like the whole-list variant: the
+    // function and variable pointers are updated with the new valuetypes in between
     if (rebuildAll) {
         mSymbolDatabase->setValueTypeInTokenList(false);
         mSymbolDatabase->setValueTypeInTokenList(true);
     } else {
-        mSymbolDatabase->updateFunctionAndVariablePointers();
-        for (const auto& region : regions) {
+        for (const auto& region : regions)
             mSymbolDatabase->setValueTypeInTokenList(false, region.first, region.second->next());
+        mSymbolDatabase->updateFunctionAndVariablePointers();
+        for (const auto& region : regions)
             mSymbolDatabase->setValueTypeInTokenList(true, region.first, region.second->next());
-        }
     }
     mTemplateSimplifier->clearTokenChanges();
     mSymbolDatabase->validate();

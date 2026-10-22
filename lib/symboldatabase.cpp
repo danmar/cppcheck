@@ -58,6 +58,57 @@
 
 static const Type* findVariableTypeInBase(const Scope* scope, const Token* typeTok);
 
+namespace {
+    // An access specifier in a class body: "private:", "__published:", "public slots:", ..
+    struct AccessSpecifier {
+        AccessControl access = AccessControl::Public;
+        const Token* last = nullptr; // the last token of the specifier, nullptr when there is none
+    };
+}
+
+// Parse the access specifier that starts at tok. The result has no last token when tok
+// does not start an access specifier.
+static AccessSpecifier parseAccessSpecifier(const Token* tok)
+{
+    AccessSpecifier specifier;
+    if (tok->str() == "private:") {
+        specifier.access = AccessControl::Private;
+        specifier.last = tok;
+    } else if (tok->str() == "protected:") {
+        specifier.access = AccessControl::Protected;
+        specifier.last = tok;
+    } else if (tok->str() == "public:" || tok->str() == "__published:") {
+        specifier.access = AccessControl::Public;
+        specifier.last = tok;
+    } else if (Token::Match(tok, "public|protected|private %name% :")) {
+        if (tok->str() == "private")
+            specifier.access = AccessControl::Private;
+        else if (tok->str() == "protected")
+            specifier.access = AccessControl::Protected;
+        else
+            specifier.access = AccessControl::Public;
+        specifier.last = tok->tokAt(2);
+    }
+    return specifier;
+}
+
+// insert the addresses of the elements of a container into a set of pointers
+template<class Container, class Set>
+static void insertPointers(const Container& container, Set& set)
+{
+    for (const auto& element : container)
+        set.insert(&element);
+}
+
+// erase the elements of a sequence container of pointers that are in the set
+template<class Container, class Set>
+static void erasePointersIn(Container& container, const Set& set)
+{
+    container.erase(std::remove_if(container.begin(), container.end(), [&](const typename Container::value_type& p) {
+        return set.count(p) != 0;
+    }), container.end());
+}
+
 SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer)
     : mTokenizer(tokenizer)
     , mSettings(tokenizer.getSettings())
@@ -589,21 +640,10 @@ void SymbolDatabase::findAllScopes(const Token* startToken,
             const Token *declEnd = nullptr;
 
             // What section are we in..
-            if (tok->str() == "private:")
-                access[scope] = AccessControl::Private;
-            else if (tok->str() == "protected:")
-                access[scope] = AccessControl::Protected;
-            else if (tok->str() == "public:" || tok->str() == "__published:")
-                access[scope] = AccessControl::Public;
-            else if (Token::Match(tok, "public|protected|private %name% :")) {
-                if (tok->str() == "private")
-                    access[scope] = AccessControl::Private;
-                else if (tok->str() == "protected")
-                    access[scope] = AccessControl::Protected;
-                else
-                    access[scope] = AccessControl::Public;
-
-                tok = tok->tokAt(2);
+            const AccessSpecifier accessSpecifier = parseAccessSpecifier(tok);
+            if (accessSpecifier.last) {
+                access[scope] = accessSpecifier.access;
+                tok = accessSpecifier.last;
             }
 
             // class function?
@@ -1890,18 +1930,8 @@ void SymbolDatabase::removeSymbolsForTokens(const std::unordered_set<const Token
         if ((scope.classDef && removedTokens.count(scope.classDef) != 0) ||
             (scope.bodyStart && removedTokens.count(scope.bodyStart) != 0)) {
             removedScopes.insert(&scope);
-            std::transform(scope.varlist.cbegin(),
-                           scope.varlist.cend(),
-                           std::inserter(removedVariables, removedVariables.end()),
-                           [](const Variable& var) {
-                return &var;
-            });
-            std::transform(scope.enumeratorList.cbegin(),
-                           scope.enumeratorList.cend(),
-                           std::inserter(removedEnumerators, removedEnumerators.end()),
-                           [](const Enumerator& enumerator) {
-                return &enumerator;
-            });
+            insertPointers(scope.varlist, removedVariables);
+            insertPointers(scope.enumeratorList, removedEnumerators);
         }
     }
     std::unordered_set<const Function*> removedFunctions;
@@ -1915,12 +1945,7 @@ void SymbolDatabase::removeSymbolsForTokens(const std::unordered_set<const Token
             const bool definitionRemoved = function.token && removedTokens.count(function.token) != 0;
             if (!declarationRemoved && !definitionRemoved)
                 continue;
-            std::transform(function.argumentList.cbegin(),
-                           function.argumentList.cend(),
-                           std::inserter(removedVariables, removedVariables.end()),
-                           [](const Variable& arg) {
-                return &arg;
-            });
+            insertPointers(function.argumentList, removedVariables);
             if (declarationRemoved)
                 removedFunctions.insert(&function);
             else {
@@ -1964,29 +1989,14 @@ void SymbolDatabase::removeSymbolsForTokens(const std::unordered_set<const Token
         return var && removedVariables.count(var) != 0;
     },
         nullptr);
-    functionScopes.erase(std::remove_if(functionScopes.begin(),
-                                        functionScopes.end(),
-                                        [&](const Scope* scope) {
-        return removedScopes.count(scope) != 0;
-    }),
-                         functionScopes.end());
-    classAndStructScopes.erase(std::remove_if(classAndStructScopes.begin(),
-                                              classAndStructScopes.end(),
-                                              [&](const Scope* scope) {
-        return removedScopes.count(scope) != 0;
-    }),
-                               classAndStructScopes.end());
+    erasePointersIn(functionScopes, removedScopes);
+    erasePointersIn(classAndStructScopes, removedScopes);
 
     // remove from the owning scopes
     for (Scope& scope : scopeList) {
         if (removedScopes.count(&scope) != 0)
             continue;
-        scope.nestedList.erase(std::remove_if(scope.nestedList.begin(),
-                                              scope.nestedList.end(),
-                                              [&](const Scope* nested) {
-            return removedScopes.count(nested) != 0;
-        }),
-                               scope.nestedList.end());
+        erasePointersIn(scope.nestedList, removedScopes);
         for (auto it = scope.functionMap.begin(); it != scope.functionMap.end();) {
             if (removedFunctions.count(it->second) != 0)
                 it = scope.functionMap.erase(it);
@@ -2040,23 +2050,25 @@ static AccessControl accessControlAt(const Scope& classScope, const Token* tok)
             --depth;
         if (depth != 0)
             continue;
-        if (tok2->str() == "private:")
-            access = AccessControl::Private;
-        else if (tok2->str() == "protected:")
-            access = AccessControl::Protected;
-        else if (tok2->str() == "public:" || tok2->str() == "__published:")
-            access = AccessControl::Public;
-        else if (Token::Match(tok2, "public|protected|private %name% :")) {
-            if (tok2->str() == "private")
-                access = AccessControl::Private;
-            else if (tok2->str() == "protected")
-                access = AccessControl::Protected;
-            else
-                access = AccessControl::Public;
-            tok2 = tok2->tokAt(2);
+        const AccessSpecifier accessSpecifier = parseAccessSpecifier(tok2);
+        if (accessSpecifier.last) {
+            access = accessSpecifier.access;
+            tok2 = accessSpecifier.last;
         }
     }
     return access;
+}
+
+const Scope* SymbolDatabase::scopeAfterToken(const Token* tok)
+{
+    const Scope* scope = tok->scope();
+    if (!scope || !scope->nestedIn)
+        return scope;
+    // a namespace can consist of multiple blocks and bodyStart/bodyEnd only track the
+    // latest block - so for namespaces any closing brace with the namespace scope closes it
+    if (tok == scope->bodyEnd || (tok->str() == "}" && scope->type == ScopeType::eNamespace))
+        return scope->nestedIn;
+    return scope;
 }
 
 void SymbolDatabase::addSymbolsForNewTokenRanges(const std::vector<std::pair<Token*, Token*>>& newRanges)
@@ -2087,14 +2099,10 @@ void SymbolDatabase::addSymbolsForNewTokenRanges(const std::vector<std::pair<Tok
         const Token* anchor = range.first->previous();
         while (anchor && !anchor->scope())
             anchor = anchor->previous();
-        const Scope* enclosing = anchor ? anchor->scope() : &scopeList.front();
+        // an anchor that closes the enclosing scope means the new tokens are in its parent
+        const Scope* enclosing = anchor ? scopeAfterToken(anchor) : &scopeList.front();
         if (!enclosing)
             continue;
-        // an anchor that closes the enclosing scope means the new tokens are in its parent.
-        // a namespace can consist of multiple blocks and bodyStart/bodyEnd only track the
-        // latest block - so for namespaces any closing brace with the namespace scope closes it.
-        if (anchor && anchor->str() == "}" && (anchor == enclosing->bodyEnd || enclosing->type == ScopeType::eNamespace))
-            enclosing = enclosing->nestedIn ? enclosing->nestedIn : &scopeList.front();
         // in a class body the access specifier that is in force at the new tokens applies to them
         const AccessControl startAccess =
             enclosing->isClassOrStructOrUnion() ? accessControlAt(*enclosing, range.first) : AccessControl::Public;

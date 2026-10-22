@@ -38,6 +38,15 @@
 
 class ErrorLogger;
 
+// the settings with --template-full-rebuild: the symbol database etc. are recreated
+// after each template type deduction round instead of being updated incrementally
+static Settings makeFullRebuildSettings(const Settings& base)
+{
+    Settings s = base;
+    s.templateFullRebuild = true;
+    return s;
+}
+
 class TestSimplifyTemplate : public TestFixture {
 public:
     TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {}
@@ -47,15 +56,6 @@ private:
     const Settings settings1 = settingsBuilder(settings).library("std.cfg").build();
     const Settings settings1_d = settingsBuilder(settings1).debugwarnings().build();
     const Settings settings1_fr = makeFullRebuildSettings(settings1);
-
-    // used in the settings1_fr initializer - the unusedPrivateFunction check does not
-    // see usage in member initializers (suppressed in .selfcheck_suppressions)
-    static Settings makeFullRebuildSettings(const Settings& base)
-    {
-        Settings s = base;
-        s.templateFullRebuild = true;
-        return s;
-    }
 
     void run() override {
         TEST_CASE(template1);
@@ -394,15 +394,22 @@ private:
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tok_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+    std::string tok_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj(), bool varid = false) {
         const Settings& s = checkOptionsSettings(options);
         SimpleTokenizer tokenizer(s, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        return tokenizer.tokens()->stringifyList(nullptr, true);
+        if (!varid)
+            return tokenizer.tokens()->stringifyList(nullptr, true);
+        Token::stringifyOptions str_options = Token::stringifyOptions::forDebugVarId();
+        str_options.files = false;
+        str_options.linenumbers = false;
+        str_options.linebreaks = false;
+        return tokenizer.tokens()->stringifyList(str_options);
     }
 
+    // tok() with the variable ids in the output
 #define tokVarId(...) tokVarId_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokVarId_(const char* file,
@@ -410,16 +417,7 @@ private:
                           const char (&code)[size],
                           const CheckOptions& options = make_default_obj())
     {
-        const Settings& s = checkOptionsSettings(options);
-        SimpleTokenizer tokenizer(s, *this);
-
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
-
-        Token::stringifyOptions str_options = Token::stringifyOptions::forDebugVarId();
-        str_options.files = false;
-        str_options.linenumbers = false;
-        str_options.linebreaks = false;
-        return tokenizer.tokens()->stringifyList(str_options);
+        return tok_(file, line, code, options, /*varid*/ true);
     }
 
     // the function with the given name that is declared in the scope with the given

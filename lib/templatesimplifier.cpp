@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <iterator>
 #include <map>
 #include <memory>
 #include <stack>
@@ -804,6 +803,19 @@ struct ParameterShape {
     bool isConst = false;
     bool isPointer = false;
     bool isReference = false;
+
+    // Same parameter form. Template parameters are compared by position - their names
+    // may differ between a forward declaration and the definition.
+    bool operator==(const ParameterShape& other) const
+    {
+        if (templateParameterIndex != other.templateParameterIndex || isConst != other.isConst ||
+            isPointer != other.isPointer || isReference != other.isReference)
+            return false;
+        return templateParameterIndex >= 0 || typeTok->str() == other.typeTok->str();
+    }
+    bool operator!=(const ParameterShape& other) const {
+        return !(*this == other);
+    }
 };
 
 // The type deduced for a template parameter from a function call argument
@@ -830,7 +842,6 @@ struct DeducedType {
 struct DeductionCandidate {
     std::vector<const Token*> typeParameters;
     std::vector<ParameterShape> parameterShapes;
-    std::string signature;
 };
 
 // Parse a function parameter of a template declaration. The returned shape has no
@@ -1108,16 +1119,11 @@ static void insertDeducedType(Token* tok, const DeducedType& deduced)
         tok = tok->insertToken("const");
     if (deduced.globalQualification)
         tok = tok->insertToken("::");
-    const std::string& qualification = deduced.qualification;
-    for (std::string::size_type pos = 0; pos < qualification.size();) {
-        std::string::size_type end = qualification.find(' ', pos);
-        if (end == std::string::npos)
-            end = qualification.size();
-        tok = tok->insertToken(qualification.substr(pos, end - pos));
-        pos = end + 1;
-    }
-    if (!qualification.empty())
+    if (!deduced.qualification.empty()) {
+        for (const std::string& part : splitString(deduced.qualification, ' '))
+            tok = tok->insertToken(part);
         tok = tok->insertToken("::");
+    }
     tok = tok->insertToken(deduced.typeStr);
     tok->isUnsigned(deduced.isUnsigned);
     tok->isLong(deduced.isLong);
@@ -1128,13 +1134,22 @@ static void insertDeducedType(Token* tok, const DeducedType& deduced)
     }
 }
 
+// the number of function parameters when deduction can handle the parsed declaration,
+// -1 when it can not
+static int deducibleParameterCount(const DeductionCandidate& parsedCandidate)
+{
+    if (parsedCandidate.typeParameters.empty())
+        return -1;
+    return parsedCandidate.parameterShapes.size();
+}
+
+// The parse result only depends on the declaration but the deduction runs for every
+// call site, so the parse results are cached per declaration for one pass.
 struct TemplateSimplifier::DeductionCache {
     std::map<const TokenAndName*, DeductionCandidate> parsed;
 
     // Parse a candidate declaration: all parameters must have a supported form and
-    // every template parameter must be deducible from the function parameters. The
-    // signature identifies the parameter list, so a forward declaration and the
-    // definition of the same template can be recognized.
+    // every template parameter must be deducible from the function parameters.
     static DeductionCandidate parseDeductionCandidate(const TokenAndName& candidate)
     {
         if (candidate.isVariadic())
@@ -1153,15 +1168,6 @@ struct TemplateSimplifier::DeductionCache {
             if (!shape.typeTok)
                 return DeductionCandidate();
             parsedCandidate.parameterShapes.push_back(shape);
-            parsedCandidate.signature += (shape.isConst ? " const" : "");
-            // template parameters are compared by position - their names may differ
-            // between a forward declaration and the definition
-            if (shape.templateParameterIndex >= 0)
-                parsedCandidate.signature += " $" + std::to_string(shape.templateParameterIndex);
-            else
-                parsedCandidate.signature += " " + shape.typeTok->str();
-            parsedCandidate.signature += (shape.isPointer ? " *" : shape.isReference ? " &" : "");
-            parsedCandidate.signature += ",";
         }
         // every template parameter must be deducible from the function parameters
         const int typeParameterCount = parsedCandidate.typeParameters.size();
@@ -1176,9 +1182,7 @@ struct TemplateSimplifier::DeductionCache {
         return parsedCandidate;
     }
 
-    // The parse result only depends on the declaration but the deduction runs for every
-    // call site, so cache the parse result per declaration. The references stay valid
-    // when the cache grows.
+    // the references stay valid when the cache grows
     const DeductionCandidate& parsedCandidate(const TokenAndName& candidate)
     {
         const auto it = parsed.find(&candidate);
@@ -1186,33 +1190,18 @@ struct TemplateSimplifier::DeductionCache {
             return it->second;
         return parsed.emplace(&candidate, parseDeductionCandidate(candidate)).first->second;
     }
-
-    // the number of function parameters when deduction can handle the declaration, -1
-    // when it can not
-    int supportedParameterCount(const TokenAndName& candidate)
-    {
-        const DeductionCandidate& candidateParse = parsedCandidate(candidate);
-        if (candidateParse.typeParameters.empty())
-            return -1;
-        return candidateParse.parameterShapes.size();
-    }
 };
 
 std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     Token* tok,
-    std::string qualification,
+    const std::string& qualification,
     const std::string& scopeName,
     const std::multimap<std::string, const TokenAndName*>& functionNameMap,
-    DeductionCache* deductionCache)
+    DeductionCache& deductionCache)
 {
-    if (!deductionCache)
-        throw InternalError(tok,
-                            "Internal error. deduceFunctionTemplateArguments() called without a deduction cache.",
-                            InternalError::INTERNAL);
-
     const auto range = functionNameMap.equal_range(tok->str());
     if (range.first == range.second)
-        return qualification;
+        return "";
 
     std::string fullName;
     if (!qualification.empty())
@@ -1314,22 +1303,22 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
                     cppcheck::unreachable();
                 }
                 tok->insertToken("<");
-                return qualification;
+                return "";
             }
         }
     }
 
     // the remaining deduction needs the types of the argument expressions
     if (instantiationArgs.empty())
-        return qualification;
+        return "";
 
     // a call through a variable (function object, function pointer) is not a template instantiation
     if (tok->varId() != 0)
-        return qualification;
+        return "";
     // a call that the symbol database resolved to a real (non template) function must not
     // be hijacked - overload resolution against non templates is not implemented here
     if (tok->function() && !tok->function()->templateDef)
-        return qualification;
+        return "";
 
     // Without type information for this call the deduction can not be done now: either
     // the type information pass has not run yet, or the call is in a function body that
@@ -1339,10 +1328,10 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     // class - so consider all declarations with this name.
     if (!mUseTypeInformation || !tok->scope()) {
         if (std::any_of(range.first, range.second, [&](const std::pair<const std::string, const TokenAndName*>& entry) {
-            return deductionCache->supportedParameterCount(*entry.second) == instantiationArgs.size();
+            return deducibleParameterCount(deductionCache.parsedCandidate(*entry.second)) == instantiationArgs.size();
         }))
             mPendingTypeDeductions = true;
-        return qualification;
+        return "";
     }
 
     // the scopes where the call name is looked up - see CallLookupLevels
@@ -1378,7 +1367,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     for (const LookupLevel& level : lookup.levels) {
         // a non template function with the same name might be a better overload match
         if (level.scope && scopeHasNonTemplateFunction(level.scope, tok->str()))
-            return qualification;
+            return "";
         const std::string lookupName = level.scopeName.empty() ? tok->str() : (level.scopeName + " :: " + tok->str());
         for (auto pos = range.first; pos != range.second; ++pos) {
             if (pos->second->fullName() == lookupName)
@@ -1396,26 +1385,26 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     const TokenAndName* declaration = nullptr;
     const DeductionCandidate* parsedDeclaration = nullptr;
     for (const TokenAndName* candidate : candidates) {
-        if (deductionCache->supportedParameterCount(*candidate) != instantiationArgs.size())
+        const DeductionCandidate& parsed = deductionCache.parsedCandidate(*candidate);
+        if (deducibleParameterCount(parsed) != instantiationArgs.size())
             continue;
-        const DeductionCandidate& parsed = deductionCache->parsedCandidate(*candidate);
 
         if (declaration) {
             // multiple overloads could match: overload resolution is not implemented => bail out
-            if (parsed.signature != parsedDeclaration->signature)
-                return qualification;
+            if (parsed.parameterShapes != parsedDeclaration->parameterShapes)
+                return "";
             continue; // forward declaration and definition of the same template
         }
         declaration = candidate;
         parsedDeclaration = &parsed;
     }
     if (!declaration)
-        return qualification;
+        return "";
 
     // deduce the template parameters from the ValueTypes of the argument expressions
     const std::vector<const Token*> argRoots = getArguments(tok);
     if (argRoots.size() != instantiationArgs.size())
-        return qualification;
+        return "";
     std::vector<DeducedType> deducedTypes(parsedDeclaration->typeParameters.size());
     for (std::size_t i = 0; i < parsedDeclaration->parameterShapes.size(); ++i) {
         const ParameterShape& shape = parsedDeclaration->parameterShapes[i];
@@ -1425,16 +1414,16 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
         if (!vt) {
             // type information is not available (yet) for this argument
             mPendingTypeDeductions = true;
-            return qualification;
+            return "";
         }
         DeducedType deduced = argumentToDeducedType(argRoots[i], shape);
         if (deduced.typeStr.empty())
-            return qualification;
+            return "";
         DeducedType& stored = deducedTypes[shape.templateParameterIndex];
         if (!stored.typeStr.empty()) {
             // inconsistent deduction => don't deduce
             if (!(stored == deduced))
-                return qualification;
+                return "";
         } else
             stored = std::move(deduced);
     }
@@ -1447,7 +1436,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
         if (!deduced.typeScope)
             continue;
         if (!declarationScope)
-            return qualification; // cannot tell which type the name would resolve to
+            return ""; // cannot tell which type the name would resolve to
         if (deducedTypeIsShadowed(declarationScope, deduced))
             deduced.globalQualification = true;
     }
@@ -1456,15 +1445,9 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     // instantiation is matched with that declaration: "btf ( x )" => "Base :: btf ( x )"
     if (!baseClassQualification.empty()) {
         Token* const beforeQualification = tok->previous();
-        std::string::size_type offset = 0;
-        std::string::size_type pos = 0;
-        while ((pos = baseClassQualification.find(' ', offset)) != std::string::npos) {
-            tok->insertTokenBefore(baseClassQualification.substr(offset, pos - offset));
-            offset = pos + 1;
-        }
-        tok->insertTokenBefore(baseClassQualification.substr(offset));
+        for (const std::string& part : splitString(baseClassQualification, ' '))
+            tok->insertTokenBefore(part);
         tok->insertTokenBefore("::");
-        qualification = baseClassQualification;
         rememberNewTokens(beforeQualification ? beforeQualification->next() : mTokenList.front(), tok->previous());
     }
 
@@ -1481,7 +1464,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     rememberDirtyCallSite(tok);
     mTypeDeductionsMade = true;
     mChanged = true;
-    return qualification;
+    return baseClassQualification;
 }
 
 void TemplateSimplifier::getTemplateInstantiations()
@@ -1560,9 +1543,12 @@ void TemplateSimplifier::getTemplateInstantiations()
             }
 
             // look for function instantiation with type deduction
-            if (tok->strAt(1) == "(")
-                qualification =
-                    deduceFunctionTemplateArguments(tok, qualification, scopeName, functionNameMap, &deductionCache);
+            if (tok->strAt(1) == "(") {
+                const std::string insertedQualification =
+                    deduceFunctionTemplateArguments(tok, qualification, scopeName, functionNameMap, deductionCache);
+                if (!insertedQualification.empty())
+                    qualification = insertedQualification;
+            }
 
             if (!Token::Match(tok, "%name% <") ||
                 Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast"))
@@ -2164,9 +2150,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
     std::string scope = templateDeclaration.scope();
     if (insert) {
         // the qualification that is already there: "C" or "N :: C" for "N :: C :: m"
-        std::string existing;
-        for (const Token* tok2 = tokStart; tok2 != tok->previous(); tok2 = tok2->next())
-            existing += (existing.empty() ? "" : " ") + tok2->str();
+        const std::string existing = tokStart->stringifyList(tok->previous(), false);
         // fully qualified already: nothing to add
         if (scope == existing)
             return;
@@ -2276,7 +2260,8 @@ void TemplateSimplifier::expandTemplate(
     const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
     // the parameter count of a function template whose calls type deduction can handle
-    const int deducibleParameterCount = isFunction ? DeductionCache().supportedParameterCount(templateDeclaration) : -1;
+    const int deducibleParameterCount =
+        isFunction ? ::deducibleParameterCount(DeductionCache::parseDeductionCandidate(templateDeclaration)) : -1;
 
     // the incremental symbol database update only supports expansions that copy a
     // function template (see SymbolDatabase::addSymbolsForNewTokenRanges) - everything
@@ -4142,28 +4127,17 @@ void TemplateSimplifier::replaceTemplateUsage(
     }
     // remembered new token ranges that start in the erased tokens are gone
     if (!mNewTokenRanges.empty() && !removeTokens.empty()) {
-        std::unordered_set<const Token*> rangeStarts;
-        std::transform(mNewTokenRanges.cbegin(),
-                       mNewTokenRanges.cend(),
-                       std::inserter(rangeStarts, rangeStarts.end()),
-                       [](const std::pair<Token*, Token*>& range) {
-            return range.first;
-        });
-        std::unordered_set<const Token*> erasedRangeStarts;
+        std::unordered_set<const Token*> erased;
         for (const auto& removeToken : removeTokens) {
-            for (const Token* tok = removeToken.first->next(); tok && tok != removeToken.second; tok = tok->next()) {
-                if (rangeStarts.count(tok) != 0)
-                    erasedRangeStarts.insert(tok);
-            }
+            for (const Token* tok = removeToken.first->next(); tok && tok != removeToken.second; tok = tok->next())
+                erased.insert(tok);
         }
-        if (!erasedRangeStarts.empty()) {
-            mNewTokenRanges.erase(std::remove_if(mNewTokenRanges.begin(),
-                                                 mNewTokenRanges.end(),
-                                                 [&](const std::pair<Token*, Token*>& range) {
-                return erasedRangeStarts.count(range.first) != 0;
-            }),
-                                  mNewTokenRanges.end());
-        }
+        mNewTokenRanges.erase(std::remove_if(mNewTokenRanges.begin(),
+                                             mNewTokenRanges.end(),
+                                             [&](const std::pair<Token*, Token*>& range) {
+            return erased.count(range.first) != 0;
+        }),
+                              mNewTokenRanges.end());
     }
     while (!removeTokens.empty()) {
         eraseTokens(removeTokens.back().first, removeTokens.back().second);
@@ -4484,11 +4458,8 @@ void TemplateSimplifier::printOut(const std::string & text) const
     }
 }
 
-void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
+void TemplateSimplifier::simplifyTemplateSyntax()
 {
-    // reset once per call, not per pass - see mPendingTypeDeductions
-    mPendingTypeDeductions = false;
-
     // convert "sizeof ..." to "sizeof..."
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof ...")) {
@@ -4530,6 +4501,17 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             }
         }
     }
+}
+
+void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
+{
+    // reset once per call, not per pass - see mPendingTypeDeductions
+    mPendingTypeDeductions = false;
+
+    // the token simplifications only have to run once: in a type-information round
+    // every token has already been simplified
+    if (!mUseTypeInformation)
+        simplifyTemplateSyntax();
 
     mTokenizer.calculateScopes();
 
@@ -4556,15 +4538,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                 break;
 
             mChanged = usingChanged;
-            mTemplateDeclarations.clear();
-            mTemplateForwardDeclarations.clear();
-            mTemplateForwardDeclarationsMap.clear();
-            mTemplateSpecializationMap.clear();
-            mTemplatePartialSpecializationMap.clear();
-            mTemplateInstantiations.clear();
-            mInstantiatedTemplates.clear();
-            mExplicitInstantiationsToDelete.clear();
-            mTemplateNamePos.clear();
+            clearPassState();
         }
 
         getTemplateDeclarations();
@@ -4827,12 +4801,21 @@ bool TemplateSimplifier::simplifyTemplatesUsingTypeInformation(std::time_t maxti
 {
     mUseTypeInformation = true;
     mTypeDeductionsMade = false;
-    mNewTokenRanges.clear();
-    mConvertedSpecializations.clear();
-    mDirtyCallSites.clear();
+    clearTokenChanges();
     mIncrementalUpdatePossible = true;
     // start from a clean state - the state left behind by the previous
     // simplifyTemplates() call refers to a token list that has changed since
+    clearPassState();
+    mChanged = false;
+
+    simplifyTemplates(maxtime);
+
+    mUseTypeInformation = false;
+    return mTypeDeductionsMade;
+}
+
+void TemplateSimplifier::clearPassState()
+{
     mTemplateDeclarations.clear();
     mTemplateForwardDeclarations.clear();
     mTemplateForwardDeclarationsMap.clear();
@@ -4842,12 +4825,6 @@ bool TemplateSimplifier::simplifyTemplatesUsingTypeInformation(std::time_t maxti
     mInstantiatedTemplates.clear();
     mExplicitInstantiationsToDelete.clear();
     mTemplateNamePos.clear();
-    mChanged = false;
-
-    simplifyTemplates(maxtime);
-
-    mUseTypeInformation = false;
-    return mTypeDeductionsMade;
 }
 
 void TemplateSimplifier::deferRemoval(Token* declTok)
@@ -4875,7 +4852,8 @@ void TemplateSimplifier::rememberDirtyCallSite(Token* nameTok)
 
 // The tokens of the given template declarations, from "template" to the end of each
 // declaration
-static std::unordered_set<const Token*> declarationTokens(const std::vector<const Token*>& declarations)
+template<class T>
+static std::unordered_set<const Token*> declarationTokens(const std::vector<T*>& declarations)
 {
     std::unordered_set<const Token*> tokens;
     for (const Token* declTok : declarations) {
@@ -4896,6 +4874,14 @@ static bool isPlainCall(const Token* tok)
 {
     if (!tok->isName() || tok->isKeyword() || tok->strAt(1) != "(")
         return false;
+    // when the "(" has an AST it tells whether this is a call: the callee is the name,
+    // possibly qualified ("N :: f") or a member ("a . f")
+    if (const Token* callee = tok->next()->astOperand1()) {
+        while (Token::Match(callee, "::|.") && callee->astOperand2())
+            callee = callee->astOperand2();
+        return callee == tok;
+    }
+    // no AST (new tokens, or a declaration): decide from the token before the name.
     // skip the qualification: "N :: f ( x )"
     const Token* prev = tok->previous();
     while (Token::simpleMatch(prev, "::") && prev->previous() && prev->previous()->isName())
@@ -4959,25 +4945,20 @@ bool TemplateSimplifier::removeDeferredTemplateDeclarations(SymbolDatabase* symb
 
     // a function template that is still called without template arguments (the
     // arguments could not be deduced) is kept - the calls refer to the generic definition
-    const std::unordered_set<const Token*> deferredTokens(
-        declarationTokens(std::vector<const Token*>(declarations.cbegin(), declarations.cend())));
-    std::vector<Token*> removedDeclarations;
-    for (Token* declTok : declarations) {
+    const std::unordered_set<const Token*> deferredTokens = declarationTokens(declarations);
+    declarations.erase(std::remove_if(declarations.begin(), declarations.end(), [&](const Token* declTok) {
         const Token* nameTok = nullptr;
         if (const Token* paramEnd = declTok->next()->findClosingBracket()) {
             const int namepos = getTemplateNamePosition(paramEnd);
             if (namepos > 0)
                 nameTok = paramEnd->tokAt(namepos);
         }
-        if (isDeducibleFunctionTemplateName(nameTok) && ::hasRemainingCalls(mTokenList, nameTok->str(), deferredTokens))
-            continue;
-        removedDeclarations.push_back(declTok);
-    }
-    declarations = std::move(removedDeclarations);
+        return isDeducibleFunctionTemplateName(nameTok) &&
+               ::hasRemainingCalls(mTokenList, nameTok->str(), deferredTokens);
+    }), declarations.end());
 
     // all tokens that are going to be removed
-    const std::unordered_set<const Token*> removedTokens(
-        declarationTokens(std::vector<const Token*>(declarations.cbegin(), declarations.cend())));
+    const std::unordered_set<const Token*> removedTokens = declarationTokens(declarations);
 
     // dirty call sites inside the removed declarations are gone
     mDirtyCallSites.erase(std::remove_if(mDirtyCallSites.begin(),
