@@ -2951,6 +2951,27 @@ void *bufferAccessOutOfBounds_memchr(const void *s, int c, size_t n)
     return memchr(s,c,n);
 }
 
+bool bufferAccessOutOfBounds_wmemchr(wchar_t c)
+{
+    const wchar_t buf[] = {'a', 'b', 'c'};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    return wmemchr(buf, c, 5) != NULL;
+}
+
+void bufferAccessOutOfBounds_wmemset(wchar_t c)
+{
+    wchar_t buf[3];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    wmemset(buf, c, 5);
+}
+
+void bufferAccessOutOfBounds_wmemmove(const wchar_t* s)
+{
+    wchar_t d[3];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    wmemmove(d, s, 5);
+}
+
 void uninitvar_wmemchr(void)
 {
     const wchar_t *cs;
