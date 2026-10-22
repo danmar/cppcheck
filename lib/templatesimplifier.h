@@ -446,7 +446,7 @@ private:
                                                 const std::string& qualification,
                                                 const std::string& scopeName,
                                                 const std::multimap<std::string, const TokenAndName*>& functionNameMap,
-                                                DeductionCache& deductionCache);
+                                                DeductionCache* deductionCache);
 
     /**
      * Remember that the given instantiated function template declaration should not be

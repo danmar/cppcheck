@@ -1201,7 +1201,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     const std::string& qualification,
     const std::string& scopeName,
     const std::multimap<std::string, const TokenAndName*>& functionNameMap,
-    DeductionCache& deductionCache)
+    DeductionCache* deductionCache)
 {
     const auto range = functionNameMap.equal_range(tok->str());
     if (range.first == range.second)
@@ -1332,7 +1332,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     // class - so consider all declarations with this name.
     if (!mUseTypeInformation || !tok->scope()) {
         if (std::any_of(range.first, range.second, [&](const std::pair<const std::string, const TokenAndName*>& entry) {
-            return deducibleParameterCount(deductionCache.parsedCandidate(*entry.second)) == instantiationArgs.size();
+            return deducibleParameterCount(deductionCache->parsedCandidate(*entry.second)) == instantiationArgs.size();
         }))
             mPendingTypeDeductions = true;
         return "";
@@ -1389,7 +1389,7 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     const TokenAndName* declaration = nullptr;
     const DeductionCandidate* parsedDeclaration = nullptr;
     for (const TokenAndName* candidate : candidates) {
-        const DeductionCandidate& parsed = deductionCache.parsedCandidate(*candidate);
+        const DeductionCandidate& parsed = deductionCache->parsedCandidate(*candidate);
         if (deducibleParameterCount(parsed) != instantiationArgs.size())
             continue;
 
@@ -1549,7 +1549,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             // look for function instantiation with type deduction
             if (tok->strAt(1) == "(") {
                 const std::string insertedQualification =
-                    deduceFunctionTemplateArguments(tok, qualification, scopeName, functionNameMap, deductionCache);
+                    deduceFunctionTemplateArguments(tok, qualification, scopeName, functionNameMap, &deductionCache);
                 if (!insertedQualification.empty())
                     qualification = insertedQualification;
             }
