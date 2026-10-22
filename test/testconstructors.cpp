@@ -243,6 +243,7 @@ private:
         TEST_CASE(inheritedCtor8);
         TEST_CASE(inheritedCtor9);
         TEST_CASE(inheritedCtor10);
+        TEST_CASE(inheritedCtor11);
     }
 
 
@@ -4786,6 +4787,15 @@ private:
               "    int x;\n"
               "};\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void inheritedCtor11() {
+        check("namespace X { struct Base { Base(int); }; }\n"
+              "struct Derived : X::Base {\n"
+              "    using X::Base::Base;\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:20]: (warning) Member variable 'Derived::x' is not initialized in the constructor inherited from 'Base'. [uninitMemberVar]\n", errout_str());
     }
 
 };
