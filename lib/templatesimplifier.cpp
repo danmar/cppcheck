@@ -2241,7 +2241,7 @@ static bool isDeducibleCall(const Token* nameTok, int deducibleParameters)
         return false;
     std::vector<const Token*> args;
     getFunctionArguments(nameTok, args);
-    return args.size() == static_cast<std::size_t>(deducibleParameters);
+    return args.size() == deducibleParameters;
 }
 
 struct newInstantiation {
