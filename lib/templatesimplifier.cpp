@@ -805,13 +805,17 @@ struct ParameterShape {
     bool isReference = false;
 
     // Same parameter form. Template parameters are compared by position - their names
-    // may differ between a forward declaration and the definition.
+    // may differ between a forward declaration and the definition. A concrete standard
+    // type is a single token whose sign and length are flags, not part of the string.
     bool operator==(const ParameterShape& other) const
     {
         if (templateParameterIndex != other.templateParameterIndex || isConst != other.isConst ||
             isPointer != other.isPointer || isReference != other.isReference)
             return false;
-        return templateParameterIndex >= 0 || typeTok->str() == other.typeTok->str();
+        if (templateParameterIndex >= 0)
+            return true;
+        return typeTok->str() == other.typeTok->str() && typeTok->isUnsigned() == other.typeTok->isUnsigned() &&
+               typeTok->isSigned() == other.typeTok->isSigned() && typeTok->isLong() == other.typeTok->isLong();
     }
     bool operator!=(const ParameterShape& other) const {
         return !(*this == other);

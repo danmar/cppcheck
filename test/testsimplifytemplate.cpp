@@ -6929,6 +6929,35 @@ private:
             ASSERT_EQUALS(exp, tok(code));
         }
         {
+            // overloads that differ only in the sign or length of a concrete parameter:
+            // the type is one token with flags, the string alone does not tell them apart
+            const char code[] = "template<class T> T f(T a, int b) { return a + b; }\n"
+                                "template<class T> T f(T a, unsigned int b) { return a / b; }\n"
+                                "template<class T> T g(T a, long b) { return a + b; }\n"
+                                "template<class T> T g(T a, long long b) { return a / b; }\n"
+                                "template<class T> T h(T a, char b) { return a + b; }\n"
+                                "template<class T> T h(T a, signed char b) { return a / b; }\n"
+                                "int use(int x, int y) { return f(x, y) + g(x, y) + h(x, y); }";
+            const char exp[] = "template < class T > T f ( T a , int b ) { return a + b ; } "
+                               "template < class T > T f ( T a , unsigned int b ) { return a / b ; } "
+                               "template < class T > T g ( T a , long b ) { return a + b ; } "
+                               "template < class T > T g ( T a , long long b ) { return a / b ; } "
+                               "template < class T > T h ( T a , char b ) { return a + b ; } "
+                               "template < class T > T h ( T a , signed char b ) { return a / b ; } "
+                               "int use ( int x , int y ) { return f ( x , y ) + g ( x , y ) + h ( x , y ) ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            // the same parameter type spelled differently is still one overload
+            const char code[] = "template<class T> T f(T a, unsigned b);\n"
+                                "template<class T> T f(T a, unsigned int b) { return a + b; }\n"
+                                "int use(int x, unsigned y) { return f(x, y); }";
+            const char exp[] = "int f<int> ( int a , unsigned int b ) ; "
+                               "int use ( int x , unsigned int y ) { return f<int> ( x , y ) ; } "
+                               "int f<int> ( int a , unsigned int b ) { return a + b ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
             // substitution of the template would fail (SFINAE) and the non template
             // overload wins the overload resolution => don't deduce
             const char code[] = "template<class T>\n"
