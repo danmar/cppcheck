@@ -4225,6 +4225,17 @@ private:
               "    int select(DS &ds) { return select(ds, [](int) {}); }\n"
               "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #15087
+              "    int a, b;\n"
+              "};\n"
+              "int& f(S& s, bool b) {\n"
+              "    return b ? s.a : s.b;\n"
+              "}\n"
+              "int* g(U& u) {\n"
+              "    return &(u.i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {
