@@ -1553,6 +1553,8 @@ struct ImportProject::PropertyValueExpander {
 
     PropertyValueExpander(ImportProject &project, const PropertiesMap &vars, std::string str, bool unknownAsEmpty = false)
         : mProject(project), mVars(vars), mStr(std::move(str)), mUnknownAsEmpty(unknownAsEmpty) {}
+    PropertyValueExpander(const PropertyValueExpander &) = delete;
+    PropertyValueExpander &operator=(const PropertyValueExpander &) = delete;
 
     bool hasValue(const std::string &name) const {
         if (mVars.count(name))
@@ -2356,6 +2358,8 @@ class ImportProject::ConditionParser {
 public:
     ConditionParser(ImportProject &project, const std::string &condition, const PropertiesMap &properties)
         : mProject(project), mCondition(condition), mVariables(properties) {}
+    ConditionParser(const ConditionParser &) = delete;
+    ConditionParser &operator=(const ConditionParser &) = delete;
 
     bool parse() {
         const std::string value = parseOr();
@@ -3141,6 +3145,8 @@ namespace {
             , thisFileFullPath(properties["MSBuildThisFileFullPath"]) {
             setMSBuildThis(filename, properties);
         }
+        MSBuildThis(const MSBuildThis &) = delete;
+        MSBuildThis &operator=(const MSBuildThis &) = delete;
 
         static void setMSBuildThis(const std::string &filename, PropertiesMap &properties) {
             // Normalize once so all subsequent path ops can assume '/' separators.
@@ -3174,6 +3180,8 @@ namespace {
         explicit DiscoveringGuard(bool &flag) : mFlag(flag) {
             mFlag = true;
         }
+        DiscoveringGuard(const DiscoveringGuard &) = delete;
+        DiscoveringGuard &operator=(const DiscoveringGuard &) = delete;
 
         ~DiscoveringGuard() {
             mFlag = false;
@@ -3186,6 +3194,8 @@ namespace {
 
         ImportStackGuard(std::unordered_set<std::string> &stack, std::string key)
             : mStack(stack), mKey(std::move(key)) {}
+        ImportStackGuard(const ImportStackGuard &) = delete;
+        ImportStackGuard &operator=(const ImportStackGuard &) = delete;
 
         ~ImportStackGuard() {
             mStack.erase(mKey);
@@ -3204,6 +3214,8 @@ namespace {
             : mCurrent(current), mPrev(current) {
             mCurrent = std::move(next);
         }
+        CurrentFileGuard(const CurrentFileGuard &) = delete;
+        CurrentFileGuard &operator=(const CurrentFileGuard &) = delete;
 
         ~CurrentFileGuard() {
             mCurrent = std::move(mPrev);
