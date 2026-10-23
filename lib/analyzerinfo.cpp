@@ -21,7 +21,6 @@
 #include "errorlogger.h"
 #include "filesettings.h"
 #include "path.h"
-#include "utils.h"
 
 #include <array>
 #include <cstring>
@@ -197,23 +196,16 @@ std::string AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analy
 
 std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, size_t fsFileId)
 {
-    // An exact match wins, the suffix match is only a fallback for paths spelled differently than in
-    // files.txt. Otherwise "processexecutor.cpp" matches the "executor.cpp" line and both share one file.
     const std::string simplifiedSourcefile = Path::simplifyPath(sourcefile);
-    std::string suffixMatch;
     std::string line;
     while (std::getline(filesTxt,line)) {
         AnalyzerInformation::Info filesTxtInfo;
         if (!filesTxtInfo.parse(line))
             continue; // TODO: report error?
-        if (filesTxtInfo.cfg != cfg || filesTxtInfo.fsFileId != fsFileId)
-            continue;
-        if (simplifiedSourcefile == filesTxtInfo.sourceFile)
+        if (filesTxtInfo.sourceFile == simplifiedSourcefile && filesTxtInfo.cfg == cfg && filesTxtInfo.fsFileId == fsFileId)
             return filesTxtInfo.afile;
-        if (suffixMatch.empty() && endsWith(simplifiedSourcefile, filesTxtInfo.sourceFile))
-            suffixMatch = filesTxtInfo.afile;
     }
-    return suffixMatch;
+    return "";
 }
 
 std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t fsFileId)

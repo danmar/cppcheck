@@ -54,8 +54,8 @@ private:
         f.str(filesTxt);
         ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f, "./file1.c", "", 0));
 
-        // an exact match wins over a suffix match - "executor.cpp" is a suffix of
-        // "processexecutor.cpp" so both used to resolve to the same analyzer info file
+        // only an exact match is used - "executor.cpp" is a suffix of "processexecutor.cpp"
+        // so both used to resolve to the same analyzer info file
         {
             constexpr char suffixTxt[] = "executor.a1:::executor.cpp\n"
                                          "processexecutor.a2:::processexecutor.cpp\n";
@@ -75,11 +75,11 @@ private:
             ASSERT_EQUALS("executor.a2", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f2, "executor.cpp", "", 0));
         }
 
-        // a suffix match is still used when there is no exact match
+        // a path that only ends with the path in files.txt is not a match
         {
             constexpr char relTxt[] = "a.a1:::src/a.c\n";
             std::istringstream f1(relTxt);
-            ASSERT_EQUALS("a.a1", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f1, "/home/proj/src/a.c", "", 0));
+            ASSERT_EQUALS("", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f1, "/home/proj/src/a.c", "", 0));
         }
 
         // no match at all
