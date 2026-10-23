@@ -320,6 +320,7 @@ private:
         TEST_CASE(templateTypeDeductionShadowedType); // the deduced type name means another type in the template's scope
         TEST_CASE(templateTypeDeductionRecursion);   // recursive calls are deduced, not renamed to the current instantiation
         TEST_CASE(templateTypeDeductionRemainingCalls); // the generic definition stays while undeduced calls remain
+        TEST_CASE(templateTypeDeductionClassMembers);  // out of line members of a class template are not kept for pending deductions
         TEST_CASE(templateTypeDeductionEnum);        // enum arguments deduce the enum, not its underlying type
         TEST_CASE(templateTypeDeductionArray);       // array arguments: only the decayed dimension is a pointer
         TEST_CASE(templateTypeDeductionConstPointer); // "const T *": the parameter provides the pointee const
@@ -7644,6 +7645,34 @@ private:
                                "int total ( const Bag & b ) { return get<Bag> ( b ) ; } "
                                "int get<Bag> ( const Bag & t ) { return t . count ; }";
             ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void templateTypeDeductionClassMembers()
+    { // a pending deduction (id) keeps function templates until the deduction rounds are
+      // done - but not the out of line members of a class template: those are expanded
+      // with their class, and keeping them lets the bogus instantiation V<U> (from the
+      // parameter of the member template) copy them as well
+        const char code[] = "template<class T> struct V {\n"
+                            "    V();\n"
+                            "    V(T i);\n"
+                            "    template<class U> V(const V<U>& r);\n"
+                            "    T m;\n"
+                            "};\n"
+                            "template<class T> V<T>::V() : m(0) {}\n"
+                            "template<class T> V<T>::V(T newI) : m(newI) {}\n"
+                            "template<class T> template<class U> V<T>::V(const V<U>& r) : m(r.m) {}\n"
+                            "template<class T> T id(T x) { return x; }\n"
+                            "using VF = V<float>;\n"
+                            "float f(const VF& v) { return VF(v.m).m; }\n"
+                            "float g(float x) { return id(x); }";
+        for (const bool fullRebuild : { false, true }) {
+            const std::string result = tok(code, dinit(CheckOptions, $.templateFullRebuild = fullRebuild));
+            ASSERT_EQUALS(std::string::npos, result.find("template < class T > V < T > :: V ("));
+            ASSERT_EQUALS(std::string::npos, result.find("V<U> :: V<U> ( )"));
+            ASSERT_EQUALS(std::string::npos, result.find("V<U> :: V<U> ( U newI )"));
+            ASSERT(result.find("V<float> :: V<float> ( float newI ) : m ( newI ) { }") != std::string::npos);
+            ASSERT(result.find("float id<float> ( float x ) { return x ; }") != std::string::npos);
         }
     }
 

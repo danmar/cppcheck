@@ -4924,6 +4924,19 @@ static bool isDeducibleFunctionTemplateName(const Token* nameTok)
     return nameTok && nameTok->strAt(1) == "(" && !Token::simpleMatch(nameTok->tokAt(-2), "> ::");
 }
 
+bool TemplateSimplifier::shouldDeferRemoval(const TokenAndName& declaration) const
+{
+    // during the type deduction rounds the symbol database refers to the tokens of the
+    // declarations
+    if (mUseTypeInformation)
+        return true;
+    // a pending type deduction can instantiate the function template again - but not a
+    // member of a class template: that is expanded with its class, and keeping the
+    // generic definition would let a later class instantiation copy it
+    return mPendingTypeDeductions && declaration.isFunction() &&
+           isDeducibleFunctionTemplateName(declaration.nameToken());
+}
+
 bool TemplateSimplifier::hasRemainingCalls(const TokenAndName& declaration) const
 {
     if (!declaration.isFunction() || !isDeducibleFunctionTemplateName(declaration.nameToken()))

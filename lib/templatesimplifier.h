@@ -467,10 +467,7 @@ private:
      * Whether removing the given instantiated template declaration must be deferred
      * with deferRemoval() instead of removing it immediately.
      */
-    bool shouldDeferRemoval(const TokenAndName& declaration) const
-    {
-        return mUseTypeInformation || (mPendingTypeDeductions && declaration.isFunction());
-    }
+    bool shouldDeferRemoval(const TokenAndName& declaration) const;
 
     /** remember tokens that were added during a type-information round so the symbol
      * database can be updated incrementally */
