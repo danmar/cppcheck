@@ -28,7 +28,6 @@
 #include <exception>
 #include <iostream>
 #include <map>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -52,45 +51,11 @@ static std::string getFilename(const std::string &fullpath)
     return fullpath.substr(pos1,pos2);
 }
 
-void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings, bool merge)
+void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings)
 {
     const std::string filesTxt(buildDir + "/files.txt");
-
-    std::string keptLines;
-    std::map<std::string, unsigned int> fileCount;
-
-    if (merge) {
-        std::set<std::string> current;
-        for (const std::string &f : sourcefiles)
-            current.insert(Path::simplifyPath(f));
-        for (const FileSettings &fs : fileSettings)
-            current.insert(Path::simplifyPath(fs.filename()));
-
-        std::ifstream fin(filesTxt);
-        std::string line;
-        while (std::getline(fin, line)) {
-            Info info;
-            if (!info.parse(line))
-                continue;
-            if (current.count(info.sourceFile))
-                continue;
-            keptLines += line + '\n';
-
-            const std::string::size_type dotA = info.afile.rfind(".a");
-            if (dotA != std::string::npos) {
-                const std::string base = info.afile.substr(0, dotA);
-                unsigned int n = 0;
-                if (strToInt(info.afile.substr(dotA + 2), n)) {
-                    unsigned int &count = fileCount[base];
-                    count = std::max(count, n);
-                }
-            }
-        }
-    }
-
     std::ofstream fout(filesTxt);
-    fout << keptLines;
-    fout << getFilesTxt(sourcefiles, fileSettings, fileCount);
+    fout << getFilesTxt(sourcefiles, fileSettings);
 }
 
 void AnalyzerInformation::writeIncludes(const std::set<std::string> &files)
@@ -155,8 +120,10 @@ void AnalyzerInformation::writeHash(std::size_t hash)
     }
 }
 
-std::string AnalyzerInformation::getFilesTxt(const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings, std::map<std::string, unsigned int> fileCount) {
+std::string AnalyzerInformation::getFilesTxt(const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings) {
     std::ostringstream ret;
+
+    std::map<std::string, unsigned int> fileCount;
 
     for (const std::string &f : sourcefiles) {
         const std::string afile = getFilename(f);
@@ -230,15 +197,23 @@ std::string AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analy
 
 std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, size_t fsFileId)
 {
+    // An exact match wins, the suffix match is only a fallback for paths spelled differently than in
+    // files.txt. Otherwise "processexecutor.cpp" matches the "executor.cpp" line and both share one file.
+    const std::string simplifiedSourcefile = Path::simplifyPath(sourcefile);
+    std::string suffixMatch;
     std::string line;
     while (std::getline(filesTxt,line)) {
         AnalyzerInformation::Info filesTxtInfo;
         if (!filesTxtInfo.parse(line))
             continue; // TODO: report error?
-        if (endsWith(sourcefile, filesTxtInfo.sourceFile) && filesTxtInfo.cfg == cfg && filesTxtInfo.fsFileId == fsFileId)
+        if (filesTxtInfo.cfg != cfg || filesTxtInfo.fsFileId != fsFileId)
+            continue;
+        if (simplifiedSourcefile == filesTxtInfo.sourceFile)
             return filesTxtInfo.afile;
+        if (suffixMatch.empty() && endsWith(simplifiedSourcefile, filesTxtInfo.sourceFile))
+            suffixMatch = filesTxtInfo.afile;
     }
-    return "";
+    return suffixMatch;
 }
 
 std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t fsFileId)

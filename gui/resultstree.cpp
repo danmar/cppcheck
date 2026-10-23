@@ -1203,8 +1203,15 @@ void ResultsTree::updateSettings(bool showFullPath,
 
 void ResultsTree::setCheckDirectory(const QString &dir)
 {
+    if (mCheckPath == dir)
+        return;
+
     mCheckPath = dir;
-    refreshFilePaths();
+
+    // A partial recheck keeps results whose displayed paths are relative to the check path, so
+    // they are recalculated. Not without a check path, QDir("") would turn absolute paths into "../..".
+    if (!mCheckPath.isEmpty())
+        refreshFilePaths();
 }
 
 const QString& ResultsTree::getCheckDirectory() const
