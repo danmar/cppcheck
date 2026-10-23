@@ -102,6 +102,18 @@ void CheckFunctionsImpl::functionCalledError(const Token* tok, Severity severity
     reportError(tok, severity, prefix + "Called", msg, CWE477, Certainty::normal);
 }
 
+static bool hasArgMinReadSize(const Token *ftok, int argnr, const Library &library)
+{
+    if (library.getArgDirection(ftok, argnr) == Library::ArgumentChecks::Direction::DIR_IN) {
+        if (const std::vector<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes(ftok, argnr)) {
+            return std::any_of(minsizes->begin(), minsizes->end(), [](const Library::ArgumentChecks::MinSize &ms) {
+                return ms.type == Library::ArgumentChecks::MinSize::Type::ARGVALUE;
+            });
+        }
+    }
+    return false;
+}
+
 //---------------------------------------------------------------------------
 // Check <valid>, <strz> and <not-bool>
 //---------------------------------------------------------------------------
@@ -137,7 +149,7 @@ void CheckFunctionsImpl::invalidFunctionUsage()
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings.library.validarg(functionToken, argnr));
                 }
                 // check <strz>
-                if (mSettings.library.isargstrz(functionToken, argnr)) {
+                if (mSettings.library.isargstrz(functionToken, argnr) && !hasArgMinReadSize(functionToken, argnr, mSettings.library)) {
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
                         const Variable * variable = argtok->next()->variable();

@@ -4575,6 +4575,47 @@ def test_analyzerinfo(tmp_path):
     # - internalError
 
 
+def test_analyzerinfo_include_order(tmp_path):  # #15132
+    with open(tmp_path / 'z.h', 'wt') as f:
+        f.write('int z;\n')
+    with open(tmp_path / 'a.h', 'wt') as f:
+        f.write('int a;\n')
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#include "z.h"
+#include "a.h"
+int f(void) { return a + z; }
+""")
+
+    build_dir = tmp_path / 'b1'
+    os.makedirs(build_dir)
+
+    args = [
+        '-q',
+        '--debug-analyzerinfo',
+        '--cppcheck-build-dir={}'.format(build_dir),
+        str(test_file)
+    ]
+
+    test_file_s = str(test_file).replace('\\', '/')
+    test_a1_file_s = str(build_dir / 'test.a1').replace('\\', '/')
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        "no cached result '{}' for '{}' found".format(test_a1_file_s, test_file_s)
+    ]
+    assert stderr.splitlines() == []
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        "skipping analysis - loaded 0 cached finding(s) from '{}' for '{}'".format(test_a1_file_s, test_file_s)
+    ]
+    assert stderr.splitlines() == []
+
+
 def test_ctu_function_call_path_slash(tmp_path):  # #14591
     test_file = tmp_path / 'test.cpp'
     with open(test_file, "w") as f:
