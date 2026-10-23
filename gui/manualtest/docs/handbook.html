@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gui-test Handbook</title>
+<style>
+:root {
+  --ink: #1b2330; --ink-2: #4a5568; --muted: #6b7686; --line: #e2e6ec; --line-2: #cfd6df; --paper: #fff; --band: #f5f7fa;
+  --accent: #2456c8; --accent-soft: #e8eefb;
+  --sans: system-ui, -apple-system, "Segoe UI", Ubuntu, Cantarell, Roboto, sans-serif;
+  --mono: ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.6 var(--sans); }
+.page { display: grid; grid-template-columns: 14rem minmax(0, 1fr); gap: 3rem; max-width: 72rem; margin: 0 auto;
+        padding: 2rem max(16px, 2rem) 4rem; }
+nav { position: sticky; top: 1.5rem; align-self: start; font-size: .88rem; }
+nav .eyebrow { margin-bottom: .5rem; }
+nav ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .15rem; }
+nav a { color: var(--ink-2); text-decoration: none; display: block; padding: .2rem .5rem; border-radius: 5px; }
+nav a:hover { background: var(--band); color: var(--ink); }
+nav ol ol { padding-left: .8rem; font-size: .82rem; }
+main { min-width: 0; max-width: 46rem; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
+h1 { font-size: 2rem; margin: 0; }
+h2 { font-size: 1.35rem; margin: 2.8rem 0 .6rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+h3 { font-size: 1.05rem; margin: 1.8rem 0 .4rem; }
+p { margin: .6rem 0; }
+.eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; color: var(--muted); font-weight: 600; }
+.lead { font-size: 1.08rem; color: var(--ink-2); margin-top: .8rem; }
+.updated { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: .86em; background: var(--band); border-radius: 4px; padding: .05em .3em; }
+pre { background: var(--band); border: 1px solid var(--line); border-radius: 8px; padding: .8rem 1rem; overflow-x: auto; font-size: .85rem; line-height: 1.5; }
+pre code { background: none; padding: 0; font-size: inherit; }
+ul, ol { padding-left: 1.4rem; }
+li { margin: .25rem 0; }
+.tbl { overflow-x: auto; margin: .8rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th { text-align: left; font-size: .78rem; color: var(--muted); font-weight: 600; padding: .4rem .7rem; border-bottom: 1px solid var(--line-2); }
+td { padding: .5rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:first-child { white-space: nowrap; }
+td.wrap { white-space: normal; }
+figure { margin: 1.2rem 0; }
+figure svg, figure img { display: block; width: 100%; height: auto; }
+figure img { border: 1px solid var(--line); border-radius: 8px; }
+figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
+@media (max-width: 800px) { .page { grid-template-columns: 1fr; gap: 1rem; } nav { position: static; } }
+</style>
+</head>
+<body>
+<div class="page">
+<nav aria-label="Contents">
+  <div class="eyebrow">Contents</div>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#getting-started">Getting started</a></li>
+    <li><a href="#writing-tests">Writing tests</a>
+      <ol><li><a href="#test-matrix">Test matrix</a></li><li><a href="#test-projects">Test projects</a></li></ol></li>
+    <li><a href="#scripts">Scripts</a>
+      <ol><li><a href="#generating">Generating a script</a></li><li><a href="#script-format">The script format</a></li><li><a href="#outdated">Outdated scripts</a></li></ol></li>
+    <li><a href="#running">Running tests</a></li>
+    <li><a href="#report">Reading the report</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ol>
+</nav>
+<main>
+<div class="eyebrow">gui-test</div>
+<h1>gui-test Handbook</h1>
+<p class="lead">gui-test turns the manual test descriptions for cppcheck-gui into automated tests: Claude explores the GUI once and writes a script, and from then on the script is replayed without any AI.</p>
+<p class="updated">Updated 2026-10-22</p>
+
+<h2 id="overview">Overview</h2>
+<p>A test is written in plain words: steps and an expected result. <code>gen.py</code> starts the application, lets Claude do the test by hand through <code>guitest.py</code>, and saves what it did as a script of <code>do</code> and <code>expect</code> steps. <code>run.py</code> replays the scripts, one fresh application per test, and writes an HTML report. <code>web.py</code> is the web interface around all of it.</p>
+
+<figure>
+<svg viewBox="0 0 760 310" role="img" aria-label="Claude writes the script once, every run replays it without AI" font-family="system-ui, sans-serif" font-size="13">
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa4b2"/></marker></defs>
+  <text x="24" y="34" font-size="15" font-weight="600" fill="#1b2330">Claude writes the script once, every run replays it without AI</text>
+  <g fill="none" stroke="#9aa4b2" stroke-width="1.25">
+    <path d="M184 130H208" marker-end="url(#arrow)"/>
+    <path d="M372 130H392" marker-end="url(#arrow)"/>
+    <path d="M520 130H552" marker-end="url(#arrow)"/>
+    <path d="M456 90V74H290V102" marker-end="url(#arrow)"/>
+    <path d="M634 158V234" marker-end="url(#arrow)"/>
+    <path d="M552 262H538" marker-end="url(#arrow)"/>
+  </g>
+  <rect x="20" y="102" width="164" height="56" rx="8" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
+  <text x="102" y="126" text-anchor="middle" font-weight="600" fill="#1b2330">A test in words</text>
+  <text x="102" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">steps, expected result</text>
+  <rect x="208" y="102" width="164" height="56" rx="8" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
+  <text x="290" y="126" text-anchor="middle" font-weight="600" fill="#1b2330">gen.py</text>
+  <text x="290" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">Claude does it once</text>
+  <polygon points="392,130 456,90 520,130 456,170" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
+  <text x="456" y="134" text-anchor="middle" fill="#1b2330">Replay passes?</text>
+  <rect x="552" y="102" width="164" height="56" rx="8" fill="#e8eefb" stroke="#2456c8" stroke-width="2"/>
+  <text x="634" y="126" text-anchor="middle" font-weight="600" fill="#1b2330">Script saved</text>
+  <text x="634" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">in the test file</text>
+  <rect x="552" y="234" width="164" height="56" rx="8" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
+  <text x="634" y="258" text-anchor="middle" font-weight="600" fill="#1b2330">run.py</text>
+  <text x="634" y="276" text-anchor="middle" font-size="11.5" fill="#4a5568">replays it, no AI</text>
+  <rect x="374" y="234" width="164" height="56" rx="8" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
+  <text x="456" y="258" text-anchor="middle" font-weight="600" fill="#1b2330">report.html</text>
+  <text x="456" y="276" text-anchor="middle" font-size="11.5" fill="#4a5568">and results.json</text>
+  <text x="536" y="122" text-anchor="middle" font-size="11.5" fill="#4a5568">yes</text>
+  <text x="373" y="66" text-anchor="middle" font-size="11.5" fill="#4a5568">no: Claude gets the reason, up to 3 tries</text>
+  <text x="644" y="200" font-size="11.5" fill="#4a5568">every run</text>
+</svg>
+<figcaption>From a test in words to a report: gen.py once, run.py every run.</figcaption>
+</figure>
+
+<p>The application runs in its own Xvfb display with its own D-Bus and accessibility bus, so your desktop is never touched. Elements are found through AT-SPI by their accessible name and role, not by screen positions.</p>
+<div class="tbl"><table>
+<thead><tr><th>Part</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><code>web.py</code></td><td>Web interface: edit test files and test projects, generate scripts, run tests, open reports</td></tr>
+<tr><td><code>gen.py</code></td><td>Claude drives the GUI once per test and writes its script; the script is saved only if a replay passes</td></tr>
+<tr><td><code>run.py</code></td><td>Replays the scripts without AI and writes the report and <code>results.json</code></td></tr>
+<tr><td><code>runner.py</code></td><td>Executes one script step by step, used by both <code>gen.py</code> and <code>run.py</code></td></tr>
+<tr><td><code>guitest.py</code></td><td>Command line tool that starts the session and clicks, types and reads the GUI</td></tr>
+<tr><td><code>testfile.py</code></td><td>The test file format, test matrices, test projects and outdated-script detection</td></tr>
+<tr><td><code>report.py</code></td><td>Writes the HTML report</td></tr>
+<tr><td><code>tests/</code></td><td>The test files (<code>*.json</code>) and test projects (<code>tests/projects/NAME</code>)</td></tr>
+<tr><td><code>results/</code></td><td>One directory per run with the report, logs and screenshots</td></tr>
+</tbody></table></div>
+
+<h2 id="getting-started">Getting started</h2>
+<p>Start <code>web.py</code> with the cppcheck-gui binaries you want to test, then open <a href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> in a browser.</p>
+<pre><code>./web.py --opensource ~/cppcheck/build/bin/cppcheck-gui \
+         --premium ~/premium/build/bin/cppcheck-gui --src ~/cppcheck</code></pre>
+<ul>
+  <li><code>--opensource</code> and <code>--premium</code> each take the binary of that edition. Give one, both or none; without a binary you can edit tests but not generate or run them.</li>
+  <li><code>--src</code> is the git checkout the binaries are built from. It is only used for the git SHA, branch and commit in the report; the default is the directory of the binary.</li>
+  <li><code>--dir</code> (default <code>tests</code>), <code>--out</code> (default <code>results</code>) and <code>--port</code> (default 8080) change where test files and results live and which port is used. The server only listens on 127.0.0.1.</li>
+</ul>
+<p>The tools the session needs must be installed: Xvfb, xdotool, dbus-daemon, the AT-SPI bus launcher and Python with the GObject bindings and Pillow. <code>tesseract</code> is only needed for <code>ocr</code> checks, and the <code>claude</code> command line tool only for generating scripts. On Ubuntu (checked on 26.04) they come from these packages:</p>
+<pre><code>sudo apt install xvfb xdotool dbus at-spi2-core python3-gi gir1.2-atspi-2.0 python3-pil tesseract-ocr tesseract-ocr-eng</code></pre>
+<div class="tbl"><table>
+<thead><tr><th>Package</th><th>Needed for</th></tr></thead>
+<tbody>
+<tr><td><code>xvfb</code></td><td>The virtual display the application runs in</td></tr>
+<tr><td><code>xdotool</code></td><td>Keyboard input and mouse clicks</td></tr>
+<tr><td><code>dbus</code></td><td>The session's own D-Bus (<code>dbus-daemon</code>)</td></tr>
+<tr><td><code>at-spi2-core</code></td><td>The accessibility bus (<code>/usr/libexec/at-spi-bus-launcher</code>)</td></tr>
+<tr><td><code>python3-gi</code>, <code>gir1.2-atspi-2.0</code></td><td>Python access to AT-SPI, to find and read elements</td></tr>
+<tr><td><code>python3-pil</code></td><td>Screenshots, and cropping them for the report</td></tr>
+<tr><td><code>tesseract-ocr</code>, <code>tesseract-ocr-eng</code></td><td>Only for <code>ocr</code> checks</td></tr>
+</tbody></table></div>
+
+<h3>The web interface</h3>
+<ul>
+  <li><strong>Left column:</strong> the test files and the test projects. The ▶ button next to a file runs all tests in it.</li>
+  <li><strong>Header:</strong> Save, Run all (every test in every file), the edition picker (opensource, premium or both) and a status message.</li>
+  <li><strong>Main area:</strong> the open test file, the open test or test project. Each has an ✕ in the top right corner to close it.</li>
+  <li><strong>Job box:</strong> while a script is generated or tests run, it shows the progress, the results as they come and a link to the report. Its ✕ hides it until the next job.</li>
+</ul>
+
+<h2 id="writing-tests">Writing tests</h2>
+<p>A test is written as if for a person: steps in plain words and the result to expect. Claude reads exactly these words when it makes the script, so be concrete.</p>
+<p>Tests live in test files (<code>tests/*.json</code>), one file per area of the GUI. Click a file in the left column to see its title and its tests, <strong>New file</strong> to create one, or <strong>Import .md</strong> to convert an older markdown test file (sections <code>## Test: NAME</code>). Click a test in the list to edit it, <strong>+ New test</strong> to add one. Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes.</p>
+<div class="tbl"><table>
+<thead><tr><th>Field</th><th>What to write</th></tr></thead>
+<tbody>
+<tr><td>Name</td><td>Unique within the file. Shown in reports and the history, so a rename starts a new history line</td></tr>
+<tr><td>Ticket</td><td>Optional, e.g. a Trac ticket number</td></tr>
+<tr><td>enabled</td><td>Untick to leave the test out of every run without deleting it</td></tr>
+<tr><td>Editions</td><td>The editions the test runs in; default both. The script is the same for all, <code>{edition}</code> is replaced by the edition's name</td></tr>
+<tr><td>Steps</td><td>One step per line, e.g. "Open File &gt; New project file". Use <code>{axis}</code> for matrix values</td></tr>
+<tr><td>Expected result</td><td>What must be true at the end. Every part becomes a check in the script</td></tr>
+<tr><td>TODO</td><td>Why a test can't be automated yet, e.g. "cannot be automated". Leave empty otherwise</td></tr>
+<tr><td>Test projects</td><td>The projects whose files the test uses, see below</td></tr>
+<tr><td>Test matrix</td><td>Axes with comma-separated values; every combination is a separate run</td></tr>
+</tbody></table></div>
+
+<h3 id="test-matrix">Test matrix</h3>
+<p>An axis named <code>platform</code> with the values <code>native, unix32</code> and an axis <code>lang</code> with <code>C, C++</code> give 4 runs. A step like "Select platform {platform}" gets the value of each run. The runs are named after the test plus the values, e.g. <code>Relative paths [platform=unix32, lang=C]</code>, and each one gets its own line in the report. The editor shows how many runs a matrix gives.</p>
+
+<h3 id="test-projects">Test projects</h3>
+<p>A test project is a directory of files that tests use: source files, a <code>.cppcheck</code> project file, a <code>.cfg</code> file. They live in <code>tests/projects/NAME</code> and are edited under <strong>Test projects</strong> in the left column. Before every run the project is copied to a new empty directory, so a test always starts with the same files, even if an earlier test changed them. In a script the copy is <code>{project:NAME}</code>, or <code>{project}</code> when the test has only one project.</p>
+<p>Changing a file in a project makes the scripts of the tests that use it outdated, because the script was made for the old files.</p>
+
+<h2 id="scripts">Scripts</h2>
+<p>A test runs only when it has an up-to-date script. Generate it with Claude once, check it, and from then on it is replayed without AI.</p>
+
+<h3 id="generating">Generating a script</h3>
+<p>Open the test and press <strong>Generate script</strong>. <code>gen.py</code> starts the application with the test projects in place, and Claude does the test by hand: it looks at the accessibility tree, clicks and types, and checks the expected result. It then answers with a script. The script is replayed from scratch and saved in the test file only if that replay passes. When the replay fails, Claude is told why and tries again, 3 attempts in all. While a script is generated the editor is locked.</p>
+<ul>
+  <li>A matrix test is explored with the first combination. The script uses <code>{axis}</code> where the values belong.</li>
+  <li>When the application does not do what the expected result says, Claude still writes the script that checks it and marks that one check <code>"observed_fail": true</code>. The script is saved, and the test fails until the bug is fixed. That is a finding, not a broken script.</li>
+  <li>When the test can't be done through the GUI, Claude answers <code>CANNOT: &lt;reason&gt;</code> and no script is saved.</li>
+</ul>
+<p>Read the generated script before you trust it, especially its <code>expect</code> steps: they decide what the test proves.</p>
+
+<h3 id="script-format">The script format</h3>
+<p>A script is a JSON list of steps. Each step has <code>do</code> (an action) or <code>expect</code> (a check), and a <code>label</code> in the words of the test that is shown when it fails. Elements are found by <code>name</code> (part of the accessible name, case-insensitive) and <code>role</code>, and if needed <code>path</code>, <code>nth</code> and <code>exact</code>.</p>
+<pre><code>[
+  {"do": "click", "name": "Help", "role": "menu item", "label": "Open the Help menu"},
+  {"do": "click", "name": "Contents", "role": "menu item", "label": "Choose Help &gt; Contents"},
+  {"expect": "visible", "name": "Cppcheck GUI help", "role": "dialog", "label": "A help window opens"}
+]</code></pre>
+<div class="tbl"><table>
+<thead><tr><th>Step</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td class="wrap"><code>do</code>: <code>click</code>, <code>rightclick</code>, <code>doubleclick</code>, <code>focus</code>, <code>hover</code></td><td>Act on an element; <code>"mouse": true</code> clicks with the mouse</td></tr>
+<tr><td><code>do</code>: <code>settext</code></td><td>Replace the text of an edit field with <code>value</code></td></tr>
+<tr><td><code>do</code>: <code>type</code>, <code>key</code></td><td>Keyboard input to the focused element; <code>keys</code> uses xdotool names like <code>ctrl+o</code>, <code>Return</code></td></tr>
+<tr><td><code>do</code>: <code>wait</code></td><td>Wait for an element to appear, or with <code>"gone": true</code> to disappear</td></tr>
+<tr><td><code>do</code>: <code>restart</code></td><td>Quit and start the application again; settings are kept</td></tr>
+<tr><td><code>do</code>: <code>sleep</code>, <code>write</code>, <code>copy</code></td><td>Pause, write a file in <code>{work}</code>, or copy a file in a test project</td></tr>
+<tr><td><code>expect</code>: <code>visible</code>, <code>gone</code></td><td>An element is shown, or is not</td></tr>
+<tr><td><code>expect</code>: <code>state</code></td><td>An element is or is not <code>checked</code>, <code>enabled</code>, <code>focused</code>, <code>selected</code>, <code>expanded</code>...</td></tr>
+<tr><td><code>expect</code>: <code>value</code></td><td>The value or text of a field equals something</td></tr>
+<tr><td><code>expect</code>: <code>text</code>, <code>ocr</code></td><td>Text is (not) on the screen; <code>ocr</code> reads pixels with tesseract, for context menus AT-SPI can't see</td></tr>
+<tr><td><code>expect</code>: <code>file</code></td><td>A file contains, does not contain or matches a regex</td></tr>
+<tr><td><code>expect</code>: <code>alive</code>, <code>exited</code></td><td>The application is still running, or has quit by itself with status 0</td></tr>
+<tr><td><code>expect</code>: <code>capture</code></td><td>Search <code>regex</code> in an element and save group 1 <code>as</code> a name; <code>{name}</code> in the later steps is replaced by it, for text that changes such as the version</td></tr>
+</tbody></table></div>
+<p>Checks and actions wait for their element up to <code>timeout</code> seconds, 5 by default. The placeholders <code>{work}</code>, <code>{home}</code>, <code>{project:NAME}</code>, <code>{axis}</code> and <code>{edition}</code> are replaced before the run, captured values when the capture step has passed. The full description is under <strong>How to write a script</strong> below the script in the editor.</p>
+
+<h3 id="outdated">Outdated scripts</h3>
+<p>A script is made for the test's steps, expected result, TODO, matrix and the files of its test projects. When any of those change, the script is <strong>OUTDATED</strong>: it is kept but skipped by every run, and the editor says so in red. You then have three choices:</p>
+<ol>
+  <li><strong>Generate script</strong> again.</li>
+  <li><strong>Approve the script</strong> when the change does not affect it, e.g. a typo fix in a step.</li>
+  <li>Edit the script by hand in the editor; it has to be valid JSON before you can save.</li>
+</ol>
+
+<h2 id="running">Running tests</h2>
+<p>Every test starts a fresh application with an empty HOME and fresh copies of its test projects, so tests never depend on each other.</p>
+
+<h3>From the web interface</h3>
+<p>Pick the edition in the header first: opensource, premium or both. Then:</p>
+<ul>
+  <li><strong>Run test</strong> in an open test runs that test, all its matrix combinations.</li>
+  <li><strong>▶</strong> next to a test file runs every test in that file.</li>
+  <li><strong>Run all</strong> runs every test in every file.</li>
+</ul>
+<p>With "both", the run is done for one edition and then the other, and each edition gets its own report. The job box shows the test and step that is running and the results as they come. <strong>Stop</strong> ends the run at once: the test that was running is SKIP "aborted by user", and the report is written with the tests that are done. Only one job runs at a time.</p>
+
+<h3>From the command line</h3>
+<pre><code>./run.py ~/cppcheck/build/bin/cppcheck-gui tests/application.json tests/projects.json --edition opensource</code></pre>
+<div class="tbl"><table>
+<thead><tr><th>Option</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>APP</code></td><td>The binary to test</td></tr>
+<tr><td><code>FILE ...</code></td><td>One or more test files</td></tr>
+<tr><td><code>--edition opensource|premium</code></td><td>APP is this edition; only the tests for it run. Without it all tests run and there is no history per edition</td></tr>
+<tr><td><code>--test TEXT</code></td><td>Only tests whose name contains TEXT (case-insensitive)</td></tr>
+<tr><td><code>--id ID</code></td><td>Only the test with this id, all its matrix combinations</td></tr>
+<tr><td><code>--src DIR</code></td><td>Git checkout for the SHA in the report; default the directory of APP</td></tr>
+<tr><td><code>--out DIR</code></td><td>Where the run directories go; default <code>results</code></td></tr>
+</tbody></table></div>
+<p><code>run.py</code> prints one line per test and the path of the report, and exits with 1 when a test failed, so it can be used in a script or CI job. Scripts are generated the same way with <code>./gen.py APP FILE.json</code>; it takes <code>--edition</code>, <code>--test</code>, <code>--id</code>, <code>--force</code> (also tests that have a script), <code>--model</code> and <code>--attempts</code>.</p>
+
+<h3>What happens in a run</h3>
+<ol>
+  <li>The tests to run are selected: enabled, for this edition, not filtered out. Tests without a script, or with an outdated one, are SKIP.</li>
+  <li>For each test, a new Xvfb session starts, the test projects are copied, and the application is started.</li>
+  <li>The script is replayed step by step. After every step that acts on the GUI (click, type, key, settext, restart...) a screenshot is saved.</li>
+  <li>At the end, or at the first failing step, the step log, a final screenshot and the application log are saved, and the log is searched for a crash.</li>
+  <li>After the last test, <code>results.json</code> and <code>report.html</code> are written in the run directory.</li>
+</ol>
+
+<h2 id="report">Reading the report</h2>
+<p>Each run writes one self-contained <code>report.html</code>; read it top-down: the verdict first, then what changed, then the details of each failure.</p>
+<figure>
+  <img src="report.png" alt="The top of a report: verdict, run details, number boxes, results per test file, the last runs and the status history" loading="lazy">
+  <figcaption>The top of a report from three runs of two test files.</figcaption>
+</figure>
+<div class="tbl"><table>
+<thead><tr><th>Part</th><th>What it tells you</th></tr></thead>
+<tbody>
+<tr><td>Header</td><td>FAILED or PASSED with the count, and the run details: date, edition, duration, git SHA ("+ uncommitted changes" when the checkout was dirty), branch, commit, application, host, test files</td></tr>
+<tr><td>Number boxes</td><td>Passed, failed (how many crashed the app), skipped, duration, and with history the change against the previous run</td></tr>
+<tr><td>Results per test file</td><td>A bar per file, green/red/amber. Shows whether failures are in one part of the GUI. Only when the run has more than one file</td></tr>
+<tr><td>The last runs</td><td>Pass, fail and skip counts for up to 15 runs of the same edition; the number on a column is its failures</td></tr>
+<tr><td class="wrap">Changed since the previous run</td><td>NEW failures, tests that are fixed, and tests that are STILL FAILING</td></tr>
+<tr><td>Status history</td><td>A row per test that did not pass in every run: "new failure", "failing since 10/22 12:00 (b8b27a)", "fixed since", "flaky: 4 changes", "never ran"</td></tr>
+<tr><td class="wrap">Failed and skipped tests</td><td>A card per test: the reason, the step strip, the screenshots after the last 3 steps and the final screen with a red frame</td></tr>
+<tr><td>All tests</td><td>Every test grouped by file, with its time, links to its files and its step screenshots</td></tr>
+</tbody></table></div>
+
+<h3>The step strip</h3>
+<p>Every test has a strip with a cell per script step: green passed, red failed, grey not run. A failure at step 2 of 14 usually means the test or the application broke early. A failure at the last step usually means one check is wrong, or the bug the check describes. Under the strip it says e.g. "failed at step 9 of 14", "not run" or "did not start".</p>
+
+<h3>Files in a run directory</h3>
+<p>A run directory is <code>results/&lt;date&gt;-&lt;time&gt;-&lt;edition&gt;-&lt;sha&gt;/</code>, e.g. <code>20261022-120317-opensource-b8b27a95/</code>. The test name becomes the file name, with everything but letters, digits and <code>_</code> turned into <code>_</code>.</p>
+<div class="tbl"><table>
+<thead><tr><th>File</th><th>Content</th></tr></thead>
+<tbody>
+<tr><td><code>report.html</code></td><td>The report</td></tr>
+<tr><td><code>results.json</code></td><td>The run details and every result. The history is read from these files</td></tr>
+<tr><td><code>NAME.txt</code></td><td>The step log: each step, ok or FAIL, its time and its screenshot</td></tr>
+<tr><td><code>NAME.png</code></td><td>The screen at the end of the test, or when it failed</td></tr>
+<tr><td><code>NAME.stepNN.png</code></td><td>The screen after step NN, for steps that act on the GUI</td></tr>
+<tr><td><code>NAME.app.log</code></td><td>What the application printed</td></tr>
+</tbody></table></div>
+<p>The history only uses runs of the same edition in the same <code>--out</code> directory that have a <code>results.json</code>. Runs made before 22 Oct 2026 don't have one and are left out. Tests are matched by name.</p>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Start with the reason in the report and the final screenshot: together they usually say whether the application, the script or the test is wrong.</p>
+<div class="tbl"><table>
+<thead><tr><th>What you see</th><th>What it means and what to do</th></tr></thead>
+<tbody>
+<tr><td class="wrap">SKIP "no script"</td><td>The test has no script yet. Generate one, or write it by hand</td></tr>
+<tr><td class="wrap">SKIP "OUTDATED SCRIPT"</td><td>The test or one of its test projects changed after the script was made. Generate again, or approve the script if the change doesn't matter to it</td></tr>
+<tr><td class="wrap">FAIL "timeout waiting for element to appear"</td><td>An element with that name and role wasn't found within the timeout. The reason lists the most similar visible elements and the open windows: a renamed button shows up there. Fix the name in the script, or regenerate</td></tr>
+<tr><td class="wrap">FAIL with <code>observed_fail=True</code> in the reason</td><td>Claude saw the application not do what the expected result says when it made the script. It is a known bug, and the test fails until the bug is fixed</td></tr>
+<tr><td class="wrap">FAIL with CRASH</td><td>The application was not running at the end of the test, or its log has a fatal message (SIGSEGV, SIGABRT, an assertion, AddressSanitizer, QFATAL...). A crash fails the test even if every step passed. Read <code>NAME.app.log</code>. A test that quits the application with status 0 is not a crash</td></tr>
+<tr><td class="wrap">FAIL "could not start"</td><td>The session or the application did not start. Check that the packages under <a href="#getting-started">Getting started</a> are installed, and that the binary runs</td></tr>
+<tr><td class="wrap">"flaky" in the status history</td><td>The test changes between PASS and FAIL. Usually timing: give the slow step a longer <code>timeout</code>, or add a <code>wait</code> step before it</td></tr>
+<tr><td class="wrap">A context menu can't be found</td><td>Some menus are not in the accessibility tree. Check them with an <code>ocr</code> step and choose with <code>key</code> Down and Return</td></tr>
+<tr><td class="wrap">"path ... is outside the test directories"</td><td><code>write</code>, <code>copy</code> and <code>file</code> steps may only use <code>{work}</code>, <code>{home}</code> and the test project copies</td></tr>
+<tr><td class="wrap">Generate script or Run test is greyed out</td><td><code>web.py</code> has no binary for the edition picked in the header, or the test is not for that edition. Run test also needs an up-to-date script</td></tr>
+</tbody></table></div>
+
+<h2 id="reference">Reference</h2>
+<p>The commands, with all their options. <code>web.py</code>, <code>run.py</code>, <code>gen.py</code> and <code>guitest.py</code> also print their help with <code>--help</code>.</p>
+<pre><code>web.py [--opensource APP] [--premium APP] [--src DIR] [--dir tests] [--out results] [--port 8080]
+run.py APP FILE.json... [--edition opensource|premium] [--test TEXT] [--id ID] [--src DIR] [--out results]
+gen.py APP FILE.json [--edition opensource|premium] [--test TEXT] [--id ID] [--force] [--model M] [--attempts 3]
+testfile.py convert IN.md OUT.json</code></pre>
+
+<h3>guitest.py</h3>
+<p><code>guitest.py</code> is what Claude uses to drive the GUI, and you can use it by hand to look at the GUI the way a script sees it. The session lives in <code>$GUITEST_STATE</code> (default <code>/tmp/guitest-&lt;uid&gt;/state.json</code>).</p>
+<pre><code>guitest.py start ~/cppcheck/build/bin/cppcheck-gui
+guitest.py tree --showing --depth 3
+guitest.py click --name Help --role "menu item"
+guitest.py screenshot /tmp/screen.png
+guitest.py stop</code></pre>
+<div class="tbl"><table>
+<thead><tr><th>Command</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><code>start APP [ARGS]</code></td><td>Start Xvfb, D-Bus, AT-SPI and the application. <code>--home DIR</code> (default an empty directory), <code>--size 1280x900</code></td></tr>
+<tr><td><code>stop</code>, <code>restart</code></td><td>Stop everything; quit and start the application again with its settings kept</td></tr>
+<tr><td><code>alive</code>, <code>log</code></td><td>Exit 0 if the application runs; print what it wrote to stdout and stderr</td></tr>
+<tr><td><code>windows</code>, <code>texts</code></td><td>The top level windows and dialogs; every visible text</td></tr>
+<tr><td><code>tree</code></td><td>The accessibility tree. <code>--showing</code> only visible elements, <code>--depth N</code>, <code>--path P</code> one subtree</td></tr>
+<tr><td class="wrap"><code>click</code>, <code>rightclick</code>, <code>doubleclick</code>, <code>focus</code>, <code>hover</code></td><td>Act on an element found with <code>--name</code>, <code>--role</code>, <code>--path</code>, <code>--nth</code>, <code>--exact</code>. <code>--mouse</code> for a real mouse click</td></tr>
+<tr><td class="wrap"><code>settext VALUE</code>, <code>type VALUE</code>, <code>key KEYS</code></td><td>Set a field's text; type into the focused element; press keys (xdotool names)</td></tr>
+<tr><td><code>wait</code></td><td>Wait for an element, <code>--timeout 10</code>, <code>--gone</code> to wait until it disappears</td></tr>
+<tr><td><code>info</code>, <code>suggest</code></td><td>Role, name, text, value and states of one element; the visible elements most like <code>--name</code>/<code>--role</code></td></tr>
+<tr><td><code>ocr</code>, <code>screenshot FILE</code></td><td>Text on the screen read by tesseract; a PNG of the screen</td></tr>
+</tbody></table></div>
+</main>
+</div>
+</body>
+</html>
