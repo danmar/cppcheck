@@ -204,6 +204,7 @@ private:
         TEST_CASE(duplicateExpression20);
         TEST_CASE(duplicateExpression21);
         TEST_CASE(duplicateExpression22);
+        TEST_CASE(duplicateExpression23); // #12282
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateValueTernarySizeof); // #13773
@@ -8494,6 +8495,17 @@ private:
               "    const int o = p->i;\n"
               "    t.modify();\n"
               "    if (p->i == o) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void duplicateExpression23() { // #12282
+        // long double literals out of the range of double are different values
+        check("long double f() {\n"
+              "    return 1e400L / 1e500L;\n"
+              "}\n"
+              "int g(long double x) {\n"
+              "    return x == 1e400L || x == 1e500L;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
