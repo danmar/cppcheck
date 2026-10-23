@@ -13532,6 +13532,24 @@ private:
 
         check("struct S { void g(float f) {} void f() {} };\n");
         ASSERT_EQUALS("[test.cpp:1:36] -> [test.cpp:1:25]: (style) Argument 'f' shadows outer function [shadowFunction]\n", errout_str());
+
+        check("int f() {\n" // #15114
+              "    int i = 0;\n"
+              "    return i;\n"
+              "}\n"
+              "int i = 1;\n");
+        ASSERT_EQUALS("", errout_str());
+
+        {
+            ScopedFile inc("test.h", "int pad1;\nint pad2;\nint pad3;\nint pad4;\nfloat f;\n");
+            checkP("void g() {\n"
+                   "    #include \"test.h\"\n"
+                   "    {\n"
+                   "        float f;\n"
+                   "    }\n"
+                   "}\n");
+            ASSERT_EQUALS("[test.h:5:7] -> [test.cpp:4:15]: (style) Local variable 'f' shadows outer variable [shadowVariable]\n", errout_str());
+        }
     }
 
     void knownArgument() {
