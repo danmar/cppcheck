@@ -35,7 +35,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <numeric>
 #include <stack>
 #include <type_traits>
 #include <unordered_set>
@@ -826,7 +825,7 @@ struct ParameterShape {
 // The type deduced for a template parameter from a function call argument
 struct DeducedType {
     std::string typeStr;                // base type, e.g. "int" or "MyClass"
-    std::string qualification;          // enclosing scopes of record and enum types, "N :: A"
+    std::vector<std::string> qualification; // enclosing scopes of record and enum types, {"N", "A"}
     const Scope* typeScope = nullptr;   // the scope of a record or enum type
     bool globalQualification = false;   // write the type with a leading "::"
     unsigned int constness = 0;         // bit 0 = data const, bit 1 = first '*' const, ..
@@ -909,16 +908,27 @@ static bool isUndecayedArray(const Token* tok, bool decay, std::size_t consumed 
     return false;
 }
 
-// The qualified name of a scope ("N :: A"). Empty when the scope or an enclosing scope
-// cannot be named (anonymous namespaces, local classes, ..).
+// The names of a scope and its enclosing scopes, outermost first ({"N", "A"} for
+// "N :: A"). Each name is one token - the name of a class template instantiation
+// contains spaces ("A < int >"). Empty when the scope or an enclosing scope cannot be
+// named (anonymous namespaces, local classes, ..).
+static std::vector<std::string> scopeQualificationNames(const Scope* scope)
+{
+    std::vector<std::string> names;
+    for (const Scope* it = scope; it && it->type != ScopeType::eGlobal; it = it->nestedIn) {
+        if (it->className.empty() || (!it->isClassOrStructOrUnion() && it->type != ScopeType::eNamespace))
+            return std::vector<std::string>();
+        names.insert(names.begin(), it->className);
+    }
+    return names;
+}
+
+// The qualified name of a scope ("N :: A"), see scopeQualificationNames()
 static std::string scopeQualifiedName(const Scope* scope)
 {
     std::string name;
-    for (const Scope* it = scope; it && it->type != ScopeType::eGlobal; it = it->nestedIn) {
-        if (it->className.empty() || (!it->isClassOrStructOrUnion() && it->type != ScopeType::eNamespace))
-            return "";
-        name = name.empty() ? it->className : (it->className + " :: " + name);
-    }
+    for (const std::string& scopeName : scopeQualificationNames(scope))
+        name += (name.empty() ? "" : " :: ") + scopeName;
     return name;
 }
 
@@ -931,7 +941,7 @@ static DeducedType deducedScopeType(DeducedType deduced, const Scope* typeScope)
     if (!typeScope->isClassOrStructOrUnion() && typeScope->type != ScopeType::eEnum)
         return DeducedType();
     const Scope* const enclosing = typeScope->nestedIn;
-    deduced.qualification = scopeQualifiedName(enclosing);
+    deduced.qualification = scopeQualificationNames(enclosing);
     if (deduced.qualification.empty() && enclosing && enclosing->type != ScopeType::eGlobal)
         return DeducedType(); // local types etc. cannot be named - bail out
     deduced.typeStr = typeScope->className;
@@ -1124,11 +1134,8 @@ static void insertDeducedType(Token* tok, const DeducedType& deduced)
         tok = tok->insertToken("const");
     if (deduced.globalQualification)
         tok = tok->insertToken("::");
-    if (!deduced.qualification.empty()) {
-        const std::vector<std::string> parts = splitString(deduced.qualification, ' ');
-        tok = std::accumulate(parts.cbegin(), parts.cend(), tok, [](Token* last, const std::string& part) {
-            return last->insertToken(part);
-        });
+    for (const std::string& scopeName : deduced.qualification) {
+        tok = tok->insertToken(scopeName);
         tok = tok->insertToken("::");
     }
     tok = tok->insertToken(deduced.typeStr);
@@ -1452,9 +1459,10 @@ std::string TemplateSimplifier::deduceFunctionTemplateArguments(
     // instantiation is matched with that declaration: "btf ( x )" => "Base :: btf ( x )"
     if (!baseClassQualification.empty()) {
         Token* const beforeQualification = tok->previous();
-        for (const std::string& part : splitString(baseClassQualification, ' '))
-            tok->insertTokenBefore(part);
-        tok->insertTokenBefore("::");
+        for (const std::string& baseScopeName : scopeQualificationNames(declarationScope)) {
+            tok->insertTokenBefore(baseScopeName);
+            tok->insertTokenBefore("::");
+        }
         rememberNewTokens(beforeQualification ? beforeQualification->next() : mTokenList.front(), tok->previous());
     }
 
@@ -2179,11 +2187,12 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
             inTemplate = true;
             ++level;
         }
+        // the name of a class template instantiation is one token: "A < int >"
         if (inTemplate) {
             if (insert)
-                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + token);
+                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + " " + token);
             else
-                mTokenList.back()->str(mTokenList.back()->str() + token);
+                mTokenList.back()->str(mTokenList.back()->str() + " " + token);
             if (token == ">") {
                 --level;
                 if (level == 0)
@@ -2204,13 +2213,13 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
             if (!inTemplate)
                 mTokenList.back()->tokAt(offset)->insertToken(scope.substr(start));
             else
-                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + scope.substr(start));
+                mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + " " + scope.substr(start));
             mTokenList.back()->tokAt(offset)->insertToken("::");
         } else {
             if (!inTemplate)
                 mTokenList.addtoken(scope.substr(start), tok->linenr(), tok->column(), tok->fileIndex());
             else
-                mTokenList.back()->str(mTokenList.back()->str() + scope.substr(start));
+                mTokenList.back()->str(mTokenList.back()->str() + " " + scope.substr(start));
             mTokenList.addtoken("::", tok->linenr(), tok->column(), tok->fileIndex());
         }
     }

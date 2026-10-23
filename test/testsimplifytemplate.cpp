@@ -6770,6 +6770,36 @@ private:
             ASSERT_EQUALS(exp, tok(code));
         }
         {
+            // the base class is a class template instantiation: its name is one token
+            const char code[] = "template<class T> struct A {\n"
+                                "    template<class U> void put(U* p) const { *p = 1; }\n"
+                                "};\n"
+                                "struct B : A<int> {\n"
+                                "    void h() const { long* p = nullptr; put(p); }\n"
+                                "};";
+            const char exp[] = "struct A<int> ; "
+                               "struct B : A<int> { "
+                               "void h ( ) const { long * p ; p = nullptr ; A<int> :: put<long> ( p ) ; } "
+                               "} ; "
+                               "struct A<int> { "
+                               "void put<long> ( long * p ) const ; "
+                               "} ; "
+                               "void A<int> :: put<long> ( long * p ) const { * p = 1 ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            // a deduced type that is nested in a class template instantiation
+            const char code[] = "template<class T> struct A { struct In { int v; }; };\n"
+                                "template<class U> U* id(U* u) { return u; }\n"
+                                "void g(A<int>::In* x) { id(x); }";
+            const char exp[] = "struct A<int> ; "
+                               "A<int> :: In * id<A<int>::In> ( A<int> :: In * u ) ; "
+                               "void g ( A<int> :: In * x ) { id<A<int>::In> ( x ) ; } "
+                               "struct A<int> { struct In { int v ; } ; } ; "
+                               "A<int> :: In * id<A<int>::In> ( A<int> :: In * u ) { return u ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
             // transitive base classes across namespaces, in inline and in
             // out of class member function bodies; a derived class member
             // template shadows the base class one

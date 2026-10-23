@@ -547,6 +547,7 @@ private:
         TEST_CASE(findFunction63); // #14937 - member function of type returned by operator()
         TEST_CASE(findFunction64); // overloaded operator()
         TEST_CASE(findFunction65);
+        TEST_CASE(findFunction66); // member template of a class template instantiation
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionRef2); // #13328
         TEST_CASE(findFunctionContainer);
@@ -9003,6 +9004,22 @@ private:
             ASSERT(g && g->function());
             ASSERT_EQUALS(2, g->function()->tokenDef->linenr());
         }
+    }
+
+    void findFunction66()
+    { // the out of line definition of a member template instantiation is linked to the
+      // declaration in the class template instantiation
+        GET_SYMBOL_DB("template<class T> struct A {\n"
+                      "    template<class U> void put(U* p) const { *p = 1; }\n"
+                      "};\n"
+                      "void g(const A<int>& a) { long* p = nullptr; a.put<long>(p); }\n");
+        const Token* call = Token::findsimplematch(tokenizer.tokens(), "a .");
+        ASSERT(call);
+        call = call->tokAt(2);
+        ASSERT_EQUALS("put < long >", call->str());
+        ASSERT(call->function() && call->function()->hasBody());
+        ASSERT(call->function()->functionScope);
+        ASSERT(Token::simpleMatch(call->function()->functionScope->bodyStart, "{ * p = 1 ; }"));
     }
 
     void findFunctionRef1() {
