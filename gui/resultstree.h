@@ -29,6 +29,7 @@
 #include <string>
 
 #include <QObject>
+#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QTreeView>
@@ -572,8 +573,8 @@ private:
 
     QStringList mHiddenMessageId;
 
-    // List of existing errors so we can avoid duplicates
-    QStringList mErrorList;
+    // Set of existing errors so we can avoid duplicates
+    QSet<QString> mErrorList;
 
     QItemSelectionModel* mSelectionModel{};
     ThreadHandler *mThread{};

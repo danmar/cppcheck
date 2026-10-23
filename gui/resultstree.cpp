@@ -246,7 +246,7 @@ bool ResultsTree::addErrorItem(const ErrorItem& errorItem)
     const QString s = errorItem.toString();
     if (mErrorList.contains(s))
         return false;
-    mErrorList.append(s);
+    mErrorList.insert(s);
 
     QSharedPointer<ErrorItem> errorItemPtr{new ErrorItem(errorItem)};
 
@@ -1137,7 +1137,7 @@ void ResultsTree::removeFileErrorsFromErrorList(const ResultItem *fileItem)
     for (int i{0}; i < fileItem->rowCount(); ++i) {
         const auto *errorItem = dynamic_cast<const ResultItem*>(fileItem->child(i, COLUMN_FILE));
         if (errorItem && errorItem->errorItem)
-            mErrorList.removeAll(errorItem->errorItem->toString());
+            mErrorList.remove(errorItem->errorItem->toString());
     }
 }
 
