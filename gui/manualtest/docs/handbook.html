@@ -57,6 +57,8 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
   <ol>
     <li><a href="#overview">Overview</a></li>
     <li><a href="#getting-started">Getting started</a></li>
+    <li><a href="#gherkin">Gherkin</a>
+      <ol><li><a href="#gherkin-keywords">Keywords</a></li><li><a href="#gherkin-tags">Tags</a></li><li><a href="#gherkin-style">Writing good steps</a></li><li><a href="#gherkin-differences">Differences from Cucumber</a></li></ol></li>
     <li><a href="#writing-tests">Writing tests</a>
       <ol><li><a href="#test-matrix">Examples (test matrix)</a></li><li><a href="#test-projects">Test projects</a></li></ol></li>
     <li><a href="#scripts">Scripts</a>
@@ -70,8 +72,8 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <main>
 <div class="eyebrow">gui-test</div>
 <h1>gui-test Handbook</h1>
-<p class="lead">gui-test turns the manual test descriptions for cppcheck-gui into automated tests: Claude explores the GUI once and writes a script, and from then on the script is replayed without any AI.</p>
-<p class="updated">Updated 2026-10-22</p>
+<p class="lead">The manual tests for cppcheck-gui are written in Gherkin, the plain-language Given/When/Then format. gui-test turns them into automated tests: Claude explores the GUI once and writes a script, and from then on the script is replayed without any AI.</p>
+<p class="updated">Updated 2026-10-24</p>
 
 <h2 id="overview">Overview</h2>
 <p>A test is written in Gherkin: a scenario with Given, When and Then steps in plain words. <code>gen.py</code> starts the application, lets Claude do the test by hand through <code>guitest.py</code>, and saves what it did as a script of <code>do</code> and <code>expect</code> steps. <code>run.py</code> replays the scripts, one fresh application per test, and writes an HTML report. <code>web.py</code> is the web interface around all of it.</p>
@@ -98,7 +100,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
   <text x="456" y="134" text-anchor="middle" fill="#1b2330">Replay passes?</text>
   <rect x="552" y="102" width="164" height="56" rx="8" fill="#e8eefb" stroke="#2456c8" stroke-width="2"/>
   <text x="634" y="126" text-anchor="middle" font-weight="600" fill="#1b2330">Script saved</text>
-  <text x="634" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">in the test file</text>
+  <text x="634" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">in FILE.scripts.json</text>
   <rect x="552" y="234" width="164" height="56" rx="8" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
   <text x="634" y="258" text-anchor="middle" font-weight="600" fill="#1b2330">run.py</text>
   <text x="634" y="276" text-anchor="middle" font-size="11.5" fill="#4a5568">replays it, no AI</text>
@@ -121,7 +123,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <tr><td><code>run.py</code></td><td>Replays the scripts without AI and writes the report and <code>results.json</code></td></tr>
 <tr><td><code>runner.py</code></td><td>Executes one script step by step, used by both <code>gen.py</code> and <code>run.py</code></td></tr>
 <tr><td><code>guitest.py</code></td><td>Command line tool that starts the session and clicks, types and reads the GUI</td></tr>
-<tr><td><code>testfile.py</code></td><td>The test file format, test matrices, test projects and outdated-script detection</td></tr>
+<tr><td><code>testfile.py</code></td><td>The Gherkin parser and writer, Examples, test projects and outdated-script detection</td></tr>
 <tr><td><code>report.py</code></td><td>Writes the HTML report</td></tr>
 <tr><td><code>tests/</code></td><td>The test files (<code>*.feature</code>), their scripts (<code>*.scripts.json</code>) and test projects (<code>tests/projects/NAME</code>)</td></tr>
 <tr><td><code>results/</code></td><td>One directory per run with the report, logs and screenshots</td></tr>
@@ -158,6 +160,91 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
   <li><strong>Job box:</strong> while a script is generated or tests run, it shows the progress, the results as they come and a link to the report. Its ✕ hides it until the next job.</li>
 </ul>
 
+<h2 id="gherkin">Gherkin</h2>
+<p>The manual tests are written in <a href="https://cucumber.io/docs/gherkin/reference/" target="_blank">Gherkin</a>, the language that Cucumber, behave and other behaviour-driven development tools use. Gherkin describes behaviour in plain words with a small set of keywords, so a test reads the same for a developer, a tester and Claude. Each test file in <code>tests/</code> is a <code>.feature</code> file with one feature, and every scenario in it is one test.</p>
+<pre><code>Feature: Preferences
+
+  Background:
+    Given the application is started with no project loaded
+
+  @id:t28ce8afe @project:embedded @edition:opensource
+  Scenario Outline: Misra rule text file
+    Given Edit &gt; Preferences is open on the Addons tab
+    When I select the rule text file {project:embedded}/&lt;rulefile&gt;
+    And I close the dialog with OK
+    And I open the project file {project:embedded}/embedded.cppcheck
+    And I wait until the analysis is done
+    Then the Misra error for the unused parameter has the rule text from the file
+    And there are no internalError results
+
+    Examples:
+      | rulefile              |
+      | rules.txt             |
+      | rules with spaces.txt |</code></pre>
+
+<h3 id="gherkin-keywords">Keywords</h3>
+<div class="tbl"><table>
+<thead><tr><th>Keyword</th><th>Meaning here</th></tr></thead>
+<tbody>
+<tr><td><code>Feature:</code></td><td>The first line of the file. Its text is the title of the test file, shown in the editor and the report. Lines below it, before the first scenario, are a free description</td></tr>
+<tr><td><code>Background:</code></td><td>Steps that come before every scenario of the file, typically <code>Given the application is started with no project loaded</code>. At most one, before the scenarios</td></tr>
+<tr><td><code>Scenario:</code></td><td>One test. The text after the colon is the name of the test, unique within the file. <code>Example:</code> means the same</td></tr>
+<tr><td><code>Scenario Outline:</code></td><td>A test that is run once for every row of its <code>Examples</code> table. <code>Scenario Template:</code> means the same</td></tr>
+<tr><td><code>Examples:</code></td><td>The table of a scenario outline. The first row is the header with the column names; <code>&lt;column&gt;</code> in a step is replaced by the value of the row. See <a href="#test-matrix">Examples (test matrix)</a></td></tr>
+<tr><td><code>Given</code></td><td>The starting point: the state that the application is in before the test does anything</td></tr>
+<tr><td><code>When</code></td><td>An action of the user: a click, a menu entry, typing, opening a file</td></tr>
+<tr><td><code>Then</code></td><td>The expected result: something that can be seen in the GUI or in a file. Every scenario needs at least one <code>Then</code></td></tr>
+<tr><td><code>And</code>, <code>But</code>, <code>*</code></td><td>Continue the step above with the same meaning, e.g. a second <code>Then</code>. A scenario can not start with <code>And</code> or <code>But</code></td></tr>
+<tr><td><code>&quot;&quot;&quot;</code></td><td>A doc string: lines of text that belong to the step above, e.g. code to type into the scratch pad. It ends with another <code>&quot;&quot;&quot;</code></td></tr>
+<tr><td><code>| a | b |</code></td><td>A data table that belongs to the step above</td></tr>
+<tr><td><code>@tag</code></td><td>Tags on the line above a scenario, see below</td></tr>
+<tr><td><code># text</code></td><td>A comment. Comments are lost when the web interface saves the file</td></tr>
+<tr><td><code>TODO:</code></td><td>Not standard Gherkin: a description line under the scenario name that says why the test can't be automated yet</td></tr>
+</tbody></table></div>
+<p>A scenario can switch between <code>When</code> and <code>Then</code> more than once, when a result has to be checked in the middle of the test:</p>
+<pre><code>  Scenario: Filter the results
+    Given the project file {project:basic-project}/basic.cppcheck is opened from the File menu
+    And the analysis is done
+    When I type "arrayIndex" in the Filter field
+    Then only the arrayIndexOutOfBounds error in b.c is shown
+    When I clear the Filter field
+    Then all errors are shown again</code></pre>
+
+<h3 id="gherkin-tags">Tags</h3>
+<p>Everything about a test that is not a step is a tag on the line above the scenario. Tags can't contain spaces.</p>
+<div class="tbl"><table>
+<thead><tr><th>Tag</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>@id:t1a2b3c4d</code></td><td>Identifies the test, also when it is renamed. The script is stored by this id. Added automatically when it is missing; don't change it</td></tr>
+<tr><td><code>@ticket:14893</code></td><td>The ticket of the test, shown as #14893</td></tr>
+<tr><td><code>@project:NAME</code></td><td>A <a href="#test-projects">test project</a> that the test uses, one tag per project</td></tr>
+<tr><td><code>@edition:opensource</code></td><td>An edition that the test is for, one tag per edition. Without the tag the test is for all editions</td></tr>
+<tr><td><code>@disabled</code></td><td>The test is not run</td></tr>
+</tbody></table></div>
+<p>Other tags are kept but have no meaning for gui-test.</p>
+
+<h3 id="gherkin-style">Writing good steps</h3>
+<p>Claude reads the steps as they are when it makes the script, and the <code>Then</code> steps become the checks. A good scenario is one that a new tester could follow without asking:</p>
+<ul>
+  <li>Use the words of the GUI: the menu entries, button texts and dialog titles as they are shown, e.g. <code>When I open File &gt; Edit Project File</code>.</li>
+  <li>Write <code>Given</code> steps as a state (<code>Given the analysis is done</code>), <code>When</code> steps as an action (<code>When I click Recheck</code>) and <code>Then</code> steps as something that can be seen (<code>Then the nullPointer error in a.c is gone</code>).</li>
+  <li>One thing per <code>Then</code> step. <code>Then there are no results for a.c</code> and <code>And there are no results for b.c</code> become two checks, and a failure points at the right one.</li>
+  <li>Be concrete about results: name the file, the error id and the line instead of "the results are correct".</li>
+  <li>Say how to wait: <code>And I wait until the analysis is done</code>.</li>
+  <li>Refer to files with <code>{project:NAME}/path</code>, and to the scratch directory with <code>{work}</code>.</li>
+  <li>Keep the steps that all tests of a file share in the <code>Background</code>.</li>
+</ul>
+<p>Changing the steps, the Background or the Examples makes the script of the test <a href="#outdated">outdated</a>, because the script was made for the old words.</p>
+
+<h3 id="gherkin-differences">Differences from Cucumber</h3>
+<ul>
+  <li>There are no step definitions. In Cucumber every step is matched by a pattern to code that someone writes. Here Claude reads the scenario once and writes a script for it, and the script is replayed. Steps can therefore be free text; they don't have to repeat fixed phrases.</li>
+  <li>The script of a scenario is stored next to the feature file in <code>FILE.scripts.json</code>, by test id.</li>
+  <li><code>Rule:</code>, tags on <code>Examples</code>, and more than one <code>Feature</code> per file are not supported.</li>
+  <li>Placeholders in braces are gui-test variables, not Gherkin: <code>{project:NAME}</code>, <code>{work}</code> and <code>{edition}</code>.</li>
+  <li><code>TODO:</code> description lines are a gui-test convention.</li>
+</ul>
+
 <h2 id="writing-tests">Writing tests</h2>
 <p>A test is a Gherkin scenario, written as if for a person: <code>Given</code> steps say where the test starts, <code>When</code> steps what is done and <code>Then</code> steps the result to expect. Claude reads exactly these words when it makes the script, so be concrete.</p>
 <pre><code>Feature: Results list
@@ -171,7 +258,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
     And the analysis is done
     When I click Clear results
     Then the results are cleared: the result tree is empty</code></pre>
-<p>A file is one <code>Feature</code>, its title is the title of the file. The <code>Background</code> steps belong to every scenario of the file. The fields that are not steps are tags above the scenario: <code>@id:</code>, <code>@ticket:</code>, <code>@project:</code> (one per project), <code>@edition:</code> (one per edition, none means all) and <code>@disabled</code>. A step can have a doc string (lines between <code>"""</code>) or a table. The files can be edited in the web interface or in a text editor; comments (<code>#</code>) are lost when the web interface saves the file. The scripts are not in the feature file but next to it, in <code>FILE.scripts.json</code>, by test id.</p>
+<p>The files can be edited in the web interface or in a text editor. The <a href="#gherkin">Gherkin</a> chapter describes the format; the web interface shows the tags of a scenario (ticket, editions, test projects, enabled) as separate fields.</p>
 <p>Tests live in test files (<code>tests/*.feature</code>), one file per area of the GUI. Click a file in the left column to see its title and its tests, <strong>New file</strong> to create one. Older markdown (sections <code>## Test: NAME</code>) and JSON test files are converted with <code>testfile.py convert IN.md|IN.json OUT.feature</code>. Click a test in the list to edit it, <strong>+ New test</strong> to add one. Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes.</p>
 <div class="tbl"><table>
 <thead><tr><th>Field</th><th>What to write</th></tr></thead>
