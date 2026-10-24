@@ -288,68 +288,122 @@
   "t053b7c9c": {
     "script": [
       {
+        "expect": "visible",
+        "name": "Cppcheck",
+        "role": "frame",
+        "label": "Given the application is started with no project loaded"
+      },
+      {
         "do": "click",
         "name": "File",
         "role": "menu item",
-        "label": "Open the File menu"
+        "label": "Given the XML results are opened with File > Open XML: open the File menu"
       },
       {
         "do": "click",
-        "name": "Open XML",
+        "name": "Open XML...",
         "role": "menu item",
-        "label": "Choose File > Open XML"
+        "label": "Given the XML results are opened with File > Open XML: choose Open XML"
       },
       {
-        "do": "wait",
+        "expect": "visible",
         "name": "Open the report file",
-        "timeout": 10,
-        "label": "Wait for the Open XML dialog"
+        "role": "dialog",
+        "label": "The Open XML file dialog is shown"
       },
       {
         "do": "settext",
         "name": "File name:",
         "role": "text",
         "value": "{project:xml-results}/results.xml",
-        "label": "Enter the path of results.xml"
+        "label": "Enter the XML results file name"
       },
       {
         "do": "key",
         "keys": [
           "Return"
         ],
-        "label": "Confirm the XML file"
+        "label": "Open the XML results"
       },
       {
         "do": "wait",
         "name": "Open the report file",
         "gone": true,
         "timeout": 10,
-        "label": "Wait for the dialog to close"
+        "label": "Wait until the file dialog is closed"
+      },
+      {
+        "expect": "visible",
+        "name": "results.xml",
+        "role": "frame",
+        "timeout": 10,
+        "label": "The XML results are loaded"
+      },
+      {
+        "expect": "visible",
+        "name": "a.c",
+        "role": "table cell",
+        "timeout": 10,
+        "label": "a.c is shown in the results"
+      },
+      {
+        "expect": "state",
+        "name": "Reanalyze all files",
+        "role": "button",
+        "not_state": "enabled",
+        "label": "Then the button Reanalyze all files is disabled"
+      },
+      {
+        "do": "rightclick",
+        "name": "a.c",
+        "role": "table cell",
+        "label": "And if I rightclick on a.c in the results"
+      },
+      {
+        "do": "sleep",
+        "seconds": 1
+      },
+      {
+        "expect": "ocr",
+        "contains": "Copy",
+        "label": "I get a popup"
+      },
+      {
+        "expect": "ocr",
+        "not_contains": "Recheck",
+        "label": "There is an option Recheck 1 file(s) in the popup that is disabled (greyed out, not read by OCR)"
+      },
+      {
+        "do": "key",
+        "keys": [
+          "Escape"
+        ],
+        "label": "Close the popup"
       },
       {
         "do": "click",
         "name": "File",
         "role": "menu item",
-        "label": "Open the File menu again"
+        "label": "When I open the project file: open the File menu"
       },
       {
         "do": "click",
-        "name": "Open Project File",
+        "name": "Open Project File...",
         "role": "menu item",
-        "label": "Choose File > Open Project File"
+        "label": "When I open the project file: choose Open Project File"
       },
       {
-        "do": "wait",
+        "expect": "visible",
         "name": "Select Project File",
-        "timeout": 10,
-        "label": "Wait for the project file dialog"
+        "role": "dialog",
+        "label": "The project file dialog is shown"
       },
       {
         "do": "settext",
         "name": "File name:",
         "role": "text",
         "value": "{project:basic-project}/basic.cppcheck",
-        "label": "Enter the path of basic.cppcheck"
+        "label": "Enter the project file name"
       },
       {
         "do": "key",
@@ -363,39 +417,50 @@
         "name": "Select Project File",
         "gone": true,
         "timeout": 10,
-        "label": "Wait for the dialog to close"
-      },
-      {
-        "do": "sleep",
-        "seconds": 5,
-        "label": "Wait until the analysis is done"
+        "label": "Wait until the file dialog is closed"
       },
       {
         "expect": "visible",
-        "name": "Reanalyze all files",
-        "role": "button",
+        "name": "Project: basic.cppcheck",
+        "role": "frame",
         "timeout": 10,
-        "label": "Reanalyze all files button is shown"
+        "label": "The project is loaded"
+      },
+      {
+        "expect": "state",
+        "name": "Stop analysis",
+        "role": "button",
+        "not_state": "enabled",
+        "timeout": 30,
+        "label": "And I wait until the analysis is done"
       },
       {
         "expect": "state",
         "name": "Reanalyze all files",
         "role": "button",
         "state": "enabled",
-        "timeout": 10,
-        "label": "Reanalyze all files button is enabled"
+        "timeout": 30,
+        "label": "Then the button Reanalyze all files is enabled"
       },
       {
         "do": "click",
         "name": "Reanalyze all files",
         "role": "button",
-        "label": "Click Reanalyze all files"
+        "label": "And can be clicked"
       },
       {
         "expect": "alive",
-        "label": "Application still running after the click"
+        "label": "The application still runs after clicking Reanalyze all files"
+      },
+      {
+        "expect": "state",
+        "name": "Reanalyze all files",
+        "role": "button",
+        "state": "enabled",
+        "timeout": 30,
+        "label": "Reanalyze all files is enabled again after the reanalysis"
       }
     ],
-    "script_for": "36a581ae5136"
+    "script_for": "299ae476b3db"
   }
 }

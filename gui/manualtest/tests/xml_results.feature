@@ -37,6 +37,9 @@ Feature: XML results
   @id:t053b7c9c @project:xml-results @project:basic-project
   Scenario: Reanalyze enabled after XML results
     Given the XML results {project:xml-results}/results.xml are opened with File > Open XML
+    Then the button Reanalyze all files is disabled
+    And if I rightclick on a.c in the results I get a popup
+    And there is a option "Recheck 1 file(s)" in the popup that is disabled
     When I open the project file {project:basic-project}/basic.cppcheck
     And I wait until the analysis is done
     Then the button Reanalyze all files is enabled and can be clicked

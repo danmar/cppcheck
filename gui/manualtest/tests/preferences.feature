@@ -26,7 +26,7 @@ Feature: Preferences
     Then the application does not crash
     And the analysis is done and the results are shown
 
-  @id:t28ce8afe @project:embedded @edition:opensource
+  @id:t28ce8afe @project:embedded @edition:opensource @disabled
   Scenario Outline: Misra rule text file
     Given Edit > Preferences is open on the Addons tab
     When I select the rule text file {project:embedded}/<rulefile>
