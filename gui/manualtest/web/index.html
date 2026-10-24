@@ -44,8 +44,6 @@ ul.tlist li.sel { background: var(--accent); color: var(--accent-text); }
 ul.tlist li.off { opacity: .55; font-style: italic; }
 .row { display: flex; gap: .6rem; align-items: end; flex-wrap: wrap; }
 .row > .grow { flex: 1 1 14rem; }
-.axis { display: flex; gap: .5rem; margin-bottom: .35rem; align-items: center; }
-.axis input.an { width: 10rem; flex: none; }
 .chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
 .flag { font-size: .75rem; border-radius: 999px; padding: 0 .45rem; margin-left: .3rem; white-space: nowrap; }
 .flag.invalid { background: var(--bad); color: #fff; }
@@ -165,10 +163,10 @@ function open(name, d) {
 }
 $('#newfile').onclick = () => {
   if (!confirmDiscard()) return;
-  let n = prompt('File name (e.g. projects.json):', 'new.json');
+  let n = prompt('File name (e.g. projects.feature):', 'new.feature');
   if (!n) return;
-  if (!n.endsWith('.json')) n += '.json';
-  open(n, {title: '', tests: []}); setDirty(true);
+  if (!n.endsWith('.feature')) n += '.feature';
+  open(n, {title: '', background: ['Given the application is started with no project loaded'], tests: []}); setDirty(true);
 };
 $('#import').onclick = () => $('#importfile').click();
 $('#importfile').onchange = async e => {
@@ -176,7 +174,7 @@ $('#importfile').onchange = async e => {
   if (!f || !confirmDiscard()) return;
   try {
     const d = await api('/api/import', {method: 'POST', body: JSON.stringify({markdown: await f.text()})});
-    open(f.name.replace(/\.\w+$/, '') + '.json', d); setDirty(true);
+    open(f.name.replace(/\.\w+$/, '') + '.feature', d); setDirty(true);
     setStatus('Imported, check it and save', 'ok');
   } catch (err) { setStatus(err.message, 'bad'); }
 };
@@ -390,21 +388,68 @@ async function tick() {
 $('#jobstop').onclick = () => api('/api/job/stop', {method: 'POST', body: '{}'}).catch(e => setStatus(e.message, 'bad'));
 window.onbeforeunload = e => { if (dirty || pdirty) e.preventDefault(); };
 
-// ---- model helpers. Axes are edited as a list (the order matters, names must be unique)
-function axesOf(t) { return t._axes || (t._axes = Object.entries(t.matrix || {}).map(([n, v]) => ({n, v: v.join(', ')}))); }
+// ---- model helpers. Steps are Gherkin lines, the Examples are edited as a Gherkin table
+const STEP_RE = /^(Given|When|Then|And|But|\*)\s+\S/;
+function toLines(text) {   // lines of the steps; blank lines are dropped, except in doc strings
+  const out = []; let fence = null, indent = 0;   // doc string lines lose the indentation of the opening """
+  for (const raw of text.split('\n')) {
+    const s = raw.trim();
+    if (fence) {
+      const lead = raw.length - raw.trimStart().length;
+      out.push(s === fence ? s : raw.trimEnd().slice(Math.min(lead, indent)));
+      if (s === fence) fence = null;
+      continue;
+    }
+    if (!s) continue;
+    out.push(s);
+    if (s.startsWith('"""') || s.startsWith('```')) { fence = s.slice(0, 3); indent = raw.length - raw.trimStart().length; }
+  }
+  return out;
+}
+function stepErrors(lines, need_then) {
+  const errs = []; let fence = null, first = true;
+  lines.forEach((l, k) => {
+    const s = l.trim();
+    if (fence) { if (s === fence) fence = null; return; }
+    if (s.startsWith('"""') || s.startsWith('```')) { fence = s.slice(0, 3); return; }
+    if (s.startsWith('|')) return;
+    const m = STEP_RE.exec(s);
+    if (!m) errs.push('line ' + (k + 1) + ' must start with Given, When, Then, And, But or *');
+    else if (first && (m[1] === 'And' || m[1] === 'But')) errs.push('the first step can not start with ' + m[1]);
+    first = false;
+  });
+  if (fence) errs.push('a doc string is not closed with ' + fence);
+  if (need_then && !lines.some(l => /^Then\s/.test(l.trim()))) errs.push('needs a Then step, the expected result');
+  return errs;
+}
+function fmtTable(rows) {
+  if (!rows || !rows.length) return '';
+  const cols = Object.keys(rows[0]), w = cols.map(c => Math.max(c.length, ...rows.map(r => (r[c] || '').length)));
+  const line = cells => '| ' + cells.map((v, k) => v.padEnd(w[k])).join(' | ') + ' |';
+  return [line(cols), ...rows.map(r => line(cols.map(c => r[c] || '')))].join('\n');
+}
+function parseTable(text) {   // {rows, err}
+  const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!lines.length) return {rows: []};
+  const cells = l => l.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+  if (lines.some(l => !l.startsWith('|') || !l.endsWith('|') || l.length < 2)) return {rows: [], err: 'every line of the Examples must start and end with |'};
+  const head = cells(lines[0]);
+  if (lines.length < 2) return {rows: [], err: 'the Examples need a header line and at least one row'};
+  const rows = [];
+  for (const l of lines.slice(1)) {
+    const c = cells(l);
+    if (c.length !== head.length) return {rows: [], err: 'a row of the Examples has ' + c.length + ' cells, the header has ' + head.length};
+    rows.push(Object.fromEntries(head.map((h, k) => [h, c[k]])));
+  }
+  return {rows};
+}
+function examplesText(t) { return t._exText !== undefined ? t._exText : (t._exText = fmtTable(t.examples)); }
+function examplesOf(t) { return parseTable(examplesText(t)); }
 function fmtScript(script) {
   return script && script.length ? '[\n' + script.map(x => '  ' + JSON.stringify(x)).join(',\n') + '\n]' : '';
 }
 let scriptDoc = '';
-function values(a) { return a.v.split(',').map(s => s.trim()).filter(Boolean); }
-function combos(t) {
-  let out = [{}];
-  for (const a of axesOf(t)) {
-    if (!a.n) continue;
-    out = out.flatMap(c => values(a).map(v => ({...c, [a.n]: v})));
-  }
-  return out;
-}
+function combos(t) { const r = examplesOf(t).rows; return r.length ? r : [{}]; }
 function editionsOf(t) { return t.editions || config.editions; }
 function canRun(t, generate) {   // a binary for an edition of the test; to run also the chosen edition
   const ed = $('#edition').value;
@@ -419,29 +464,33 @@ function problems() {
     else if (names.has(t.name)) errs.push(w + 'the name "' + t.name + '" is used twice');
     names.add(t.name);
     if (t._scriptErr) errs.push(w + 'the script is not valid JSON: ' + t._scriptErr);
-    const an = new Set();
-    for (const a of axesOf(t)) {
-      if (!/^\w+$/.test(a.n)) errs.push(w + 'axis name "' + a.n + '" must be letters, digits and _');
-      else if (an.has(a.n)) errs.push(w + 'the axis "' + a.n + '" exists twice');
-      an.add(a.n);
-      if (!values(a).length) errs.push(w + 'the axis "' + a.n + '" has no values');
-    }
+    for (const e of stepErrors(t.steps || [], true)) errs.push(w + 'steps: ' + e);
+    const ex = examplesOf(t);
+    if (ex.err) errs.push(w + ex.err);
+    const cols = ex.rows.length ? Object.keys(ex.rows[0]) : [];
+    for (const c of cols) if (!/^\w+$/.test(c)) errs.push(w + 'the Examples column "' + c + '" must be letters, digits and _');
+    if (new Set(cols).size !== cols.length) errs.push(w + 'an Examples column exists twice');
+    if (ex.rows.some(r => Object.values(r).some(v => !v))) errs.push(w + 'every cell of the Examples needs a value');
+    if (new Set(ex.rows.map(r => JSON.stringify(r))).size !== ex.rows.length) errs.push(w + 'a row of the Examples is there twice');
   });
   return errs;
 }
 function clean() {   // what is saved: no editor-only fields, no empty optional fields
-  return {title: doc.title || '', tests: doc.tests.map(t => {
+  const head = {title: doc.title || ''};
+  for (const k of ['background', 'description', 'tags']) if (doc[k] && doc[k].length) head[k] = doc[k];
+  return {...head, tests: doc.tests.map(t => {
     const o = {id: t.id, name: t.name.trim()};
     if (t.ticket) o.ticket = t.ticket;
     if (t.enabled === false) o.enabled = false;
-    o.steps = t.steps || []; o.expected = t.expected || '';
+    o.steps = t.steps || [];
+    for (const k of ['description', 'tags']) if (t[k] && t[k].length) o[k] = t[k];
     if (t.todo) o.todo = t.todo;
     if (t.script && t.script.length) o.script = t.script;
     if (t._approve) o._approve = true;
     if (t.projects && t.projects.length) o.projects = t.projects;
     if (t.editions && t.editions.length < config.editions.length) o.editions = t.editions;   // default: all
-    const ax = axesOf(t).filter(a => a.n);
-    if (ax.length) o.matrix = Object.fromEntries(ax.map(a => [a.n, values(a)]));
+    const ex = examplesOf(t).rows;
+    if (ex.length) o.examples = ex;
     return o;
   })};
 }
@@ -453,6 +502,9 @@ function render() {
     <div class="card closable"><button class="close" id="closefile" title="Close the file">&#10005;</button>
       <label style="margin-top:0">Title</label>
       <input type="text" id="title" value="${esc(doc.title || '')}">
+      <label>Background (Gherkin steps that are done before every scenario of the file)</label>
+      <textarea id="background" style="min-height:2.5rem" spellcheck="false">${esc((doc.background || []).join('\n'))}</textarea>
+      <div class="err" id="bgerr"></div>
       <label>Tests</label>
       <ul class="tlist" id="tlist"></ul>
       <button id="addtest">+ New test</button>
@@ -465,8 +517,11 @@ function render() {
   };
   $('#runfile').onclick = () => startJob('run', undefined, 'all tests in ' + current, current);
   $('#title').oninput = e => { doc.title = e.target.value; setDirty(true); };
+  const bgerr = () => $('#bgerr').textContent = stepErrors(doc.background || [], false).join('; ');
+  $('#background').oninput = e => { doc.background = toLines(e.target.value); setDirty(true); bgerr(); };
+  bgerr();
   $('#addtest').onclick = () => {
-    doc.tests.push({id: 'n' + Math.random().toString(36).slice(2, 10), name: 'New test', steps: [], expected: ''});
+    doc.tests.push({id: 'n' + Math.random().toString(36).slice(2, 10), name: 'New test', steps: []});
     sel = doc.tests.length - 1; setDirty(true); render();
     $('#detail .name').select();
   };
@@ -507,10 +562,9 @@ function card(t, i) {
         <button class="del" title="Delete the test">Delete</button>
       </div>
     </div>
-    <label>Steps (one per line, use {axis} for matrix values)</label>
-    <textarea class="steps">${esc((t.steps || []).join('\n'))}</textarea>
-    <label>Expected result</label>
-    <textarea class="expected" style="min-height:3rem">${esc(t.expected || '')}</textarea>
+    <label>Scenario steps in Gherkin, one per line: Given (the starting point), When (what is done), Then (the expected result), And, But. Use &lt;column&gt; for the values of the Examples</label>
+    <textarea class="steps" spellcheck="false" style="min-height:9rem" placeholder="Given the project file {project:basic-project}/basic.cppcheck is opened&#10;When I click Clear results&#10;Then the result tree is empty">${esc((t.steps || []).join('\n'))}</textarea>
+    <div class="err steps-err"></div>
     <label>TODO (e.g. "cannot be automated", leave empty otherwise)</label>
     <input type="text" class="todo" value="${esc(t.todo || '')}">
     <label>Test projects (copied to an empty directory before every run; in the script: {project:NAME})</label>
@@ -527,16 +581,17 @@ function card(t, i) {
       <div class="err script-err"></div>
       <details><summary class="muted">How to write a script</summary><pre class="muted" style="white-space:pre-wrap;font-size:.8rem">${esc(scriptDoc)}</pre></details>
     </details>
-    <label>Test matrix (every combination of the axis values becomes a separate run)</label>
-    <div class="axes"></div>
-    <button class="link addaxis">+ axis</button>
+    <label>Examples (makes it a Scenario Outline: a Gherkin table, every row is a separate run)</label>
+    <textarea class="examples" spellcheck="false" style="min-height:3rem" placeholder="| platform |&#10;| native   |&#10;| unix32   |">${esc(examplesText(t))}</textarea>
     <div class="preview"></div>`;
   const on = (sel, ev, f) => d.querySelector(sel).addEventListener(ev, f);
   const edit = (sel, f) => on(sel, 'input', e => { f(e.target); setDirty(true); preview(); });
   edit('.name', el => { t.name = el.value; renderList(); });
   edit('.ticket', el => t.ticket = el.value);
-  edit('.steps', el => t.steps = el.value.split('\n').map(s => s.trim()).filter(Boolean));
-  edit('.expected', el => t.expected = el.value);
+  const serr = () => d.querySelector('.steps-err').textContent = stepErrors(t.steps || [], true).join('; ');
+  edit('.steps', el => { t.steps = toLines(el.value); serr(); });
+  edit('.examples', el => t._exText = el.value);
+  serr();
   edit('.todo', el => t.todo = el.value);
   const pick = d.querySelector('.projpick');
   const names = [...new Set([...projects.map(p => p.name), ...(t.projects || [])])];
@@ -590,35 +645,17 @@ function card(t, i) {
     if (!confirm('Delete "' + t.name + '"?')) return;
     doc.tests.splice(i, 1); sel = Math.min(i, doc.tests.length - 1); setDirty(true); render();
   });
-  on('.addaxis', 'click', () => { axesOf(t).push({n: '', v: ''}); setDirty(true); axes(); });
 
-  function axes() {
-    const box = d.querySelector('.axes');
-    box.innerHTML = '';
-    axesOf(t).forEach((a, k) => {
-      const r = document.createElement('div');
-      r.className = 'axis';
-      r.innerHTML = `<input type="text" class="an" placeholder="axis" value="${esc(a.n)}">
-        <input type="text" class="av" placeholder="values, comma separated" value="${esc(a.v)}">
-        <button class="link rm" title="Delete the axis">✕</button>`;
-      r.querySelector('.an').oninput = e => { a.n = e.target.value.trim(); setDirty(true); preview(); };
-      r.querySelector('.av').oninput = e => { a.v = e.target.value; setDirty(true); preview(); };
-      r.querySelector('.rm').onclick = () => { axesOf(t).splice(k, 1); setDirty(true); axes(); };
-      box.appendChild(r);
-    });
-    preview();
-  }
   function preview() {
-    const p = d.querySelector('.preview'), cs = combos(t), ax = axesOf(t).filter(a => a.n);
-    if (!ax.length) { p.innerHTML = ''; return; }
+    const p = d.querySelector('.preview'), rows = examplesOf(t).rows, cs = combos(t);
     const label = c => Object.entries(c).map(([k, v]) => k + '=' + v).join(', ');
-    p.innerHTML = `<div class="muted">${cs.length} run${cs.length == 1 ? '' : 's'}</div>` +
+    p.innerHTML = !rows.length ? '' : `<div class="muted">${cs.length} run${cs.length == 1 ? '' : 's'}</div>` +
       `<div class="chips">${cs.slice(0, 40).map(c => `<span class="chip">${esc(label(c))}</span>`).join('')}` +
       (cs.length > 40 ? `<span class="muted">… +${cs.length - 40}</span>` : '') + '</div>';
-    const bad = problems().filter(e => e.startsWith('Test ' + (i + 1) + ':'));
+    const bad = problems().filter(e => e.startsWith('Test ' + (i + 1) + ':') && !e.includes(': steps: '));
     if (bad.length) p.innerHTML += bad.map(e => `<div class="err">${esc(e)}</div>`).join('');
   }
-  axes();
+  preview();
   return d;
 }
 function move(i, dir) {

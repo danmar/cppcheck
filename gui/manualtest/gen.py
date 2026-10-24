@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Let Claude write the scripts of the tests. The scripts are replayed by run.py without AI.
 
-  gen.py APP FILE.json [--edition opensource|premium] [--test SUBSTRING] [--force] [--model M]
+  gen.py APP FILE.feature [--edition opensource|premium] [--test SUBSTRING] [--force] [--model M]
 
-For every test without a script (or every test with --force) Claude gets the steps, drives the
+For every test without a script (or every test with --force) Claude gets the scenario, drives the
 GUI once with the guitest.py commands and answers with a script, see testfile.SCRIPT_DOC.
-The script is run again from scratch and is saved in FILE.json only if that replay passes.
-Matrix tests are explored with the first combination, the script uses {axis} where the
-values of the matrix belong. With --edition APP is that edition, tests that are not for it are
+The script is run again from scratch and is saved in FILE.scripts.json only if that replay passes.
+A Scenario Outline is explored with the first row of its Examples, the script uses {column} where
+the values of the row belong. With --edition APP is that edition, tests that are not for it are
 left out; the script is used for all the editions of the test.
 """
 
@@ -48,16 +48,19 @@ Tips:
 
 Test name: {name}
 
+The test is written in Gherkin: the Background and the Given steps are the starting point, the When steps are
+what you do and the Then steps are the EXPECTED result.
+
 {body}
 
-When you have done the test and checked the EXPECTED result, answer with a script that does the
+When you have done the test and checked the EXPECTED result (the Then steps), answer with a script that does the
 same without you. The script is replayed by a program, so:
 - use the exact roles and names that you saw. Give a name and a role. Use "path" only when nothing else tells
   the element apart, paths change when the dialogs change (a file dialog's name field is found by its label)
 - a name matches any element that contains it, so always give the role too: a toolbar button
   "Preferences" and the dialog "Preferences" have the same name, the dialog is role "dialog"
 - give every step a "label" that says what it is for, in the words of the test
-- end with "expect" steps that check the EXPECTED result, one for each thing that has to be true
+- end with "expect" steps that check the EXPECTED result, at least one for each Then step
 - the files of the test are the test projects, refer to them with {{project:NAME}} paths; files that
   you made yourself are created by "write" steps (in {{work}}), not by you
 - the application is started fresh before the script, with an empty HOME
@@ -101,14 +104,14 @@ def start_session(app, root, projects):
     return work, home, env, sub, variables
 
 
-def explore(app, root, test, combo, edition, model, previous=''):
+def explore(app, root, test, combo, edition, model, background, previous=''):
     """Claude does the test by hand and returns (script, error); with a script the error is (OBSERVED, reason)."""
     work, home, env, sub, variables = start_session(app, root, test.get('projects', []))
     try:
-        note = ('this is a matrix test, you explore it with %s. Write {%s} in the script wherever that value '
-                'is used, the script is run once for every combination' % (
+        note = ('this is a Scenario Outline, you explore it with the Examples row %s. Write {%s} in the script wherever '
+                'that value is used, the script is run once for every row of the Examples' % (
                     ', '.join('%s=%s' % kv for kv in combo.items()), '}, {'.join(combo))
-                ) if combo else 'there is no matrix, write the values in the script as they are'
+                ) if combo else 'there are no Examples, write the values in the script as they are'
         others = [e for e in testfile.editions(test) if e != edition]
         if not edition:
             editionnote = 'there is one edition of the application'
@@ -121,7 +124,7 @@ def explore(app, root, test, combo, edition, model, previous=''):
                                                                   ', '.join(sorted(testfile.project_files(root, n))))
                            for n in test.get('projects', [])) or ' none'
         prompt = PROMPT.format(guitest=GUITEST, help=sub('--help', capture_output=True).stdout, work=work,
-                               name=test['name'], body=testfile.body(test, combo, edition), matrixnote=note,
+                               name=test['name'], body=testfile.body(test, combo, edition, background), matrixnote=note,
                                editionnote=editionnote,
                                scriptdoc=testfile.SCRIPT_DOC, previous=previous, projects=projects)
         cmd = ['claude', '-p', '--allowedTools', 'Bash(python3 %s:*)' % GUITEST, 'Read', 'Write', '--add-dir', work]
@@ -175,8 +178,8 @@ def main():
     ap.add_argument('--attempts', type=int, default=3, help='tries per test, a failed replay is told to Claude')
     args = ap.parse_args()
     signal.signal(signal.SIGINT, signal.default_int_handler)   # also when started in the background
-    if not args.file.endswith('.json'):
-        sys.exit('error: FILE must be a .json test file, convert markdown with testfile.py convert')
+    if not args.file.endswith(testfile.EXT):
+        sys.exit('error: FILE must be a %s test file, convert markdown or JSON with testfile.py convert' % testfile.EXT)
     app = os.path.abspath(args.app)
     doc = testfile.ensure_ids(testfile.load(args.file))
     root = os.path.dirname(os.path.abspath(args.file))
@@ -195,11 +198,11 @@ def main():
             continue
         combo = testfile.combinations(t)[0]
         values = dict(combo, edition=args.edition) if args.edition else combo
-        made_for = testfile.definition_hash(t, root)   # the test may be edited while Claude works
+        made_for = testfile.definition_hash(t, root, doc.get('background'))   # the test may be edited while Claude works
         print('%s: exploring...' % t['name'], flush=True)
         previous, saved = '', False
         for attempt in range(1, args.attempts + 1):
-            script, err = explore(app, root, t, combo, args.edition, args.model, previous)
+            script, err = explore(app, root, t, combo, args.edition, args.model, doc.get('background'), previous)
             if script is not None:
                 # the replay uses the first combination, as the exploration did
                 observed, why = err

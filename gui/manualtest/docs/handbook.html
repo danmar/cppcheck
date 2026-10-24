@@ -58,7 +58,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
     <li><a href="#overview">Overview</a></li>
     <li><a href="#getting-started">Getting started</a></li>
     <li><a href="#writing-tests">Writing tests</a>
-      <ol><li><a href="#test-matrix">Test matrix</a></li><li><a href="#test-projects">Test projects</a></li></ol></li>
+      <ol><li><a href="#test-matrix">Examples (test matrix)</a></li><li><a href="#test-projects">Test projects</a></li></ol></li>
     <li><a href="#scripts">Scripts</a>
       <ol><li><a href="#generating">Generating a script</a></li><li><a href="#script-format">The script format</a></li><li><a href="#outdated">Outdated scripts</a></li></ol></li>
     <li><a href="#running">Running tests</a></li>
@@ -74,7 +74,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <p class="updated">Updated 2026-10-22</p>
 
 <h2 id="overview">Overview</h2>
-<p>A test is written in plain words: steps and an expected result. <code>gen.py</code> starts the application, lets Claude do the test by hand through <code>guitest.py</code>, and saves what it did as a script of <code>do</code> and <code>expect</code> steps. <code>run.py</code> replays the scripts, one fresh application per test, and writes an HTML report. <code>web.py</code> is the web interface around all of it.</p>
+<p>A test is written in Gherkin: a scenario with Given, When and Then steps in plain words. <code>gen.py</code> starts the application, lets Claude do the test by hand through <code>guitest.py</code>, and saves what it did as a script of <code>do</code> and <code>expect</code> steps. <code>run.py</code> replays the scripts, one fresh application per test, and writes an HTML report. <code>web.py</code> is the web interface around all of it.</p>
 
 <figure>
 <svg viewBox="0 0 760 310" role="img" aria-label="Claude writes the script once, every run replays it without AI" font-family="system-ui, sans-serif" font-size="13">
@@ -90,7 +90,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
   </g>
   <rect x="20" y="102" width="164" height="56" rx="8" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
   <text x="102" y="126" text-anchor="middle" font-weight="600" fill="#1b2330">A test in words</text>
-  <text x="102" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">steps, expected result</text>
+  <text x="102" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">Gherkin scenarios</text>
   <rect x="208" y="102" width="164" height="56" rx="8" fill="none" stroke="#9aa4b2" stroke-width="1.25"/>
   <text x="290" y="126" text-anchor="middle" font-weight="600" fill="#1b2330">gen.py</text>
   <text x="290" y="144" text-anchor="middle" font-size="11.5" fill="#4a5568">Claude does it once</text>
@@ -123,7 +123,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <tr><td><code>guitest.py</code></td><td>Command line tool that starts the session and clicks, types and reads the GUI</td></tr>
 <tr><td><code>testfile.py</code></td><td>The test file format, test matrices, test projects and outdated-script detection</td></tr>
 <tr><td><code>report.py</code></td><td>Writes the HTML report</td></tr>
-<tr><td><code>tests/</code></td><td>The test files (<code>*.json</code>) and test projects (<code>tests/projects/NAME</code>)</td></tr>
+<tr><td><code>tests/</code></td><td>The test files (<code>*.feature</code>), their scripts (<code>*.scripts.json</code>) and test projects (<code>tests/projects/NAME</code>)</td></tr>
 <tr><td><code>results/</code></td><td>One directory per run with the report, logs and screenshots</td></tr>
 </tbody></table></div>
 
@@ -159,8 +159,20 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 </ul>
 
 <h2 id="writing-tests">Writing tests</h2>
-<p>A test is written as if for a person: steps in plain words and the result to expect. Claude reads exactly these words when it makes the script, so be concrete.</p>
-<p>Tests live in test files (<code>tests/*.json</code>), one file per area of the GUI. Click a file in the left column to see its title and its tests, <strong>New file</strong> to create one, or <strong>Import .md</strong> to convert an older markdown test file (sections <code>## Test: NAME</code>). Click a test in the list to edit it, <strong>+ New test</strong> to add one. Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes.</p>
+<p>A test is a Gherkin scenario, written as if for a person: <code>Given</code> steps say where the test starts, <code>When</code> steps what is done and <code>Then</code> steps the result to expect. Claude reads exactly these words when it makes the script, so be concrete.</p>
+<pre><code>Feature: Results list
+
+  Background:
+    Given the application is started with no project loaded
+
+  @id:t389a5f3a @project:basic-project
+  Scenario: Clear results
+    Given the project file {project:basic-project}/basic.cppcheck is opened from the File menu
+    And the analysis is done
+    When I click Clear results
+    Then the results are cleared: the result tree is empty</code></pre>
+<p>A file is one <code>Feature</code>, its title is the title of the file. The <code>Background</code> steps belong to every scenario of the file. The fields that are not steps are tags above the scenario: <code>@id:</code>, <code>@ticket:</code>, <code>@project:</code> (one per project), <code>@edition:</code> (one per edition, none means all) and <code>@disabled</code>. A step can have a doc string (lines between <code>"""</code>) or a table. The files can be edited in the web interface or in a text editor; comments (<code>#</code>) are lost when the web interface saves the file. The scripts are not in the feature file but next to it, in <code>FILE.scripts.json</code>, by test id.</p>
+<p>Tests live in test files (<code>tests/*.feature</code>), one file per area of the GUI. Click a file in the left column to see its title and its tests, <strong>New file</strong> to create one, or <strong>Import .md</strong> to convert an older markdown test file (sections <code>## Test: NAME</code>). Older JSON test files are converted with <code>testfile.py convert IN.json OUT.feature</code>. Click a test in the list to edit it, <strong>+ New test</strong> to add one. Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes.</p>
 <div class="tbl"><table>
 <thead><tr><th>Field</th><th>What to write</th></tr></thead>
 <tbody>
@@ -168,15 +180,21 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <tr><td>Ticket</td><td>Optional, e.g. a Trac ticket number</td></tr>
 <tr><td>enabled</td><td>Untick to leave the test out of every run without deleting it</td></tr>
 <tr><td>Editions</td><td>The editions the test runs in; default both. The script is the same for all, <code>{edition}</code> is replaced by the edition's name</td></tr>
-<tr><td>Steps</td><td>One step per line, e.g. "Open File &gt; New project file". Use <code>{axis}</code> for matrix values</td></tr>
-<tr><td>Expected result</td><td>What must be true at the end. Every part becomes a check in the script</td></tr>
-<tr><td>TODO</td><td>Why a test can't be automated yet, e.g. "cannot be automated". Leave empty otherwise</td></tr>
+<tr><td>Scenario steps</td><td>One Gherkin step per line, e.g. "When I open File &gt; New Project File". Every <code>Then</code> step becomes at least one check in the script. Use <code>&lt;column&gt;</code> for the values of the Examples</td></tr>
+<tr><td>TODO</td><td>Why a test can't be automated yet, e.g. "cannot be automated". Leave empty otherwise. In the file it is a line <code>TODO: ...</code> below the scenario name</td></tr>
 <tr><td>Test projects</td><td>The projects whose files the test uses, see below</td></tr>
-<tr><td>Test matrix</td><td>Axes with comma-separated values; every combination is a separate run</td></tr>
+<tr><td>Examples</td><td>A Gherkin table; every row is a separate run and the test becomes a <code>Scenario Outline</code></td></tr>
 </tbody></table></div>
 
-<h3 id="test-matrix">Test matrix</h3>
-<p>An axis named <code>platform</code> with the values <code>native, unix32</code> and an axis <code>lang</code> with <code>C, C++</code> give 4 runs. A step like "Select platform {platform}" gets the value of each run. The runs are named after the test plus the values, e.g. <code>Relative paths [platform=unix32, lang=C]</code>, and each one gets its own line in the report. The editor shows how many runs a matrix gives.</p>
+<h3 id="test-matrix">Examples (test matrix)</h3>
+<p>A <code>Scenario Outline</code> is run once for every row of its <code>Examples</code> table:</p>
+<pre><code>    When I select the platform &lt;platform&gt;
+    ...
+    Examples:
+      | platform | lang |
+      | native   | C    |
+      | unix32   | C++  |</code></pre>
+<p>That is 2 runs. A step like "When I select the platform &lt;platform&gt;" gets the value of each run, in the script it is <code>{platform}</code>. The runs are named after the test plus the values, e.g. <code>Relative paths [platform=unix32, lang=C++]</code>, and each one gets its own line in the report. The editor shows how many runs the Examples give.</p>
 
 <h3 id="test-projects">Test projects</h3>
 <p>A test project is a directory of files that tests use: source files, a <code>.cppcheck</code> project file, a <code>.cfg</code> file. They live in <code>tests/projects/NAME</code> and are edited under <strong>Test projects</strong> in the left column. Before every run the project is copied to a new empty directory, so a test always starts with the same files, even if an earlier test changed them. In a script the copy is <code>{project:NAME}</code>, or <code>{project}</code> when the test has only one project.</p>
@@ -186,9 +204,9 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <p>A test runs only when it has an up-to-date script. Generate it with Claude once, check it, and from then on it is replayed without AI.</p>
 
 <h3 id="generating">Generating a script</h3>
-<p>Open the test and press <strong>Generate script</strong>. <code>gen.py</code> starts the application with the test projects in place, and Claude does the test by hand: it looks at the accessibility tree, clicks and types, and checks the expected result. It then answers with a script. The script is replayed from scratch and saved in the test file only if that replay passes. When the replay fails, Claude is told why and tries again, 3 attempts in all. While a script is generated the editor is locked.</p>
+<p>Open the test and press <strong>Generate script</strong>. <code>gen.py</code> starts the application with the test projects in place, and Claude does the test by hand: it looks at the accessibility tree, clicks and types, and checks the expected result (the <code>Then</code> steps). It then answers with a script. The script is replayed from scratch and saved in <code>FILE.scripts.json</code> only if that replay passes. When the replay fails, Claude is told why and tries again, 3 attempts in all. While a script is generated the editor is locked.</p>
 <ul>
-  <li>A matrix test is explored with the first combination. The script uses <code>{axis}</code> where the values belong.</li>
+  <li>A Scenario Outline is explored with the first row of its Examples. The script uses <code>{column}</code> where the values belong.</li>
   <li>When the application does not do what the expected result says, Claude still writes the script that checks it and marks that one check <code>"observed_fail": true</code>. The script is saved, and the test fails until the bug is fixed. That is a finding, not a broken script.</li>
   <li>When the test can't be done through the GUI, Claude answers <code>CANNOT: &lt;reason&gt;</code> and no script is saved.</li>
 </ul>
@@ -218,10 +236,10 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <tr><td><code>expect</code>: <code>alive</code>, <code>exited</code></td><td>The application is still running, or has quit by itself with status 0</td></tr>
 <tr><td><code>expect</code>: <code>capture</code></td><td>Search <code>regex</code> in an element and save group 1 <code>as</code> a name; <code>{name}</code> in the later steps is replaced by it, for text that changes such as the version</td></tr>
 </tbody></table></div>
-<p>Checks and actions wait for their element up to <code>timeout</code> seconds, 5 by default. The placeholders <code>{work}</code>, <code>{home}</code>, <code>{project:NAME}</code>, <code>{axis}</code> and <code>{edition}</code> are replaced before the run, captured values when the capture step has passed. The full description is under <strong>How to write a script</strong> below the script in the editor.</p>
+<p>Checks and actions wait for their element up to <code>timeout</code> seconds, 5 by default. The placeholders <code>{work}</code>, <code>{home}</code>, <code>{project:NAME}</code>, <code>{column}</code> (of the Examples) and <code>{edition}</code> are replaced before the run, captured values when the capture step has passed. The full description is under <strong>How to write a script</strong> below the script in the editor.</p>
 
 <h3 id="outdated">Outdated scripts</h3>
-<p>A script is made for the test's steps, expected result, TODO, matrix and the files of its test projects. When any of those change, the script is <strong>OUTDATED</strong>: it is kept but skipped by every run, and the editor says so in red. You then have three choices:</p>
+<p>A script is made for the test's steps, the Background of the file, TODO, Examples and the files of its test projects. When any of those change, the script is <strong>OUTDATED</strong>: it is kept but skipped by every run, and the editor says so in red. You then have three choices:</p>
 <ol>
   <li><strong>Generate script</strong> again.</li>
   <li><strong>Approve the script</strong> when the change does not affect it, e.g. a typo fix in a step.</li>
@@ -234,14 +252,14 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <h3>From the web interface</h3>
 <p>Pick the edition in the header first: opensource, premium or both. Then:</p>
 <ul>
-  <li><strong>Run test</strong> in an open test runs that test, all its matrix combinations.</li>
+  <li><strong>Run test</strong> in an open test runs that test, all the rows of its Examples.</li>
   <li><strong>▶</strong> next to a test file runs every test in that file.</li>
   <li><strong>Run all</strong> runs every test in every file.</li>
 </ul>
 <p>With "both", the run is done for one edition and then the other, and each edition gets its own report. The job box shows the test and step that is running and the results as they come. <strong>Stop</strong> ends the run at once: the test that was running is SKIP "aborted by user", and the report is written with the tests that are done. Only one job runs at a time.</p>
 
 <h3>From the command line</h3>
-<pre><code>./run.py ~/cppcheck/build/bin/cppcheck-gui tests/application.json tests/projects.json --edition opensource</code></pre>
+<pre><code>./run.py ~/cppcheck/build/bin/cppcheck-gui tests/application.feature tests/projects.feature --edition opensource</code></pre>
 <div class="tbl"><table>
 <thead><tr><th>Option</th><th>Meaning</th></tr></thead>
 <tbody>
@@ -249,11 +267,11 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <tr><td><code>FILE ...</code></td><td>One or more test files</td></tr>
 <tr><td><code>--edition opensource|premium</code></td><td>APP is this edition; only the tests for it run. Without it all tests run and there is no history per edition</td></tr>
 <tr><td><code>--test TEXT</code></td><td>Only tests whose name contains TEXT (case-insensitive)</td></tr>
-<tr><td><code>--id ID</code></td><td>Only the test with this id, all its matrix combinations</td></tr>
+<tr><td><code>--id ID</code></td><td>Only the test with this id, all the rows of its Examples</td></tr>
 <tr><td><code>--src DIR</code></td><td>Git checkout for the SHA in the report; default the directory of APP</td></tr>
 <tr><td><code>--out DIR</code></td><td>Where the run directories go; default <code>results</code></td></tr>
 </tbody></table></div>
-<p><code>run.py</code> prints one line per test and the path of the report, and exits with 1 when a test failed, so it can be used in a script or CI job. Scripts are generated the same way with <code>./gen.py APP FILE.json</code>; it takes <code>--edition</code>, <code>--test</code>, <code>--id</code>, <code>--force</code> (also tests that have a script), <code>--model</code> and <code>--attempts</code>.</p>
+<p><code>run.py</code> prints one line per test and the path of the report, and exits with 1 when a test failed, so it can be used in a script or CI job. Scripts are generated the same way with <code>./gen.py APP FILE.feature</code>; it takes <code>--edition</code>, <code>--test</code>, <code>--id</code>, <code>--force</code> (also tests that have a script), <code>--model</code> and <code>--attempts</code>.</p>
 
 <h3>What happens in a run</h3>
 <ol>
@@ -320,9 +338,9 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <h2 id="reference">Reference</h2>
 <p>The commands, with all their options. <code>web.py</code>, <code>run.py</code>, <code>gen.py</code> and <code>guitest.py</code> also print their help with <code>--help</code>.</p>
 <pre><code>web.py [--opensource APP] [--premium APP] [--src DIR] [--dir tests] [--out results] [--port 8080]
-run.py APP FILE.json... [--edition opensource|premium] [--test TEXT] [--id ID] [--src DIR] [--out results]
-gen.py APP FILE.json [--edition opensource|premium] [--test TEXT] [--id ID] [--force] [--model M] [--attempts 3]
-testfile.py convert IN.md OUT.json</code></pre>
+run.py APP FILE.feature... [--edition opensource|premium] [--test TEXT] [--id ID] [--src DIR] [--out results]
+gen.py APP FILE.feature [--edition opensource|premium] [--test TEXT] [--id ID] [--force] [--model M] [--attempts 3]
+testfile.py convert IN.md|IN.json OUT.feature</code></pre>
 
 <h3>guitest.py</h3>
 <p><code>guitest.py</code> is what Claude uses to drive the GUI, and you can use it by hand to look at the GUI the way a script sees it. The session lives in <code>$GUITEST_STATE</code> (default <code>/tmp/guitest-&lt;uid&gt;/state.json</code>).</p>

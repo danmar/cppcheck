@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Web interface for editing, generating and running the JSON tests.
+"""Web interface for editing, generating and running the Gherkin tests.
 
   web.py [--opensource APP] [--premium APP] [--src DIR] [--dir tests] [--out results] [--port 8080]
 
-Serves on 127.0.0.1 only. Reads and writes DIR/*.json and starts gen.py and run.py with the
-application that is tested, one binary per edition. SRC is the git checkout that both are built
+Serves on 127.0.0.1 only. Reads and writes DIR/*.feature, with the scripts in DIR/*.scripts.json,
+and starts gen.py and run.py with the application that is tested, one binary per edition. SRC is the git checkout that both are built
 from, for the git sha in the reports. --app is the same as --opensource. Without any APP the
 tests can be edited but not generated or run.
 """
@@ -26,7 +26,7 @@ from urllib.parse import parse_qs, quote, unquote, urlparse
 import testfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-NAME_RE = re.compile(r'^[\w.-]+\.json$')
+NAME_RE = re.compile(r'^[\w.-]+\.feature$')
 ID_RE = re.compile(r'^\w+$')
 
 
@@ -138,7 +138,7 @@ class Handler(BaseHTTPRequestHandler):
     def path_of(self, query):
         name = parse_qs(query).get('name', [''])[0]
         if not NAME_RE.match(name):
-            self.reply(400, {'error': 'bad file name (letters, digits, _ - . and .json)'})
+            self.reply(400, {'error': 'bad file name (letters, digits, _ - . and .feature)'})
             return None
         return os.path.join(self.directory, name)
 
@@ -184,25 +184,26 @@ class Handler(BaseHTTPRequestHandler):
         """Add _stale (the script is outdated) and _errors (what is wrong with the test or its script)
         to every test, for the web page. Not saved, see stamp_scripts."""
         tests = doc.get('tests') if isinstance(doc, dict) else None
+        background = doc.get('background') if isinstance(doc, dict) and isinstance(doc.get('background'), list) else []
         for t in tests if isinstance(tests, list) else []:
             if not isinstance(t, dict):
                 continue
-            t['_stale'] = testfile.is_stale(t, self.directory)
+            t['_stale'] = testfile.is_stale(t, self.directory, background)
             t['_errors'] = testfile.validate({'tests': [t]}, self.directory)
 
     def file_status(self):
         """{file: {invalid: n, stale: n}}: tests with errors and tests whose script must be generated again.
-        invalid is 1 for a file that is not valid JSON or not a test file."""
+        invalid is 1 for a file that is not valid Gherkin."""
         out = {}
         for name in os.listdir(self.directory):
             if not NAME_RE.match(name):
                 continue
             try:
-                with open(os.path.join(self.directory, name), encoding='utf-8') as f:
-                    doc = testfile.ensure_ids(json.load(f))
+                doc = testfile.ensure_ids(testfile.load(os.path.join(self.directory, name)))
                 self.annotate(doc)
                 tests = [t for t in doc['tests'] if isinstance(t, dict)]
-                bad = sum(1 for t in tests if t['_errors']) + (len(tests) != len(doc['tests']))
+                bad = sum(1 for t in tests if t['_errors']) + (len(tests) != len(doc['tests'])) + bool(
+                    testfile.validate(dict(doc, tests=[]), self.directory))
                 out[name] = {'invalid': bad, 'stale': sum(1 for t in tests if t['_stale'])}
             except (ValueError, OSError, KeyError, TypeError, AttributeError):
                 out[name] = {'invalid': 1, 'stale': 0}
@@ -254,12 +255,12 @@ class Handler(BaseHTTPRequestHandler):
             path = self.path_of(u.query)
             if path:
                 try:
-                    with open(path, encoding='utf-8') as f:
-                        doc = testfile.ensure_ids(json.load(f))
+                    doc = testfile.ensure_ids(testfile.load(path))
                 except FileNotFoundError:
                     return self.reply(404, {'error': 'no such file'})
                 except ValueError as e:
-                    return self.reply(400, {'error': '%s is not valid JSON: %s' % (os.path.basename(path), e)})
+                    return self.reply(400, {'error': '%s is not valid Gherkin (fix it in a text editor): %s' % (
+                        os.path.basename(path), e)})
                 self.annotate(doc)
                 self.reply(200, doc)
         else:
@@ -423,6 +424,8 @@ class Handler(BaseHTTPRequestHandler):
         if path:
             try:
                 os.remove(path)
+                if os.path.exists(testfile.scripts_path(path)):
+                    os.remove(testfile.scripts_path(path))
                 self.reply(200, {'deleted': os.path.basename(path)})
             except FileNotFoundError:
                 self.reply(404, {'error': 'no such file'})

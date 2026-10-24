@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Run the manual tests in a test file by letting Claude drive the GUI.
 
-  run.py APP FILE.json|FILE.md [--edition opensource|premium] [--test SUBSTRING] [--id ID] [--src DIR] [--out DIR]
+  run.py APP FILE.feature... [--edition opensource|premium] [--test SUBSTRING] [--id ID] [--src DIR] [--out DIR]
 
-FILE.json is edited with web.py and can have test matrices, see testfile.py. FILE.md has
-sections "## Test: NAME". For each test (and matrix combination) the application is started
+FILE.feature is a Gherkin test file, edited with web.py or by hand, see testfile.py. The scripts
+are in FILE.scripts.json. For each scenario (and each row of its Examples) the application is started
 fresh (empty HOME) and the script of the test is run with guitest.py commands, see runner.py.
 No AI is involved. With --edition APP is that edition and only the tests for it are run.
 Tests without a script are SKIP. A step that fails gives PASS -> FAIL with the
@@ -166,10 +166,10 @@ def load_history(out, edition, current):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('app')
-    ap.add_argument('file', nargs='+', help='one or more .json test files')
+    ap.add_argument('file', nargs='+', help='one or more .feature test files')
     ap.add_argument('--edition', choices=testfile.EDITIONS, help='the edition that APP is, only the tests for it')
     ap.add_argument('--test', help='only tests whose name contains this')
-    ap.add_argument('--id', help='only the test with this id (all its matrix combinations)')
+    ap.add_argument('--id', help='only the test with this id (all the rows of its Examples)')
     ap.add_argument('--src', help='git checkout of the application (default: the directory of APP)')
     ap.add_argument('--out', default=os.path.join(HERE, 'results'))
     ap.add_argument('--events', action='store_true', help='progress lines for the web interface')
