@@ -76,7 +76,13 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <p class="updated">Updated 2026-10-24</p>
 
 <h2 id="overview">Overview</h2>
-<p>A test is written in Gherkin: a scenario with Given, When and Then steps in plain words. <code>gen.py</code> starts the application, lets Claude do the test by hand through <code>guitest.py</code>, and saves what it did as a script of <code>do</code> and <code>expect</code> steps. <code>run.py</code> replays the scripts, one fresh application per test, and writes an HTML report. <code>web.py</code> is the web interface around all of it.</p>
+<p>Working with gui-test has three steps:</p>
+<ol>
+  <li><strong>Write the test</strong> in plain words: what the starting point is, what you do and what you expect to see.</li>
+  <li><strong>Generate the script</strong>, once. Claude does the test in the application and writes down what it did as a script.</li>
+  <li><strong>Run the tests</strong> as often as you like. The scripts are replayed without AI, and you get a report with the results and screenshots.</li>
+</ol>
+<p>All of this is done in the web interface. The application runs on its own virtual screen, so your desktop is not touched while tests run.</p>
 
 <figure>
 <svg viewBox="0 0 760 310" role="img" aria-label="Claude writes the script once, every run replays it without AI" font-family="system-ui, sans-serif" font-size="13">
@@ -114,20 +120,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <figcaption>From a test in words to a report: gen.py once, run.py every run.</figcaption>
 </figure>
 
-<p>The application runs in its own Xvfb display with its own D-Bus and accessibility bus, so your desktop is never touched. Elements are found through AT-SPI by their accessible name and role, not by screen positions.</p>
-<div class="tbl"><table>
-<thead><tr><th>Part</th><th>What it does</th></tr></thead>
-<tbody>
-<tr><td><code>web.py</code></td><td>Web interface: edit test files and test projects, generate scripts, run tests, open reports</td></tr>
-<tr><td><code>gen.py</code></td><td>Claude drives the GUI once per test and writes its script; the script is saved only if a replay passes</td></tr>
-<tr><td><code>run.py</code></td><td>Replays the scripts without AI and writes the report and <code>results.json</code></td></tr>
-<tr><td><code>runner.py</code></td><td>Executes one script step by step, used by both <code>gen.py</code> and <code>run.py</code></td></tr>
-<tr><td><code>guitest.py</code></td><td>Command line tool that starts the session and clicks, types and reads the GUI</td></tr>
-<tr><td><code>testfile.py</code></td><td>The Gherkin parser and writer, Examples, test projects and outdated-script detection</td></tr>
-<tr><td><code>report.py</code></td><td>Writes the HTML report</td></tr>
-<tr><td><code>tests/</code></td><td>The test files (<code>*.feature</code>), their scripts (<code>*.scripts.json</code>) and test projects (<code>tests/projects/NAME</code>)</td></tr>
-<tr><td><code>results/</code></td><td>One directory per run with the report, logs and screenshots</td></tr>
-</tbody></table></div>
+<p>The tests are kept in <code>tests/</code>, and every run puts its report, logs and screenshots in a new directory under <code>results/</code>.</p>
 
 <h2 id="getting-started">Getting started</h2>
 <p>Start <code>web.py</code> with the cppcheck-gui binaries you want to test, then open <a href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> in a browser.</p>
@@ -138,26 +131,21 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
   <li><code>--src</code> is the git checkout the binaries are built from. It is only used for the git SHA, branch and commit in the report; the default is the directory of the binary.</li>
   <li><code>--dir</code> (default <code>tests</code>), <code>--out</code> (default <code>results</code>) and <code>--port</code> (default 8080) change where test files and results live and which port is used. The server only listens on 127.0.0.1.</li>
 </ul>
-<p>The tools the session needs must be installed: Xvfb, xdotool, dbus-daemon, the AT-SPI bus launcher and Python with the GObject bindings and Pillow. <code>tesseract</code> is only needed for <code>ocr</code> checks, and the <code>claude</code> command line tool only for generating scripts. On Ubuntu (checked on 26.04) they come from these packages:</p>
+<p>Some packages must be installed first. On Ubuntu (checked on 26.04):</p>
 <pre><code>sudo apt install xvfb xdotool dbus at-spi2-core python3-gi gir1.2-atspi-2.0 python3-pil tesseract-ocr tesseract-ocr-eng</code></pre>
-<div class="tbl"><table>
-<thead><tr><th>Package</th><th>Needed for</th></tr></thead>
-<tbody>
-<tr><td><code>xvfb</code></td><td>The virtual display the application runs in</td></tr>
-<tr><td><code>xdotool</code></td><td>Keyboard input and mouse clicks</td></tr>
-<tr><td><code>dbus</code></td><td>The session's own D-Bus (<code>dbus-daemon</code>)</td></tr>
-<tr><td><code>at-spi2-core</code></td><td>The accessibility bus (<code>/usr/libexec/at-spi-bus-launcher</code>)</td></tr>
-<tr><td><code>python3-gi</code>, <code>gir1.2-atspi-2.0</code></td><td>Python access to AT-SPI, to find and read elements</td></tr>
-<tr><td><code>python3-pil</code></td><td>Screenshots, and cropping them for the report</td></tr>
-<tr><td><code>tesseract-ocr</code>, <code>tesseract-ocr-eng</code></td><td>Only for <code>ocr</code> checks</td></tr>
-</tbody></table></div>
+<p>The <code>tesseract</code> packages are only needed for <code>ocr</code> checks. To generate scripts the <code>claude</code> command line tool must be installed too.</p>
 
 <h3>The web interface</h3>
 <ul>
-  <li><strong>Left column:</strong> three boxes: the test files, the test projects and the results (the reports of earlier runs). The ▶ button next to a file runs all tests in it.</li>
-  <li><strong>Header:</strong> Save, Run all (every test in every file), the edition picker (opensource, premium or both) and a status message.</li>
-  <li><strong>Main area:</strong> the open test file, the open test or test project. Each has an ✕ in the top right corner to close it.</li>
-  <li><strong>Job box:</strong> while a script is generated or tests run, it shows the progress, the results as they come and a link to the report. Its ✕ hides it until the next job.</li>
+  <li><strong>Header:</strong> Save, Run all (every test in every file), the Edition picker, a status message and a link to this handbook. The Edition picker only shows the editions that <code>web.py</code> got a binary for, and "both" when it got two. Without a binary there is no picker, and tests can be edited but not generated or run.</li>
+  <li><strong>Left column:</strong> three boxes.
+    <ul>
+      <li><strong>Test files</strong>, with <strong>New file</strong>. A file is flagged <code>invalid</code> when a test in it has errors, and <code>regenerate N</code> when N tests have an outdated script.</li>
+      <li><strong>Test projects</strong>, with <strong>New test project</strong>.</li>
+      <li><strong>Results</strong>: <strong>Reports</strong> lists the earlier runs with their date, edition, version, test files and result. Click a date to open the report.</li>
+    </ul></li>
+  <li><strong>Main area:</strong> the open test file with its tests, the open test, or the open test project. Each has an ✕ in the top right corner to close it.</li>
+  <li><strong>Job box:</strong> while a script is generated or tests run, it shows the progress, the results as they come in and a link to the report. <strong>Stop</strong> ends the job. Its ✕ hides the box until the next job.</li>
 </ul>
 
 <h2 id="gherkin">Gherkin</h2>
@@ -259,17 +247,26 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
     When I click Clear results
     Then the results are cleared: the result tree is empty</code></pre>
 <p>The files can be edited in the web interface or in a text editor. The <a href="#gherkin">Gherkin</a> chapter describes the format; the web interface shows the tags of a scenario (ticket, editions, test projects, enabled) as separate fields.</p>
-<p>Tests live in test files (<code>tests/*.feature</code>), one file per area of the GUI. Click a file in the left column to see its title and its tests, <strong>New file</strong> to create one. Older markdown (sections <code>## Test: NAME</code>) and JSON test files are converted with <code>testfile.py convert IN.md|IN.json OUT.feature</code>. Click a test in the list to edit it, <strong>+ New test</strong> to add one. Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes.</p>
+<p>Tests live in test files (<code>tests/*.feature</code>), one file per area of the GUI. Click a file in the left column to open it, or <strong>New file</strong> to create one. An open file shows:</p>
+<ul>
+  <li><strong>Title</strong>: the <code>Feature:</code> line, shown in the report.</li>
+  <li><strong>Background</strong>: the steps that are done before every test of the file, e.g. <code>Given the application is started with no project loaded</code>.</li>
+  <li><strong>Tests</strong>: the list of tests. Click one to edit it, <strong>+ New test</strong> to add one. A test is flagged <code>invalid</code> when it has errors and <code>regenerate</code> when its script is outdated.</li>
+  <li><strong>Run tests</strong>: runs all tests in the file.</li>
+</ul>
+<p>Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes. Errors, such as a test without a <code>Then</code> step, are shown under the field and must be fixed before you can save.</p>
+<p>The test editor has these fields. The ↑ and ↓ buttons move the test in the list, and <strong>Delete</strong> removes it.</p>
 <div class="tbl"><table>
 <thead><tr><th>Field</th><th>What to write</th></tr></thead>
 <tbody>
 <tr><td>Name</td><td>Unique within the file. Shown in reports and the history, so a rename starts a new history line</td></tr>
 <tr><td>Ticket</td><td>Optional, e.g. a Trac ticket number</td></tr>
 <tr><td>enabled</td><td>Untick to leave the test out of every run without deleting it</td></tr>
-<tr><td>Editions</td><td>The editions the test runs in; default both. The script is the same for all, <code>{edition}</code> is replaced by the edition's name</td></tr>
+<tr><td>Editions</td><td>Tick the editions the test runs in; by default all. The script is the same for all editions, <code>{edition}</code> is replaced by the edition's name</td></tr>
 <tr><td>Scenario steps</td><td>One Gherkin step per line, e.g. "When I open File &gt; New Project File". Every <code>Then</code> step becomes at least one check in the script. Use <code>&lt;column&gt;</code> for the values of the Examples</td></tr>
 <tr><td>TODO</td><td>Why a test can't be automated yet, e.g. "cannot be automated". Leave empty otherwise. In the file it is a line <code>TODO: ...</code> below the scenario name</td></tr>
-<tr><td>Test projects</td><td>The projects whose files the test uses, see below</td></tr>
+<tr><td>Test projects</td><td>Tick the projects whose files the test uses, see below</td></tr>
+<tr><td>Script</td><td>The script of the test, with the buttons <strong>Generate script</strong>, <strong>Run test</strong> and, when it is outdated, <strong>Approve the script</strong>. See <a href="#scripts">Scripts</a></td></tr>
 <tr><td>Examples</td><td>A Gherkin table; every row is a separate run and the test becomes a <code>Scenario Outline</code></td></tr>
 </tbody></table></div>
 
@@ -340,7 +337,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <p>Pick the edition in the header first: opensource, premium or both. Then:</p>
 <ul>
   <li><strong>Run test</strong> in an open test runs that test, all the rows of its Examples.</li>
-  <li><strong>▶</strong> next to a test file runs every test in that file.</li>
+  <li><strong>Run tests</strong> in an open test file runs every test in that file.</li>
   <li><strong>Run all</strong> runs every test in every file.</li>
 </ul>
 <p>With "both", the run is done for one edition and then the other, and each edition gets its own report. The job box shows the test and step that is running and the results as they come. <strong>Stop</strong> ends the run at once: the test that was running is SKIP "aborted by user", and the report is written with the tests that are done. Only one job runs at a time.</p>
@@ -363,7 +360,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <h3>What happens in a run</h3>
 <ol>
   <li>The tests to run are selected: enabled, for this edition, not filtered out. Tests without a script, or with an outdated one, are SKIP.</li>
-  <li>For each test, a new Xvfb session starts, the test projects are copied, and the application is started.</li>
+  <li>For each test, the test projects are copied and the application is started on a new virtual screen with an empty HOME.</li>
   <li>The script is replayed step by step. After every step that acts on the GUI (click, type, key, settext, restart...) a screenshot is saved.</li>
   <li>At the end, or at the first failing step, the step log, a final screenshot and the application log are saved, and the log is searched for a crash.</li>
   <li>After the last test, <code>results.json</code> and <code>report.html</code> are written in the run directory.</li>
@@ -392,7 +389,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <p>Every test has a strip with a cell per script step: green passed, red failed, grey not run. A failure at step 2 of 14 usually means the test or the application broke early. A failure at the last step usually means one check is wrong, or the bug the check describes. Under the strip it says e.g. "failed at step 9 of 14", "not run" or "did not start".</p>
 
 <h3>Files in a run directory</h3>
-<p>A run directory is <code>results/&lt;date&gt;-&lt;time&gt;-&lt;edition&gt;-&lt;sha&gt;/</code>, e.g. <code>20261022-120317-opensource-b8b27a95/</code>. The test name becomes the file name, with everything but letters, digits and <code>_</code> turned into <code>_</code>.</p>
+<p>A run directory is <code>results/&lt;date&gt;-&lt;time&gt;-&lt;edition&gt;-&lt;sha&gt;/</code>, e.g. <code>20261022-120317-opensource-b8b27a95/</code>. The files of a test are named after the test (<code>NAME</code> below), with spaces and other special characters replaced by <code>_</code>. They are also linked from the report.</p>
 <div class="tbl"><table>
 <thead><tr><th>File</th><th>Content</th></tr></thead>
 <tbody>
@@ -403,7 +400,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 <tr><td><code>NAME.stepNN.png</code></td><td>The screen after step NN, for steps that act on the GUI</td></tr>
 <tr><td><code>NAME.app.log</code></td><td>What the application printed</td></tr>
 </tbody></table></div>
-<p>The history only uses runs of the same edition in the same <code>--out</code> directory that have a <code>results.json</code>. Runs made before 22 Oct 2026 don't have one and are left out. Tests are matched by name.</p>
+<p>The history compares runs of the same edition in the same results directory. Tests are matched by name.</p>
 
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>Start with the reason in the report and the final screenshot: together they usually say whether the application, the script or the test is wrong.</p>
