@@ -343,9 +343,7 @@ class Handler(BaseHTTPRequestHandler):
         route = urlparse(self.path).path
         try:
             data = self.body()
-            if route == '/api/import':
-                self.reply(200, testfile.from_markdown(data['markdown']))
-            elif route == '/api/job':
+            if route == '/api/job':
                 self.start_job(data)
             elif route == '/api/job/stop':
                 if self.job and self.job.rc is None:

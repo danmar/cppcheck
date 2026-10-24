@@ -152,7 +152,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
 
 <h3>The web interface</h3>
 <ul>
-  <li><strong>Left column:</strong> the test files and the test projects. The ▶ button next to a file runs all tests in it.</li>
+  <li><strong>Left column:</strong> three boxes: the test files, the test projects and the results (the reports of earlier runs). The ▶ button next to a file runs all tests in it.</li>
   <li><strong>Header:</strong> Save, Run all (every test in every file), the edition picker (opensource, premium or both) and a status message.</li>
   <li><strong>Main area:</strong> the open test file, the open test or test project. Each has an ✕ in the top right corner to close it.</li>
   <li><strong>Job box:</strong> while a script is generated or tests run, it shows the progress, the results as they come and a link to the report. Its ✕ hides it until the next job.</li>
@@ -172,7 +172,7 @@ figcaption { color: var(--muted); font-size: .82rem; margin-top: .4rem; }
     When I click Clear results
     Then the results are cleared: the result tree is empty</code></pre>
 <p>A file is one <code>Feature</code>, its title is the title of the file. The <code>Background</code> steps belong to every scenario of the file. The fields that are not steps are tags above the scenario: <code>@id:</code>, <code>@ticket:</code>, <code>@project:</code> (one per project), <code>@edition:</code> (one per edition, none means all) and <code>@disabled</code>. A step can have a doc string (lines between <code>"""</code>) or a table. The files can be edited in the web interface or in a text editor; comments (<code>#</code>) are lost when the web interface saves the file. The scripts are not in the feature file but next to it, in <code>FILE.scripts.json</code>, by test id.</p>
-<p>Tests live in test files (<code>tests/*.feature</code>), one file per area of the GUI. Click a file in the left column to see its title and its tests, <strong>New file</strong> to create one, or <strong>Import .md</strong> to convert an older markdown test file (sections <code>## Test: NAME</code>). Older JSON test files are converted with <code>testfile.py convert IN.json OUT.feature</code>. Click a test in the list to edit it, <strong>+ New test</strong> to add one. Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes.</p>
+<p>Tests live in test files (<code>tests/*.feature</code>), one file per area of the GUI. Click a file in the left column to see its title and its tests, <strong>New file</strong> to create one. Older markdown (sections <code>## Test: NAME</code>) and JSON test files are converted with <code>testfile.py convert IN.md|IN.json OUT.feature</code>. Click a test in the list to edit it, <strong>+ New test</strong> to add one. Nothing is written to disk until you press <strong>Save</strong>; a dot after the file name means there are unsaved changes.</p>
 <div class="tbl"><table>
 <thead><tr><th>Field</th><th>What to write</th></tr></thead>
 <tbody>

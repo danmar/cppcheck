@@ -31,6 +31,9 @@ input[type=text], textarea { width: 100%; background: var(--bg); border: 1px sol
 textarea { resize: vertical; min-height: 4.5rem; font-family: ui-monospace, monospace; font-size: .9rem; }
 label { display: block; font-size: .8rem; color: var(--muted); margin: .6rem 0 .15rem; }
 ul.files { list-style: none; margin: 0; padding: 0; }
+fieldset.group { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin: 0 0 .9rem; padding: .3rem .4rem .5rem; min-width: 0; }
+fieldset.group legend { padding: 0 .35rem; font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+fieldset.group p { margin: .4rem .2rem 0; }
 ul.files li { padding: .35rem .6rem; border-radius: 6px; cursor: pointer; overflow-wrap: anywhere; }
 ul.files li.sel { background: var(--chip); font-weight: 600; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: .75rem 1rem; margin-bottom: .9rem; }
@@ -87,18 +90,17 @@ button.close:hover { color: var(--text); background: var(--chip); }
 </header>
 <main>
   <aside>
-    <div class="muted" style="margin:.2rem .6rem">Test files</div>
-    <ul class="files" id="files"></ul>
-    <p>
-      <button id="newfile">New file</button>
-      <button id="import">Import .md</button>
-      <input type="file" id="importfile" accept=".md,text/markdown,text/plain" hidden>
-    </p>
-    <div class="muted" style="margin:.8rem .6rem .2rem">Test projects</div>
-    <ul class="files" id="projects"></ul>
-    <p><button id="newproject">New test project</button></p>
-    <div class="muted" style="margin:.8rem .6rem .2rem">Results</div>
-    <ul class="files"><li id="reportsbtn">Reports</li></ul>
+    <fieldset class="group"><legend>Test files</legend>
+      <ul class="files" id="files"></ul>
+      <p><button id="newfile">New file</button></p>
+    </fieldset>
+    <fieldset class="group"><legend>Test projects</legend>
+      <ul class="files" id="projects"></ul>
+      <p><button id="newproject">New test project</button></p>
+    </fieldset>
+    <fieldset class="group"><legend>Results</legend>
+      <ul class="files"><li id="reportsbtn">Reports</li></ul>
+    </fieldset>
   </aside>
   <section><div id="editor"><p class="muted">Select a file on the left or create a new one.</p></div>
     <div id="jobbox" class="card closable" hidden>
@@ -167,16 +169,6 @@ $('#newfile').onclick = () => {
   if (!n) return;
   if (!n.endsWith('.feature')) n += '.feature';
   open(n, {title: '', background: ['Given the application is started with no project loaded'], tests: []}); setDirty(true);
-};
-$('#import').onclick = () => $('#importfile').click();
-$('#importfile').onchange = async e => {
-  const f = e.target.files[0]; e.target.value = '';
-  if (!f || !confirmDiscard()) return;
-  try {
-    const d = await api('/api/import', {method: 'POST', body: JSON.stringify({markdown: await f.text()})});
-    open(f.name.replace(/\.\w+$/, '') + '.feature', d); setDirty(true);
-    setStatus('Imported, check it and save', 'ok');
-  } catch (err) { setStatus(err.message, 'bad'); }
 };
 async function save() {
   const errs = problems();
